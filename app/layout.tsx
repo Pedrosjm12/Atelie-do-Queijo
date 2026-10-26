@@ -23,7 +23,7 @@ const manrope = Manrope({
 });
 
 export const metadata: Metadata = {
-  title: 'Ateliê do Queijo',
+  title: { default: 'Ateliê do Queijo', template: '%s — Ateliê do Queijo' },
   description: 'Queijos de autor, escolhidos à mão.',
 };
 

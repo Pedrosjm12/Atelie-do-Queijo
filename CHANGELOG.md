@@ -19,6 +19,8 @@ O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 - Protótipo aprovado das telas em `design/`, como referência para a comparação visual.
 - Dados dos 10 queijos (`data/cheeses.ts`), regras do catálogo, preço no Pix e lacuna "R$ [PREÇO]", ilustrações SVG do Apêndice A e `ProductCard`.
 - Home completa (§5): hero, garantias, Na cave esta semana, Do Brasil e do mundo, quiz "Encontre seu queijo", presentes, Escola do Ateliê e newsletter (sem envio nesta etapa).
+- Catálogo `/queijos` (§6) com filtro Todos / Brasil / Mundo refletido na URL, anúncio do total para leitores de tela e caixa de ajuda.
+- Modelo de título `%s — Ateliê do Queijo` para todas as páginas e `next typegen` antes do typecheck (ADR-0006).
 
 ### Corrigido
 

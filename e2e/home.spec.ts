@@ -12,6 +12,11 @@ async function semRolagemHorizontal(page: Page) {
 const SECAO_DO_QUIZ = 'section#quiz';
 
 test.describe('home', () => {
+  test('título da aba é o padrão do layout', async ({ page }) => {
+    await page.goto('/');
+    await expect(page).toHaveTitle('Ateliê do Queijo');
+  });
+
   test('mostra as seções da §5 na ordem', async ({ page }) => {
     await page.goto('/');
     const secoes = page.locator('main > section');

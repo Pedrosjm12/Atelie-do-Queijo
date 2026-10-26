@@ -1,0 +1,83 @@
+.pagina {
+  padding-block: 64px 112px;
+}
+
+.sobretitulo {
+  margin-bottom: 12px;
+}
+
+.paragrafo {
+  max-width: 560px;
+  margin-top: 16px;
+  font-size: 18px;
+  color: var(--palha);
+}
+
+.filtros {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin: 40px 0 32px;
+  padding: 14px 0;
+  border-top: var(--borda-padrao);
+  border-bottom: var(--borda-padrao);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.beneficios {
+  font-size: 14px;
+  color: var(--palha);
+}
+
+.grade {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 20px;
+}
+
+.vazio {
+  color: var(--palha);
+}
+
+.ajuda {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 56px;
+  padding: 28px 32px;
+  border: var(--borda-padrao);
+  border-radius: 12px;
+  background: var(--cave-quiz);
+}
+
+.tituloAjuda {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 600;
+  line-height: 1.6;
+}
+
+.textoAjuda {
+  margin-top: 0;
+  font-size: 15px;
+  color: var(--palha);
+}
+
+/* O cartão ocupa a altura toda da linha, para os rodapés ficarem alinhados. */
+.grade > li {
+  display: flex;
+  flex-direction: column;
+}
+
+.grade > li > * {
+  flex: 1;
+}

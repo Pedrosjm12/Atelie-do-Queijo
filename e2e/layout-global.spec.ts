@@ -6,11 +6,13 @@ test.describe('componentes globais', () => {
   for (const largura of larguras) {
     test(`sem rolagem horizontal a ${largura} px`, async ({ page }) => {
       await page.setViewportSize({ width: largura, height: 900 });
-      await page.goto('/');
-      const cabe = await page.evaluate(
-        () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
-      );
-      expect(cabe).toBe(true);
+      for (const rota of ['/', '/queijos']) {
+        await page.goto(rota);
+        const cabe = await page.evaluate(
+          () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+        );
+        expect(cabe, rota).toBe(true);
+      }
     });
   }
 
@@ -70,7 +72,7 @@ test.describe('componentes globais', () => {
 
   test('cabeçalho só tem borda inferior fora da Home', async ({ page }) => {
     const larguraDaBorda = () =>
-      page.locator('header').evaluate((el) => getComputedStyle(el).borderBottomWidth);
+      page.getByRole('banner').evaluate((el) => getComputedStyle(el).borderBottomWidth);
 
     await page.goto('/');
     expect(await larguraDaBorda()).toBe('0px');
@@ -89,8 +91,7 @@ test.describe('componentes globais', () => {
     expect((await botao.boundingBox())?.width).toBe(60);
   });
 
-  // Pendente: /queijos ainda não existe (404 recarrega o documento). Ativar na etapa 3.
-  test.fixme('navegar pelo menu mobile leva o foco para #conteudo', async ({ page }) => {
+  test('navegar pelo menu mobile leva o foco para #conteudo', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/');
     await page.getByRole('button', { name: 'Menu' }).click();
