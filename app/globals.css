@@ -36,6 +36,8 @@
 
   /* Espaço, raios e linhas (3.3) */
   --largura-conteudo: 1200px;
+  /* Caixa do contêiner (border-box): 1200 px de conteúdo + 32 px de respiro de cada lado. */
+  --largura-conteiner: calc(var(--largura-conteudo) + 2 * var(--respiro-lateral));
   --respiro-lateral: 32px;
   --raio-cartao: 12px;
   --raio-palco: 16px;
@@ -211,7 +213,7 @@ h2,
 
 /* Contêiner de conteúdo (3.3) */
 .conteudo {
-  max-width: var(--largura-conteudo);
+  max-width: var(--largura-conteiner);
   margin: 0 auto;
   padding-inline: var(--respiro-lateral);
 }

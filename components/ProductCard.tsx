@@ -2,7 +2,7 @@ import Link from 'next/link';
 import type { Cheese } from '@/data/cheeses';
 import { dadosDoCartao } from '@/lib/catalogo';
 import { formatarPreco } from '@/lib/format';
-import { Button } from './Button';
+import { BotaoDaSacola } from './BotaoDaSacola';
 import { CheeseIllustration } from './CheeseIllustration';
 import { MINIATURAS_DA_CAVE } from './ilustracoes/MiniaturasDaCave';
 import { Overline } from './Overline';
@@ -41,13 +41,13 @@ export function ProductCard({ queijo, contexto }: ProductCardProps) {
           <span className={estilos.linhaPequena}>{linhaPequena}</span>
           <span className={estilos.preco}>{formatarPreco(preco)}</span>
         </div>
-        <Button
+        <BotaoDaSacola
           variante="contorno"
           tamanho="compacto"
           aria-label={`Adicionar ${queijo.nome} à sacola`}
         >
           Adicionar
-        </Button>
+        </BotaoDaSacola>
       </div>
     </article>
   );

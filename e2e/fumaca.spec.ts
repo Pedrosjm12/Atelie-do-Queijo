@@ -5,7 +5,9 @@ test.describe('fumaça', () => {
     const resposta = await page.goto('/');
     expect(resposta?.ok()).toBe(true);
     await expect(page.locator('html')).toHaveAttribute('lang', 'pt-BR');
-    await expect(page.getByRole('heading', { level: 1, name: 'Ateliê do Queijo' })).toBeVisible();
+    await expect(
+      page.getByRole('heading', { level: 1, name: 'Queijos de autor, escolhidos à mão.' }),
+    ).toBeVisible();
   });
 
   test('sem rolagem horizontal a 360 px', async ({ page }) => {

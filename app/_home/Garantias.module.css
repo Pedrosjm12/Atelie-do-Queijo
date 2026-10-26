@@ -1,0 +1,31 @@
+.faixa {
+  border-top: var(--borda-padrao);
+  border-bottom: var(--borda-padrao);
+}
+
+.grade {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 28px;
+  padding-block: 32px;
+}
+
+.item {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.icone {
+  flex: none;
+  color: var(--ouro);
+}
+
+.titulo {
+  font-weight: 600;
+}
+
+.descricao {
+  font-size: 14px;
+  color: var(--palha);
+}

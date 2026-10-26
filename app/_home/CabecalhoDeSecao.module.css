@@ -1,0 +1,17 @@
+.cabecalho {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+  margin-bottom: 40px;
+}
+
+.sobretitulo {
+  margin-bottom: 12px;
+}
+
+.paragrafo {
+  margin-top: 12px;
+  color: var(--palha);
+}

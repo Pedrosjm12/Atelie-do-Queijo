@@ -1,0 +1,40 @@
+.secao {
+  padding-top: 128px;
+}
+
+.grade {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.cartao {
+  height: 100%;
+  overflow: hidden;
+  border: var(--borda-padrao);
+  border-radius: var(--raio-cartao);
+  background: var(--carvao);
+}
+
+.foto {
+  border-bottom: var(--borda-padrao);
+}
+
+.corpo {
+  padding: 24px;
+}
+
+.nome {
+  margin: 0 0 6px;
+}
+
+.descricao {
+  margin: 0 0 16px;
+  font-size: 14px;
+  color: var(--palha);
+}
+
+.preco {
+  font-weight: 600;
+  color: var(--ouro);
+}

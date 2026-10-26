@@ -556,7 +556,7 @@ Cada commit só sai depois do veredito ✅ (ou ⚠️ resolvido) do `revisor-de-
 
 | Controle | Onde | Ganha ação na |
 | --- | --- | --- |
-| Adicionar / Adicionar à sacola | Cartões, quiz, produto, barra fixa | Etapa 4 |
+| Adicionar / Adicionar à sacola | Cartões, quiz, produto, barra fixa | Etapa 4. Até lá: `aria-disabled="true"` + `aria-describedby` para o texto `.sr-only` "Sacola disponível em breve" (botão focável, visual igual) |
 | Calcular (frete), Embalar para presente | Produto | Etapa 4 |
 | Avise-me (esgotado) | Produto | Pendência P15 |
 | Girar, Aproximar (efeito visual), Tela cheia | Produto | Etapa 5 |
@@ -611,6 +611,10 @@ Todas as recomendações abaixo foram **aceitas pelo dono em 2026-10-26** (P1, P
 | P14 | Selos e perfil sensorial dos 9 queijos sem detalhe. | Um selo **[A DEFINIR]** e, no perfil, **[A DEFINIR]** no lugar das barras. |
 | P15 | O que faz o **Avise-me** (esgotado), e de onde vem o estoque? | Todos os queijos ficam como disponíveis. O estado esgotado existe no código e nos testes, com botão sem ação, até o dono definir o fluxo (provavelmente e-mail, junto com P9). |
 | P16 | Distância entre o painel e o FAB no desktop, e comportamento em janelas com menos de ~780 px de altura. | `bottom: 100px` (28 + 60 + 12 do `gap` do FAB) e `max-height` limitada à altura visível da janela, com a área de mensagens rolando. |
+| P17 | Erro de e-mail inválido na newsletter (a spec só define o sucesso). | **Aprovado pelo dono:** "Informe um e-mail válido, por exemplo voce@email.com." em `--casca-texto`, com a borda do campo na mesma cor. |
+| P18 | Borda dos campos (`--pedra-clara`, 1,71:1 sobre `--carvao`) abaixo dos 3:1 da WCAG 1.4.11. | **Mantida a spec pelo dono**, com rótulo visível, fundo próprio e foco dourado nos campos. Desvio aceito; rever antes da publicação. Vale também para CEP e mensagem do chat. |
+| P19 | Estado desabilitado de botões (não existe na spec nem no protótipo). | **Aprovado pelo dono:** opacidade 0,5, para qualquer botão desabilitado do site. |
+| P20 | Desempate do quiz: "suaves + presente + cerveja" recomenda o Tipo Gruyère (empata com o Brie e vem antes no catálogo). | **Mantido pelo dono** (2026-10-26): desempate pela ordem do catálogo, sem prioridade por sabor. |
 
 ---
 

@@ -1,0 +1,77 @@
+.secao {
+  padding-top: 128px;
+}
+
+.caixa {
+  padding: 56px 40px;
+  border: var(--borda-destaque);
+  border-radius: var(--raio-palco);
+  background: var(--cave-quiz);
+  text-align: center;
+}
+
+.titulo {
+  margin: 16px 0 12px;
+}
+
+.paragrafo {
+  max-width: 520px;
+  margin: 0 auto 32px;
+  color: var(--palha);
+}
+
+.pergunta {
+  margin-bottom: 20px;
+  font-family: var(--fonte-titulo), 'Cormorant Garamond', serif;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.6;
+}
+
+.pergunta:focus {
+  outline: none;
+}
+
+.opcoes {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+}
+
+.caixa .opcao {
+  max-width: 100%;
+  font-weight: 400;
+}
+
+.proxima {
+  margin-top: 32px;
+}
+
+/* Resultado */
+.tituloDoResultado {
+  margin: 16px 0 24px;
+}
+
+.tituloDoResultado:focus {
+  outline: none;
+}
+
+.ilustracao {
+  width: min(100%, 300px);
+  margin: 0 auto 24px;
+}
+
+.porQue {
+  max-width: 520px;
+  margin: 0 auto 32px;
+  color: var(--palha);
+}
+
+.acoesDoResultado {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+}

@@ -12,7 +12,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 20px;
-  max-width: var(--largura-conteudo);
+  max-width: var(--largura-conteiner);
   margin: 0 auto;
   padding: 22px var(--respiro-lateral);
 }

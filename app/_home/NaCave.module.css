@@ -1,0 +1,19 @@
+.secao {
+  padding-top: 112px;
+}
+
+.grade {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+}
+
+/* O cartão ocupa a altura toda da linha, para os rodapés ficarem alinhados. */
+.item {
+  display: flex;
+  flex-direction: column;
+}
+
+.item > * {
+  flex: 1;
+}

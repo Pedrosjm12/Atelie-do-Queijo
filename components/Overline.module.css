@@ -15,3 +15,7 @@
 .catalogo {
   letter-spacing: 0.16em;
 }
+
+.mofo {
+  color: var(--mofo);
+}

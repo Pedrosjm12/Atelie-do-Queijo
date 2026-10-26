@@ -7,6 +7,8 @@ type OverlineProps = {
   pequeno?: boolean;
   /** Espaçamento entre letras: 0,18em padrão; 0,16em no catálogo (só com `pequeno`). */
   catalogo?: boolean;
+  /** Cor: `--palha` (padrão) ou `--mofo` (sobretítulos de "origem" e da Escola). */
+  tom?: 'palha' | 'mofo';
   as?: 'p' | 'span' | 'h2' | 'h3';
   className?: string;
 };
@@ -16,6 +18,7 @@ export function Overline({
   children,
   pequeno = false,
   catalogo = false,
+  tom = 'palha',
   as: Elemento = 'p',
   className,
 }: OverlineProps) {
@@ -23,6 +26,7 @@ export function Overline({
     estilos.overline,
     pequeno ? estilos.pequeno : '',
     pequeno && catalogo ? estilos.catalogo : '',
+    tom === 'mofo' ? estilos.mofo : '',
     className ?? '',
   ]
     .filter(Boolean)

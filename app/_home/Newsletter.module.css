@@ -1,0 +1,89 @@
+.secao {
+  padding-block: 128px;
+}
+
+.bloco {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 32px;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding-top: 48px;
+  border-top: var(--borda-destaque);
+}
+
+.texto,
+.lado {
+  flex: 1 1 420px;
+  min-width: 0;
+}
+
+.paragrafo {
+  max-width: 480px;
+  margin-top: 12px;
+  color: var(--palha);
+}
+
+/* 44 px só no desktop; no celular vale o h2 padrão (≈ 60%, §3.4). */
+@media (min-width: 769px) {
+  .titulo {
+    font-size: 44px;
+  }
+}
+
+.formulario .botao {
+  font-size: 15px;
+}
+
+.formulario {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-end;
+}
+
+.campo {
+  display: flex;
+  flex: 1 1 240px;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.rotulo {
+  font-size: 13px;
+  color: var(--palha);
+}
+
+.entrada {
+  width: 100%;
+  min-height: 52px;
+  padding: 0 18px;
+  border: var(--borda-campo);
+  border-radius: var(--raio-pilula);
+  background: var(--carvao);
+  color: var(--creme);
+  font-size: 15px;
+}
+
+.entrada::placeholder {
+  color: var(--palha);
+}
+
+.entrada[aria-invalid='true'] {
+  border-color: var(--casca-texto);
+}
+
+.erro {
+  flex: 1 0 100%;
+  font-size: 13px;
+  color: var(--casca-texto);
+}
+
+.sucesso {
+  color: var(--mofo-texto);
+}
+
+.sucesso:focus {
+  outline: none;
+}

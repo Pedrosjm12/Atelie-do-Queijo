@@ -101,3 +101,10 @@
   font-size: 14px;
   font-weight: 600;
 }
+
+/* Desabilitado (quiz: Próxima pergunta até haver escolha). Deve ficar por último. */
+.botao:disabled {
+  opacity: 0.5;
+  filter: none;
+  cursor: not-allowed;
+}

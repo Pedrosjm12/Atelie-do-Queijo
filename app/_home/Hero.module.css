@@ -1,0 +1,95 @@
+.hero {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 48px;
+  padding-block: 48px 96px;
+}
+
+.texto {
+  flex: 1 1 440px;
+  min-width: 0;
+}
+
+.sobretitulo {
+  margin-bottom: 24px;
+}
+
+.titulo {
+  margin: 0;
+}
+
+.paragrafo {
+  max-width: 480px;
+  margin-top: 28px;
+}
+
+.botoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 40px;
+}
+
+.origens {
+  margin-top: 48px;
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--palha);
+}
+
+.palco {
+  position: relative;
+  flex: 1 1 520px;
+  min-width: 0;
+}
+
+.pilula {
+  position: absolute;
+  left: 0;
+  top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border: var(--borda-padrao);
+  border-radius: var(--raio-pilula);
+  background: var(--vidro-escuro);
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--palha);
+}
+
+.etiqueta {
+  box-sizing: content-box;
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  max-width: 260px;
+  padding: 14px 18px;
+  border: var(--borda-padrao);
+  border-radius: var(--raio-cartao);
+  background: var(--carvao);
+}
+
+.etiquetaTag {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--palha);
+}
+
+.etiquetaNome {
+  margin-top: 4px;
+  font-family: var(--fonte-titulo), 'Cormorant Garamond', serif;
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.etiquetaNota {
+  font-size: 13px;
+  color: var(--palha);
+}
