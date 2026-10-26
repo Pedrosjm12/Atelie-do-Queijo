@@ -1,0 +1,6 @@
+body {
+  background: #14110f;
+  color: #f3ead8;
+  font-family: var(--fonte-texto), system-ui, sans-serif;
+  margin: 0;
+}
