@@ -1,0 +1,72 @@
+.fab {
+  position: fixed;
+  right: 28px;
+  bottom: 28px;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+}
+
+.bolha {
+  margin-right: 12px;
+  padding: 10px 16px;
+  border-radius: 14px 14px 4px 14px;
+  background: var(--creme);
+  color: var(--cave);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.6;
+  animation: entrada 0.3s ease-out;
+}
+
+.botao {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 60px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--ouro);
+  color: var(--cave);
+}
+
+.botao:hover {
+  filter: brightness(0.95);
+}
+
+@keyframes entrada {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+/* Celular: sem bolha, botão menor. O recuo de 100 px da página de produto entra na etapa 3. */
+@media (max-width: 768px) {
+  .fab {
+    right: 16px;
+    bottom: 16px;
+  }
+
+  .bolha {
+    display: none;
+  }
+
+  .botao {
+    width: 54px;
+    height: 54px;
+  }
+
+  .botao svg {
+    width: 24px;
+    height: 24px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bolha {
+    animation: none;
+  }
+}

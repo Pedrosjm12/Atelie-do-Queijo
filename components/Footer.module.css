@@ -1,0 +1,80 @@
+.rodape {
+  border-top: var(--borda-padrao);
+  background: var(--rodape);
+}
+
+.topo {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 32px;
+  padding-block: 64px 40px;
+}
+
+.assinatura {
+  margin-top: 8px;
+  font-size: 14px;
+  color: var(--palha);
+}
+
+.coluna {
+  display: flex;
+  flex-direction: column;
+}
+
+.tituloDaColuna {
+  margin-bottom: 4px;
+}
+
+.lista {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Base de todo item de lista: link, texto sem destino e botão. */
+.item {
+  font-size: 14px;
+  color: var(--creme);
+}
+
+.link:hover,
+.botaoLink:hover {
+  color: var(--ouro);
+}
+
+.botaoLink {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-family: inherit;
+  text-align: left;
+}
+
+.base {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px;
+  padding-block: 20px 32px;
+  border-top: var(--borda-padrao);
+  font-size: 12px;
+  color: var(--placeholder);
+}
+
+@media (max-width: 768px) {
+  /* Alvo de toque de 44 px só no celular; no desktop vale a altura da spec 4.9. */
+  .lista {
+    gap: 0;
+  }
+
+  .item {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+
+  /* Respiro para o botão flutuante não cobrir o fim do rodapé. */
+  .base {
+    padding-bottom: 100px;
+  }
+}

@@ -1,0 +1,11 @@
+.faixa {
+  border-bottom: var(--borda-padrao);
+  padding: 10px 16px;
+  text-align: center;
+}
+
+.texto {
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: var(--palha);
+}

@@ -12,3 +12,8 @@ O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 - Função `formatarPreco` em `lib/format.ts` (preços em centavos inteiros).
 - Layout com as fontes do projeto e `lang="pt-BR"`.
 - Plano da etapa (`docs/PLANO.md`) e ADRs 0001 a 0004 em `docs/adr/`.
+- Tokens de design da spec (§3) em `app/globals.css`: cores, tipografia, raios, foco visível e reduções para o celular.
+- Componentes globais: `Logo`, `AnnouncementBar`, `Header` (com menu mobile), `Footer`, `Button` (5 variantes, tamanho compacto), `Seal`, `Overline`, `PhotoPlaceholder`, `SupportFab` e ícones.
+- Link "Pular para o conteúdo" e foco movido para o conteúdo a cada troca de rota.
+- Testes unitários dos componentes e e2e do layout global (sem rolagem horizontal de 360 a 1920 px, menu mobile por teclado, borda do cabeçalho, botão flutuante).
+- Protótipo aprovado das telas em `design/`, como referência para a comparação visual.

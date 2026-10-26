@@ -1,0 +1,64 @@
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  min-height: var(--alvo-toque);
+  color: var(--creme);
+}
+
+.simboloMobile {
+  display: none;
+}
+
+.nomeCabecalho,
+.nomeRodape {
+  font-family: var(--fonte-titulo), 'Cormorant Garamond', serif;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+.nomeCabecalho {
+  font-size: 27px;
+}
+
+.nomeRodape {
+  font-size: 26px;
+}
+
+.nomeCabecalho em,
+.nomeRodape em {
+  font-style: italic;
+  font-weight: 500;
+  color: var(--ouro);
+}
+
+.nomeCabecalho em {
+  font-size: 22px;
+}
+
+.nomeRodape em {
+  font-size: 21px;
+}
+
+@media (max-width: 768px) {
+  .logo {
+    gap: 8px;
+  }
+
+  .simboloDesktop {
+    display: none;
+  }
+
+  .simboloMobile {
+    display: block;
+  }
+
+  .nomeCabecalho {
+    font-size: 21px;
+  }
+
+  .nomeCabecalho em {
+    font-size: 17px;
+  }
+}

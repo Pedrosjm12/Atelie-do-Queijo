@@ -1,0 +1,117 @@
+.cabecalho {
+  position: relative;
+}
+
+.comBorda {
+  border-bottom: var(--borda-padrao);
+}
+
+.conteiner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  max-width: var(--largura-conteudo);
+  margin: 0 auto;
+  padding: 22px var(--respiro-lateral);
+}
+
+.logo {
+  display: flex;
+}
+
+.acoes {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.botaoIcone {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--alvo-toque);
+  height: var(--alvo-toque);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--creme);
+}
+
+.botaoIcone:hover {
+  color: var(--ouro);
+}
+
+.sacola {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: var(--alvo-toque);
+  padding: 0 16px;
+  border: var(--borda-padrao);
+  border-radius: var(--raio-pilula);
+  font-size: 14px;
+  color: var(--creme);
+}
+
+.sacola:hover {
+  color: var(--ouro);
+}
+
+.contador {
+  padding: 0 7px;
+  border-radius: var(--raio-pilula);
+  background: var(--ouro);
+  color: var(--cave);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Cabeçalho compacto do celular (spec 3.4 e 7.6): Menu, logotipo, sacola. */
+@media (max-width: 768px) {
+  .conteiner {
+    display: grid;
+    grid-template-columns: var(--alvo-toque) 1fr var(--alvo-toque);
+    gap: 0;
+    padding: 8px;
+  }
+
+  .logo {
+    justify-self: center;
+  }
+
+  .acoes {
+    justify-self: end;
+  }
+
+  .botaoIcone {
+    display: none;
+  }
+
+  .sacola {
+    position: relative;
+    justify-content: center;
+    width: var(--alvo-toque);
+    padding: 0;
+    border: 0;
+  }
+
+  .sacola svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  .sacolaTexto {
+    display: none;
+  }
+
+  .contador {
+    position: absolute;
+    top: 6px;
+    right: 4px;
+    padding: 0 5px;
+    font-size: 10px;
+    font-weight: 700;
+  }
+}

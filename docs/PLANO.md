@@ -218,3 +218,19 @@ export function formatarPreco(centavos: number): string;
 | Gateway de pagamento (Shopify Storefront, Mercado Pago ou Pagar.me, com Pix) | **Não decidido.** Até lá, só funções simuladas em `lib/commerce.ts` (spec §2). | Dono do projeto |
 | Número do WhatsApp, CNPJ, endereço, `[PREÇO]` e demais lacunas | Ficam visíveis entre colchetes até o dono preencher. | Dono do projeto |
 | Provedor de IA para o assistente | Etapa 6 começa com roteiro determinístico; integração com IA real exigirá ADR. | Dono do projeto + `especialista-em-ia-conversacional` |
+| Destino de "Entregas refrigeradas", "Trocas e devoluções" e "Perguntas frequentes" (rodapé) | A spec não define rotas. Ficam como texto não interativo até existir página. | Dono do projeto |
+| Contraste de `--placeholder` sobre `--carvao` (4,47:1, abaixo de 4,5:1) | **Aceito como provisório** pelo dono (2026-10-26): só aparece nos textos `[FOTO: …]`. Rever antes da publicação se ainda houver placeholders. | Dono do projeto |
+| Teste e2e do foco após navegar pelo menu mobile (`test.fixme` em `e2e/layout-global.spec.ts`) | Depende de `/queijos` existir; **ativar na etapa 3**. | `testes-e-qualidade` |
+| Controles sem ação (Buscar, Minha conta, "Fale conosco", botão flutuante) | "Fale conosco" e o botão flutuante são ligados ao painel no fim da etapa 3; Buscar e Minha conta precisam de destino antes da publicação. | `frontend-nextjs` + dono do projeto |
+| Busca e conta no celular | O cabeçalho compacto (§7.6) não tem Buscar nem Minha conta. Definir outro caminho quando essas funções existirem. | Dono do projeto |
+
+## Decisões de interpretação da spec (etapa 2)
+
+Registradas para não serem rediscutidas. Todas seguem "o padrão mais próximo já definido" (spec §0) ou foram aprovadas pelo dono.
+
+- **h1 de páginas ≤ 768 px: 38 px** (≈ 60% de 64 px, §3.4; igual ao h1 de produto).
+- **SupportFab no celular fora do produto:** `right: 16px; bottom: 16px`, círculo de 54 px. Na página de produto, `bottom: 100px` (§7.6), na etapa 3.
+- **Cabeçalho:** sem borda só na Home (desktop e celular); com borda em todas as outras rotas (§4.3).
+- **Links do rodapé:** `--creme`, hover `--ouro` (padrão do menu, §4.3/§4.4). Com **44 px de altura só em ≤ 768 px**, aprovado pelo dono; o desktop segue a §4.9.
+- **Painel do menu mobile** (não descrito na spec): fundo `--cave`, borda inferior `--pedra`, links de 16 px em `--creme` com 44 px de altura. **Aprovado pelo dono** (2026-10-26).
+- **Client Components da etapa 2:** `HeaderFrame` (borda por rota), `HeaderNav`, `MobileMenu`, `SupportFab` e o componente que move o foco para `#conteudo` ao trocar de rota.

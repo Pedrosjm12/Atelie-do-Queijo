@@ -1,0 +1,33 @@
+.lista {
+  display: flex;
+  gap: 32px;
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--alvo-toque);
+  font-size: 15px;
+  color: var(--creme);
+}
+
+.link:hover,
+.ativo {
+  color: var(--ouro);
+}
+
+.painel .lista {
+  flex-direction: column;
+  gap: 0;
+}
+
+.painel .link {
+  width: 100%;
+  font-size: 16px;
+}
+
+@media (max-width: 768px) {
+  .barra {
+    display: none;
+  }
+}

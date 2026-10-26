@@ -1,6 +1,280 @@
+/* Tokens de design: ATELIE-DO-QUEIJO-SPEC.md, seções 3.1 e 3.3. */
+:root {
+  /* Fundos */
+  --cave: #14110f; /* fundo principal */
+  --carvao: #1e1a17; /* cartões, painéis, barra fixa */
+  --cave-funda: #191512; /* palco do 3D, placeholders de foto */
+  --cave-quiz: #1a1613; /* caixa do quiz, faixas de destaque */
+  --rodape: #110e0c; /* fundo do rodapé */
+  --ardosia: #241f1b; /* base de ardósia sob o queijo */
+
+  /* Linhas */
+  --pedra: #2e2823; /* bordas e divisórias padrão */
+  --pedra-clara: #4a4038; /* borda de botões secundários e campos */
+  --pedra-ardosia: #3a322c; /* contorno da ardósia e de amostras escuras */
+
+  /* Texto */
+  --creme: #f3ead8; /* texto principal e títulos */
+  --palha: #b8a98f; /* texto secundário, rótulos */
+  --creme-suave: #d9cdb6; /* parágrafos de descrição de produto */
+  --placeholder: #8c8070; /* placeholders de foto, letras miúdas do rodapé */
+
+  /* Acentos */
+  --ouro: #c9a24b; /* acento único: botão principal, preços, linhas de destaque */
+  --casca: #a8642a; /* selos de maturação */
+  --casca-texto: #d9a06b; /* texto de selos de maturação / cerveja */
+  --mofo: #7e8b6a; /* selos de origem e sobretítulos de seção "origem" */
+  --mofo-texto: #b9c4a4; /* texto de selos de origem, confirmações */
+  --vinho: #7a2e3b; /* harmonização */
+  --vinho-texto: #d98e9c; /* rótulo "VINHO" na harmonização */
+  --ouro-vidro: rgba(201, 162, 75, 0.12); /* fundo de opção selecionada */
+  --vidro-escuro: rgba(20, 17, 15, 0.7); /* pílula "Arraste para girar" sobre o 3D */
+
+  /* WhatsApp (só no botão/ícone do WhatsApp, nunca como cor da marca) */
+  --whatsapp: #25d366;
+  --whatsapp-texto: #0b2a15;
+
+  /* Espaço, raios e linhas (3.3) */
+  --largura-conteudo: 1200px;
+  --respiro-lateral: 32px;
+  --raio-cartao: 12px;
+  --raio-palco: 16px;
+  --raio-miniatura: 10px;
+  --raio-pilula: 999px;
+  --raio-campo: 10px;
+  --borda-padrao: 1px solid var(--pedra);
+  --borda-campo: 1px solid var(--pedra-clara);
+  --borda-destaque: 1px solid var(--ouro);
+  --alvo-toque: 44px;
+}
+
+/* Reset mínimo */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-padding-bottom: 96px;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
 body {
-  background: #14110f;
-  color: #f3ead8;
-  font-family: var(--fonte-texto), system-ui, sans-serif;
   margin: 0;
+  background: var(--cave);
+  color: var(--creme);
+  font-family: var(--fonte-texto), 'Manrope', system-ui, sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.6;
+}
+
+h1,
+h2,
+h3,
+h4,
+p,
+ul,
+ol,
+figure {
+  margin: 0;
+}
+
+ul,
+ol {
+  padding: 0;
+  list-style: none;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+/* Foco visível (4.4) */
+:focus-visible {
+  outline: 2px solid var(--ouro);
+  outline-offset: 2px;
+}
+
+main:focus {
+  outline: none;
+}
+
+/* Tipografia (3.2). Os elementos têm um padrão; as classes escolhem o papel. */
+h1,
+h2,
+h3,
+h4,
+.titulo-home,
+.titulo-pagina,
+.titulo-produto,
+.titulo-secao,
+.titulo-bloco,
+.titulo-cartao-grande,
+.titulo-cartao,
+.titulo-artigo,
+.preco-grande {
+  font-family: var(--fonte-titulo), 'Cormorant Garamond', serif;
+  font-weight: 500;
+}
+
+h1,
+.titulo-pagina {
+  font-size: 64px;
+  line-height: 1.05;
+}
+
+h2,
+.titulo-secao {
+  font-size: 48px;
+  line-height: 1.1;
+}
+
+.titulo-home {
+  font-size: 76px;
+  line-height: 1.02;
+  letter-spacing: -0.01em;
+}
+
+.titulo-produto {
+  font-size: 56px;
+  line-height: 1.05;
+}
+
+.titulo-bloco {
+  font-size: 36px;
+}
+
+.titulo-cartao-grande {
+  font-size: 34px;
+  font-weight: 600;
+  line-height: 1.15;
+}
+
+.titulo-cartao {
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 1.1;
+}
+
+.titulo-artigo {
+  font-size: 26px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.preco-grande {
+  color: var(--ouro);
+  font-size: 40px;
+  font-weight: 600;
+}
+
+/* Ênfase em itálico dourado nos títulos */
+:is(h1, h2, h3, h4, .titulo-home, .titulo-pagina, .titulo-produto, .titulo-secao, .titulo-bloco)
+  em {
+  font-family: var(--fonte-titulo), 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-weight: 500;
+  color: var(--ouro);
+}
+
+.texto-apoio {
+  color: var(--palha);
+  font-size: 18px;
+}
+
+.texto-cartao {
+  color: var(--palha);
+  font-size: 14px;
+}
+
+/* Contêiner de conteúdo (3.3) */
+.conteudo {
+  max-width: var(--largura-conteudo);
+  margin: 0 auto;
+  padding-inline: var(--respiro-lateral);
+}
+
+/* Acessibilidade */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.pular-conteudo {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 100;
+  padding: 12px 20px;
+  background: var(--ouro);
+  color: var(--cave);
+  font-weight: 600;
+  border-radius: var(--raio-pilula);
+  transform: translateY(-200%);
+}
+
+.pular-conteudo:focus {
+  transform: none;
+}
+
+/* Reduções para ≤ 768 px (3.4): cerca de 60% do tamanho de desktop */
+@media (max-width: 768px) {
+  .titulo-home {
+    font-size: 46px;
+  }
+
+  h2,
+  .titulo-secao {
+    font-size: 32px;
+  }
+
+  .titulo-produto {
+    font-size: 38px;
+  }
+
+  /* A spec não dá o valor do h1 do catálogo no celular; 60% de 64 px. */
+  h1,
+  .titulo-pagina {
+    font-size: 38px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

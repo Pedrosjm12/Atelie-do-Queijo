@@ -1,0 +1,27 @@
+.selo {
+  display: inline-block;
+  padding: 4px 12px;
+  border: 1px solid;
+  border-radius: var(--raio-pilula);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.origem {
+  border-color: var(--mofo);
+  color: var(--mofo-texto);
+}
+
+.maturacao {
+  border-color: var(--casca);
+  color: var(--casca-texto);
+}
+
+@media (max-width: 768px) {
+  .selo {
+    padding: 3px 10px;
+    font-size: 11px;
+  }
+}

@@ -1,0 +1,103 @@
+.botao {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: var(--alvo-toque);
+  padding: 0 var(--botao-padding-x, 30px);
+  border: 1px solid transparent;
+  border-radius: var(--raio-pilula);
+  background: transparent;
+  color: var(--creme);
+  font-family: inherit;
+  font-size: 15px;
+  line-height: 1.2;
+  text-align: center;
+  cursor: pointer;
+}
+
+.principal {
+  min-height: 52px;
+  background: var(--ouro);
+  border: 0;
+  color: var(--cave);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.principal:hover {
+  filter: brightness(0.95);
+}
+
+.secundario {
+  min-height: 52px;
+  border-color: var(--pedra-clara);
+  color: var(--creme);
+  font-weight: 500;
+}
+
+.secundario:hover {
+  color: var(--ouro);
+}
+
+.contorno {
+  padding: 0 var(--botao-padding-x, 18px);
+  border-color: var(--ouro);
+  color: var(--creme);
+  font-weight: 600;
+}
+
+.contorno:hover {
+  color: var(--ouro);
+}
+
+.link {
+  position: relative;
+  min-height: 0;
+  padding: 0 0 2px;
+  border-width: 0 0 1px;
+  border-bottom-color: var(--ouro);
+  border-radius: 0;
+  font-weight: 500;
+}
+
+/* Amplia a área de toque para 44 px sem alterar o sublinhado. */
+.link::after {
+  content: '';
+  position: absolute;
+  inset: -12px 0;
+}
+
+.link:hover {
+  color: var(--ouro);
+}
+
+.opcao {
+  min-height: 48px;
+  padding: 0 var(--botao-padding-x, 24px);
+  border-color: var(--pedra-clara);
+  font-weight: 500;
+}
+
+.opcao:hover {
+  color: var(--ouro);
+}
+
+.selecionada {
+  border-color: var(--ouro);
+  background: var(--ouro-vidro);
+}
+
+/* Tamanho compacto (prop tamanho="compacto"): contextos menores da spec. */
+.principal.compacto,
+.secundario.compacto {
+  min-height: 48px;
+}
+
+/* Chip do catálogo (spec 6): altura 44, 0 20px, 14 px, 600. O padrão é o chip do quiz (5.6). */
+.opcao.compacto {
+  min-height: 44px;
+  padding: 0 var(--botao-padding-x, 20px);
+  font-size: 14px;
+  font-weight: 600;
+}

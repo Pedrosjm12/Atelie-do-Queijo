@@ -1,0 +1,17 @@
+.overline {
+  font-family: var(--fonte-texto), 'Manrope', system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.6;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--palha);
+}
+
+.pequeno {
+  font-size: 11px;
+}
+
+.catalogo {
+  letter-spacing: 0.16em;
+}

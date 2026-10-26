@@ -10,3 +10,6 @@ package-lock.json
 docs/
 *.md
 skills-lock.json
+
+# protótipo do dono (não reformatar)
+design/
