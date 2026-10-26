@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatarPreco } from './format';
+import { formatarPreco, formatarPrecoOuLacuna } from './format';
 
 const nbsp = ' ';
 
@@ -18,5 +18,17 @@ describe('formatarPreco', () => {
     expect(() => formatarPreco(13600.5)).toThrow(RangeError);
     expect(() => formatarPreco(Number.NaN)).toThrow(RangeError);
     expect(() => formatarPreco(Number.POSITIVE_INFINITY)).toThrow(RangeError);
+  });
+});
+
+describe('formatarPrecoOuLacuna', () => {
+  it('devolve a lacuna "R$ [PREÇO]" com U+00A0 para null', () => {
+    expect(formatarPrecoOuLacuna(null)).toBe(`R$${nbsp}[PREÇO]`);
+    expect(formatarPrecoOuLacuna(null).charCodeAt(2)).toBe(0xa0);
+  });
+
+  it('delega a formatarPreco quando há preço', () => {
+    expect(formatarPrecoOuLacuna(13600)).toBe(formatarPreco(13600));
+    expect(formatarPrecoOuLacuna(0)).toBe(formatarPreco(0));
   });
 });
