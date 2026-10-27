@@ -263,6 +263,16 @@ h2,
     font-size: 38px;
   }
 
+  /* Reserva a altura da barra fixa de compra do produto (14 + 52 + 22 px + 1 px de borda)
+     para ela não cobrir o rodapé ao fim da rolagem, e mantém o foco fora da barra. */
+  body:has([data-barra-compra]) {
+    padding-bottom: 89px;
+  }
+
+  html:has([data-barra-compra]) {
+    scroll-padding-bottom: 160px;
+  }
+
   /* A spec não dá o valor do h1 do catálogo no celular; 60% de 64 px. */
   h1,
   .titulo-pagina {

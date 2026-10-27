@@ -1,0 +1,147 @@
+/* Trilha (§7.1) */
+.trilha {
+  max-width: var(--largura-conteiner);
+  margin: 0 auto;
+  padding: 20px var(--respiro-lateral) 0;
+  font-size: 13px;
+  color: var(--palha);
+}
+
+.trilhaLista {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 8px;
+}
+
+.trilhaLista li {
+  display: inline-flex;
+  gap: 8px;
+}
+
+.trilhaLink:hover {
+  color: var(--ouro);
+}
+
+.trilhaAtual {
+  color: var(--creme);
+}
+
+/* Corpo principal (§7.2) */
+.corpo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 56px;
+  align-items: flex-start;
+  max-width: var(--largura-conteiner);
+  margin: 0 auto;
+  padding: 24px var(--respiro-lateral) 0;
+}
+
+.visualizador {
+  flex: 1 1 560px;
+  min-width: 0;
+}
+
+.info {
+  flex: 1 1 420px;
+  min-width: 0;
+}
+
+.sobretitulo {
+  margin: 0;
+}
+
+.nome {
+  margin: 8px 0 4px;
+}
+
+.produtor {
+  font-size: 14px;
+  color: var(--palha);
+}
+
+.selos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.descricao {
+  margin-top: 20px;
+  font-size: 17px;
+  color: var(--creme-suave);
+}
+
+.descricaoCurta {
+  margin-top: 14px;
+  font-size: 15px;
+  color: var(--creme-suave);
+}
+
+.soCelular {
+  display: none;
+}
+
+/* Perfil sensorial e abas (§7.3) */
+.detalhes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 56px;
+  max-width: var(--largura-conteiner);
+  margin: 0 auto;
+  padding: 80px var(--respiro-lateral) 96px;
+}
+
+.abas {
+  flex: 1.4 1 480px;
+  min-width: 0;
+}
+
+/* Celular (§7.6): palco de ponta a ponta, informações com 20 px de respiro, coluna única. */
+@media (max-width: 768px) {
+  /* A tela de 390 px (§7.6) começa direto no palco; a trilha fica só no desktop. */
+  .trilha {
+    display: none;
+  }
+
+  .corpo {
+    gap: 0;
+    padding: 0;
+  }
+
+  .info {
+    padding: 20px 20px 0;
+  }
+
+  .info .sobretitulo {
+    font-size: 11px;
+  }
+
+  .nome {
+    margin: 4px 0 2px;
+  }
+
+  .produtor {
+    display: none;
+  }
+
+  .selos {
+    gap: 6px;
+    margin-top: 10px;
+  }
+
+  .soDesktop {
+    display: none;
+  }
+
+  .soCelular {
+    display: revert;
+  }
+
+  /* A spec não dá o respiro vertical desta área no celular. */
+  .detalhes {
+    gap: 40px;
+    padding: 48px 20px 64px;
+  }
+}

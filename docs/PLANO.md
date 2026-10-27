@@ -1,9 +1,9 @@
 # Plano de implementação — Ateliê do Queijo
 
 > Fonte da verdade: `ATELIE-DO-QUEIJO-SPEC.md`. Decisões técnicas: `docs/adr/`.
-> Última atualização: 2026-10-26. Etapas 1 e 2 concluídas. Etapa em andamento: **3 (Home → Catálogo → Produto → painel de Atendimento)**.
+> Última atualização: 2026-10-27. Etapas 1 e 2 concluídas. Etapa em andamento: **3 (Home → Catálogo → Produto → painel de Atendimento)**.
 >
-> **Onde paramos (2026-10-26):** etapa 3 com os blocos A (dados, ilustrações, `ProductCard`), B (Home) e C (Catálogo) publicados. **Próximo passo: bloco D, página de produto `/queijos/[slug]` (tarefas 14 a 18)**, depois o bloco E, painel de atendimento (tarefas 19 a 22). Ver [Commits da etapa 3](#commits-da-etapa-3) e as decisões do dono P1 a P20.
+> **Onde paramos (2026-10-26):** etapa 3 com os blocos A (dados, ilustrações, `ProductCard`), B (Home), C (Catálogo) e D (Produto) publicados. **Próximo passo: bloco E, painel de atendimento (tarefas 19 a 22).** Pendências do bloco D para o dono: estilo visual de `aria-pressed` em Girar/Aproximar, formatos como rádio, borda dos campos (P18), "Ver na mesa" (P11) e singular "Resta 1 peça" (§7.5); `useAbas` deve ser reaproveitado pelo `SupportPanel`. Ver [Commits da etapa 3](#commits-da-etapa-3) e as decisões do dono P1 a P20.
 >
 > Fluxo usado em cada bloco: `frontend-nextjs` (ou o especialista da tarefa) implementa → `guardiao-do-design` (porta 3000, build), `especialista-em-acessibilidade` (`next dev -p 3001`, sem build) e `revisor-de-codigo` conferem em paralelo, sem editar → correções pelo implementador → lint, typecheck, format:check, test, build e test:e2e → commit e push. Reaproveitar `BotaoEmBreve`/`BotaoDaSacola` para controles sem ação e o token `--largura-conteiner` nos contêineres.
 
@@ -551,8 +551,8 @@ Cada tarefa termina com testes passando (`lint`, `typecheck`, `test`, `build`, `
 | 1 | Tarefas 1 a 6 | `feat(catalogo): adiciona dados dos queijos, ilustrações e cartão de produto` | ✅ Publicado (`4aefc52`) |
 | 2 | Tarefas 7 a 10 | `feat(home): adiciona a página inicial completa` | ✅ Publicado (`ea3ca9f`) |
 | 3 | Tarefas 11 a 13 | `feat(catalogo): adiciona o catálogo com filtro por origem` | ✅ Publicado |
-| 4 | Tarefas 14 a 18 | `feat(produto): adiciona a página de produto com visualizador em SVG` | **Próximo passo** |
-| 5 | Tarefas 19 a 22 | `feat(atendimento): adiciona o painel de atendimento` | A fazer |
+| 4 | Tarefas 14 a 18 | `feat(produto): adiciona a página de produto com visualizador em SVG` | ✅ Publicado |
+| 5 | Tarefas 19 a 22 | `feat(atendimento): adiciona o painel de atendimento` | **Próximo passo** |
 
 Cada commit só sai depois do veredito ✅ (ou ⚠️ resolvido) do `revisor-de-codigo` e com `lint`, `typecheck`, `test`, `build` e `test:e2e` passando (CLAUDE.md, "Antes de commitar").
 

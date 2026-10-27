@@ -1,0 +1,322 @@
+.painel {
+  display: flex;
+  flex-direction: column;
+}
+
+.soCelular {
+  display: none;
+}
+
+/* Formato (§7.2, item 6) */
+.secaoFormato {
+  margin-top: 28px;
+}
+
+.formatos {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.legenda {
+  padding: 0;
+  margin-bottom: 10px;
+}
+
+.opcoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.formato {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 56px;
+  padding: 6px 18px;
+  border: 1px solid var(--pedra-clara);
+  border-radius: var(--raio-cartao);
+  background: transparent;
+  color: var(--creme);
+  text-align: left;
+}
+
+.formatoAtivo {
+  border-color: var(--ouro);
+  background: var(--ouro-vidro);
+}
+
+.formatoNome {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.formatoDetalhe {
+  font-size: 12px;
+  color: var(--palha);
+}
+
+/* Preço (§7.2, item 7) */
+.preco {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 14px;
+  margin-top: 28px;
+}
+
+.valorDoPreco {
+  line-height: 1.2;
+}
+
+.pix {
+  font-size: 14px;
+  color: var(--palha);
+}
+
+.estoque {
+  margin-top: 12px;
+  font-size: 14px;
+  color: var(--casca-texto);
+}
+
+/* Compra (§7.2, itens 8 e 9) */
+.compra {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.quantidade {
+  display: inline-flex;
+  align-items: center;
+  height: 52px;
+  border: var(--borda-campo);
+  border-radius: var(--raio-pilula);
+}
+
+.passo {
+  width: 48px;
+  height: 52px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--raio-pilula);
+  background: none;
+  color: var(--creme);
+  font-size: 20px;
+  line-height: 1;
+}
+
+.passo[aria-disabled='true'] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.valor {
+  min-width: 24px;
+  text-align: center;
+  font-weight: 600;
+}
+
+.botaoPrincipal {
+  flex: 1 1 220px;
+}
+
+.botaoPrincipal > button {
+  width: 100%;
+}
+
+.presente {
+  margin-top: 12px;
+}
+
+.presente > button {
+  width: 100%;
+}
+
+/* Frete (§7.2, item 10) */
+.secaoFrete {
+  margin-top: 24px;
+}
+
+.frete {
+  padding: 18px;
+  border: var(--borda-padrao);
+  border-radius: var(--raio-cartao);
+  background: var(--carvao);
+}
+
+.rotuloDoFrete {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.linhaDoFrete {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.campoDeCep {
+  flex: 1 1 140px;
+  min-width: 0;
+  height: 46px;
+  padding: 0 14px;
+  border: var(--borda-campo);
+  border-radius: var(--raio-campo);
+  background: var(--cave);
+  color: var(--creme);
+  font-size: 15px;
+}
+
+.campoDeCep::placeholder {
+  color: var(--placeholder);
+}
+
+.calcular {
+  height: 46px;
+  padding: 0 20px;
+  border: var(--borda-destaque);
+  border-radius: var(--raio-campo);
+  background: transparent;
+  color: var(--creme);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.calcular:hover:not([aria-disabled='true']) {
+  color: var(--ouro);
+}
+
+/* Dúvidas (§7.2, item 11). No DOM vem antes do frete (ordem de foco do celular); no desktop
+   `order` o devolve para depois do frete. */
+.secaoQueijista {
+  order: 1;
+  margin-top: 16px;
+}
+
+.queijista {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--palha);
+}
+
+.iconeWhatsapp {
+  display: inline-flex;
+  color: var(--whatsapp);
+}
+
+.queijista > button {
+  font-size: 14px;
+}
+
+/* Barra fixa: só no celular (§7.6) */
+.barra {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  /* Ordem do celular (P12): formatos, estoque, presente, WhatsApp, frete. */
+  .secaoFormato {
+    order: 1;
+    margin-top: 16px;
+  }
+
+  .estoque {
+    order: 2;
+  }
+
+  .presente {
+    order: 3;
+  }
+
+  .secaoQueijista {
+    order: 4;
+  }
+
+  .secaoFrete {
+    order: 5;
+  }
+
+  /* A barra fixa substitui o preço e a compra inline. */
+  .preco,
+  .compra {
+    display: none;
+  }
+
+  .opcoes {
+    flex-wrap: nowrap;
+    gap: 8px;
+  }
+
+  .formato {
+    flex: 1 1 0;
+    align-items: center;
+    min-width: 0;
+    min-height: 52px;
+    padding: 6px 8px;
+    text-align: center;
+  }
+
+  .formatoNome {
+    font-size: 13px;
+  }
+
+  .formatoDetalhe {
+    font-size: 11px;
+  }
+
+  .soDesktop {
+    display: none;
+  }
+
+  .soCelular {
+    display: revert;
+  }
+
+  .barra {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 30;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 16px 22px;
+    border-top: var(--borda-padrao);
+    background: var(--carvao);
+  }
+
+  .barraPreco {
+    font-family: var(--fonte-titulo), 'Cormorant Garamond', serif;
+    font-size: 24px;
+    font-weight: 600;
+    line-height: 1.2;
+    color: var(--ouro);
+    white-space: nowrap;
+  }
+
+  .barraPix {
+    font-size: 11px;
+    color: var(--palha);
+  }
+
+  .barraBotao {
+    flex: 1;
+  }
+
+  .barraBotao > button {
+    width: 100%;
+    font-size: 15px;
+  }
+}

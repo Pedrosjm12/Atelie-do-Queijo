@@ -6,7 +6,7 @@ type BotaoEmBreveProps = {
   /** Texto lido por leitores de tela, ex.: "Sacola disponível em breve". */
   aviso: string;
   'aria-label'?: string;
-  variante?: 'principal' | 'secundario' | 'contorno';
+  variante?: 'principal' | 'secundario' | 'contorno' | 'link';
   tamanho?: 'padrao' | 'compacto';
   style?: CSSProperties;
 };

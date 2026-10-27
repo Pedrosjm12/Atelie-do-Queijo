@@ -1,0 +1,185 @@
+.palco {
+  position: relative;
+  padding: 32px 24px 24px;
+  background: var(--cave-funda);
+  border: 1px solid var(--pedra);
+  border-radius: var(--raio-palco);
+}
+
+.dica {
+  position: absolute;
+  left: 20px;
+  top: 18px;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 13px;
+  color: var(--palha);
+  pointer-events: none;
+}
+
+.indicador {
+  position: absolute;
+  right: 20px;
+  top: 16px;
+  z-index: 1;
+  padding: 4px 12px;
+  border: 1px solid var(--pedra-clara);
+  border-radius: var(--raio-pilula);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  color: var(--ouro);
+}
+
+.ilustracao {
+  width: 100%;
+  overflow: hidden;
+}
+
+/* O recorte fica no wrapper; só o filho cresce, sem vazar do palco. */
+.ilustracao > * {
+  transition: transform 0.3s ease;
+}
+
+.ilustracao[data-zoom='true'] > * {
+  transform: scale(1.18);
+}
+
+.gerada {
+  margin-top: 16px;
+}
+
+.apenasCelular {
+  display: none;
+}
+
+.barra {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.botao {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: var(--alvo-toque);
+  padding: 0 16px;
+  border: 1px solid var(--pedra-clara);
+  border-radius: var(--raio-pilula);
+  background: transparent;
+  color: var(--creme);
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.botao:focus-visible {
+  outline: 2px solid var(--ouro);
+  outline-offset: 2px;
+}
+
+.corte {
+  padding: 0 18px;
+  border-color: var(--ouro);
+  font-weight: 600;
+}
+
+.corte[aria-pressed='true'] {
+  background: var(--ouro);
+  color: var(--cave);
+}
+
+.soIcone {
+  width: var(--alvo-toque);
+  padding: 0;
+}
+
+.miniaturas {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.miniatura {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border: 1px solid var(--pedra);
+  border-radius: var(--raio-miniatura);
+  background: var(--carvao);
+  color: var(--placeholder);
+  font-size: 12px;
+  text-align: center;
+}
+
+.ativa {
+  border-color: var(--ouro);
+  color: var(--palha);
+}
+
+/* O PhotoPlaceholder fixa a altura em linha; aqui a miniatura é quadrada. */
+.miniatura > div {
+  width: 100%;
+  height: 100% !important;
+  padding: 4px;
+  background: transparent;
+  font-size: 12px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ilustracao > * {
+    transition: none;
+  }
+}
+
+/* Celular (spec §7.6): troca por CSS, sem JavaScript de media query. */
+@media (max-width: 768px) {
+  .palco {
+    padding: 8px 12px 0;
+    border-width: 0 0 1px;
+    border-radius: 0;
+  }
+
+  .dica {
+    left: 16px;
+    top: 12px;
+    font-size: 12px;
+  }
+
+  .dica svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .dicaExtra,
+  .apenasDesktop,
+  .soDesktop,
+  .miniaturas {
+    display: none;
+  }
+
+  .apenasCelular {
+    display: block;
+  }
+
+  .barra {
+    gap: 8px;
+    padding: 4px 0 14px;
+  }
+
+  .botao {
+    font-size: 13px;
+  }
+}
