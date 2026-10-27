@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { BotaoAbrirAtendimento } from './Atendimento';
 import estilos from './Footer.module.css';
 import { NomeDaMarca } from './Logo';
 import { Overline } from './Overline';
@@ -70,10 +71,9 @@ export function Footer() {
               </li>
             ))}
             <li>
-              {/* Abrirá o painel de atendimento quando ele existir (etapa 3). */}
-              <button type="button" className={`${estilos.item} ${estilos.botaoLink}`}>
+              <BotaoAbrirAtendimento className={`${estilos.item} ${estilos.botaoLink}`}>
                 Fale conosco
-              </button>
+              </BotaoAbrirAtendimento>
             </li>
           </ul>
         </div>

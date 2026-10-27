@@ -1,16 +1,20 @@
 # Plano de implementação — Ateliê do Queijo
 
 > Fonte da verdade: `ATELIE-DO-QUEIJO-SPEC.md`. Decisões técnicas: `docs/adr/`.
-> Última atualização: 2026-10-27. Etapas 1 e 2 concluídas. Etapa em andamento: **3 (Home → Catálogo → Produto → painel de Atendimento)**.
+> Última atualização: 2026-10-27. Etapas 1, 2 e 3 concluídas. Próxima: **4 (sacola, frete e checkout simulado)**.
 >
-> **Onde paramos (2026-10-27):** etapa 3 com os blocos A (dados, ilustrações, `ProductCard`), B (Home), C (Catálogo) e D (Produto) publicados. **Próximo passo: bloco E, painel de atendimento (tarefas 19 a 22).** Decisões do dono aplicadas no bloco D: Girar/Aproximar ativos com borda `--ouro` e fundo `--ouro-vidro`; formatos como rádios; borda dos campos mantida (P18); "Ver na mesa" não exibido (P11); singular "Resta 1 peça deste lote."; barra do 3D como `toolbar` com setas (spec §7.2) e botão de corte com `aria-pressed` e rótulo fixo "Ver por dentro". `useAbas` deve ser reaproveitado pelo `SupportPanel`.
+> **Onde paramos (2026-10-27):** etapa 3 concluída, com os cinco blocos (dados, Home, Catálogo, Produto e painel de atendimento). **Próximo passo: etapa 4, sacola, frete simulado e checkout simulado, a detalhar pelo `arquiteto-de-software`** (contrato de `calcularFrete` e `criarPedido` em `lib/commerce.ts`, contexto da sacola conforme o [ADR-0003](adr/0003-estado-da-sacola.md); o `auditor-de-seguranca` volta a entrar). Os controles sem ação seguem `aria-disabled` até as etapas 4 a 6 (ver [Controles sem ação](#controles-sem-ação-ao-fim-da-etapa-3)).
 >
-> **Pendências abertas:**
+> **Pendências abertas para o dono:**
 >
-> - **Etapa 5 (P11):** **Ver na mesa** só entra com GLB real.
-> - **Contraste de `--placeholder`** (`#8c8070`) em textos miúdos: conferir e decidir com o dono (a spec fixa o token).
+> - **Rolagem automática da conversa** do painel de atendimento até a última mensagem: hoje não rola sozinha. Decidir.
+> - **Fechar o painel ao mudar de rota:** hoje só o cartão de produto fecha o painel; voltar/avançar do navegador o mantém aberto. Decidir.
+> - **Contraste de `--placeholder`** (`#8c8070`, 4,47:1 sobre `--carvao`): aceito como provisório; rever antes da publicação (a spec fixa o token).
 > - **`AnnouncementBar` fora de landmark** (apontado pelo axe): não alterado; tratar no cabeçalho.
-> - Ver [Commits da etapa 3](#commits-da-etapa-3) e as decisões do dono P1 a P20.
+> - **Etapa 8:** enxugar o pacote global do catálogo (o provider do painel no layout leva `lib/catalogo` e `data/cheeses` ao pacote global), sem `React.lazy`.
+> - **Spec §14:** anotar a decisão P21 (botão de corte do 3D com rótulo fixo "Ver por dentro") no checklist, como desvio de texto. A spec só muda com aprovação do dono.
+> - **Etapa 5 (P11):** **Ver na mesa** só entra com GLB real.
+> - Demais itens em [Pendências e decisões em aberto](#pendências-e-decisões-em-aberto) e nas decisões do dono P1 a P23.
 >
 > Fluxo usado em cada bloco: `frontend-nextjs` (ou o especialista da tarefa) implementa → `guardiao-do-design` (porta 3000, build), `especialista-em-acessibilidade` (`next dev -p 3001`, sem build) e `revisor-de-codigo` conferem em paralelo, sem editar → correções pelo implementador → lint, typecheck, format:check, test, build e test:e2e → commit e push. Reaproveitar `BotaoEmBreve`/`BotaoDaSacola` para controles sem ação e o token `--largura-conteiner` nos contêineres.
 
@@ -28,7 +32,7 @@ Convenções deste plano:
 | --- | --- | --- | --- |
 | 1 | Base do projeto e ferramentas | `devops-e-deploy`, `arquiteto-de-software` | Concluída |
 | 2 | Tokens de design e componentes globais | `frontend-nextjs`, `guardiao-do-design` | Concluída |
-| 3 | Home → Catálogo → Produto (com `ProductCard`, `data/cheeses.ts` e ilustrações do Apêndice A) → interface do painel de Atendimento (§8). Sem sacola real, frete, 3D real nem roteiro do assistente | `frontend-nextjs`, `especialista-3d-webgl`, `engenheiro-de-ecommerce`, `guardiao-do-design` | Em andamento ([detalhe](#etapa-3--home--catálogo--produto--painel-de-atendimento)) |
+| 3 | Home → Catálogo → Produto (com `ProductCard`, `data/cheeses.ts` e ilustrações do Apêndice A) → interface do painel de Atendimento (§8). Sem sacola real, frete, 3D real nem roteiro do assistente | `frontend-nextjs`, `especialista-3d-webgl`, `engenheiro-de-ecommerce`, `guardiao-do-design` | Concluída ([detalhe](#etapa-3--home--catálogo--produto--painel-de-atendimento)) |
 | 4 | Sacola (contexto + `localStorage`), frete simulado e checkout simulado em `lib/commerce.ts` | `engenheiro-de-ecommerce` | A detalhar |
 | 5 | Visualizador 3D (`CheeseViewer` com `@google/model-viewer`) e fallback SVG do Apêndice A | `especialista-3d-webgl` | A detalhar |
 | 6 | Assistente com roteiro determinístico, horários e links do WhatsApp no painel de atendimento | `especialista-em-ia-conversacional` | A detalhar |
@@ -401,7 +405,12 @@ O `SupportPanel` só renderiza uma lista `MensagemDoChat[]`. Na etapa 6, o rotei
 
 ```ts
 export function AtendimentoProvider(props: { children: ReactNode }): JSX.Element; // renderiza children + <SupportPanel/>
-export function useAtendimento(): { aberto: boolean; abrir: () => void; fechar: () => void };
+export type OpcoesDeFechamento = { devolverFoco?: boolean }; // false quando a ação já leva o foco a outro lugar
+export function useAtendimento(): {
+  aberto: boolean;
+  abrir: (origem?: HTMLElement) => void; // origem = gatilho que recebe o foco ao fechar (reserva: document.activeElement, por causa do Safari)
+  fechar: (opcoes?: OpcoesDeFechamento) => void;
+};
 /** <button type="button" aria-haspopup="dialog"> que chama abrir(); aceita as variantes visuais do Button. */
 export function BotaoAbrirAtendimento(props: /* props do Button sem href */): JSX.Element;
 ```
@@ -557,9 +566,9 @@ Cada tarefa termina com testes passando (`lint`, `typecheck`, `test`, `build`, `
 | --- | --- | --- | --- |
 | 1 | Tarefas 1 a 6 | `feat(catalogo): adiciona dados dos queijos, ilustrações e cartão de produto` | ✅ Publicado (`4aefc52`) |
 | 2 | Tarefas 7 a 10 | `feat(home): adiciona a página inicial completa` | ✅ Publicado (`ea3ca9f`) |
-| 3 | Tarefas 11 a 13 | `feat(catalogo): adiciona o catálogo com filtro por origem` | ✅ Publicado |
-| 4 | Tarefas 14 a 18 | `feat(produto): adiciona a página de produto com visualizador em SVG` | ✅ Publicado |
-| 5 | Tarefas 19 a 22 | `feat(atendimento): adiciona o painel de atendimento` | **Próximo passo** |
+| 3 | Tarefas 11 a 13 | `feat(catalogo): adiciona o catálogo com filtro por origem` | ✅ Publicado (`fb997bd`) |
+| 4 | Tarefas 14 a 18 | `feat(produto): adiciona a página de produto com visualizador em SVG` | ✅ Publicado (`594fc87`, mais as correções de acessibilidade em `301743a`) |
+| 5 | Tarefas 19 a 22 | `feat(atendimento): adiciona o painel de atendimento` | ✅ Publicado |
 
 Cada commit só sai depois do veredito ✅ (ou ⚠️ resolvido) do `revisor-de-codigo` e com `lint`, `typecheck`, `test`, `build` e `test:e2e` passando (CLAUDE.md, "Antes de commitar").
 
@@ -643,8 +652,11 @@ Todas as recomendações abaixo foram **aceitas pelo dono em 2026-10-26** (P1, P
 | Destino de "Entregas refrigeradas", "Trocas e devoluções" e "Perguntas frequentes" (rodapé) | A spec não define rotas. Ficam como texto não interativo até existir página. | Dono do projeto |
 | Contraste de `--placeholder` sobre `--carvao` (4,47:1, abaixo de 4,5:1) | **Aceito como provisório** pelo dono (2026-10-26): só aparece nos textos `[FOTO: …]`. Rever antes da publicação se ainda houver placeholders. | Dono do projeto |
 | Teste e2e do foco após navegar pelo menu mobile (`test.fixme` em `e2e/layout-global.spec.ts`) | Depende de `/queijos` existir; **ativar na etapa 3** (tarefa 12). | `testes-e-qualidade` |
-| Pendências P1 a P16 da etapa 3 | Ver [Pendências da etapa 3](#pendências-da-etapa-3-para-o-dono-do-projeto). Cada uma tem um padrão provisório. | Dono do projeto |
+| Pendências P1 a P16 da etapa 3 | Ver [Decisões do dono para a etapa 3](#decisões-do-dono-para-a-etapa-3). Cada uma tem um padrão provisório. | Dono do projeto |
 | Controles sem ação (Buscar, Minha conta, "Fale conosco", botão flutuante) | "Fale conosco" e o botão flutuante são ligados ao painel no fim da etapa 3; Buscar e Minha conta precisam de destino antes da publicação. | `frontend-nextjs` + dono do projeto |
+| Painel de atendimento: rolar a conversa até a última mensagem | Hoje não rola sozinha. **Aguarda decisão do dono.** | Dono do projeto |
+| Painel de atendimento: fechar ao mudar de rota | Hoje só o cartão de produto fecha o painel (e o `FocoNoConteudo` cuida do foco). Voltar/avançar do navegador mantém o painel aberto. **Aguarda decisão do dono.** | Dono do projeto |
+| Etapa 8 (`performance-e-seo`): enxugar o pacote global do painel | O provider fica no layout e leva `lib/catalogo` + `data/cheeses` ao pacote global. Enxugar (ex.: dados do cartão no próprio roteiro), sem `React.lazy`. | `performance-e-seo` |
 | Busca e conta no celular | O cabeçalho compacto (§7.6) não tem Buscar nem Minha conta. Definir outro caminho quando essas funções existirem. | Dono do projeto |
 
 ## Decisões de interpretação da spec (etapa 2)

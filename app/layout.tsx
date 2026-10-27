@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Cormorant_Garamond, Manrope } from 'next/font/google';
+import { AtendimentoProvider } from '@/components/Atendimento';
 import { AnnouncementBar } from '@/components/AnnouncementBar';
 import { FocoNoConteudo } from '@/components/FocoNoConteudo';
 import { Footer } from '@/components/Footer';
@@ -31,17 +32,19 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="pt-BR" className={`${cormorant.variable} ${manrope.variable}`}>
       <body>
-        <a href="#conteudo" className="pular-conteudo">
-          Pular para o conteúdo
-        </a>
-        <FocoNoConteudo />
-        <AnnouncementBar />
-        <Header />
-        <main id="conteudo" tabIndex={-1}>
-          {children}
-        </main>
-        <Footer />
-        <SupportFab />
+        <AtendimentoProvider>
+          <a href="#conteudo" className="pular-conteudo">
+            Pular para o conteúdo
+          </a>
+          <FocoNoConteudo />
+          <AnnouncementBar />
+          <Header />
+          <main id="conteudo" tabIndex={-1}>
+            {children}
+          </main>
+          <Footer />
+          <SupportFab />
+        </AtendimentoProvider>
       </body>
     </html>
   );

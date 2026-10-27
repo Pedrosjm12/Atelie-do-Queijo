@@ -1,0 +1,383 @@
+/* Painel de atendimento: spec §8. Desktop 390 x 640 acima do botão flutuante; celular em tela cheia. */
+.painel {
+  position: fixed;
+  inset: auto 28px 100px auto; /* 28 + 60 (botão) + 12 (gap) = 100 */
+  margin: 0;
+  padding: 0;
+  width: 390px;
+  height: 640px;
+  /* Janelas baixas: o painel nunca passa do topo; a área de mensagens é que rola. */
+  max-width: calc(100vw - 56px);
+  max-height: calc(100vh - 100px - 16px);
+  max-height: calc(100dvh - 100px - 16px);
+  overflow: hidden auto; /* Janelas muito baixas (reflow 1.4.10): o painel rola por inteiro. */
+  border: var(--borda-padrao);
+  border-radius: var(--raio-palco);
+  background: var(--cave);
+  color: var(--creme);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.painel[open] {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Sem cor nova: o fundo da página continua visível. */
+.painel::backdrop {
+  background: transparent;
+}
+
+/* Cabeçalho (§8.1) */
+.cabecalho {
+  flex: none;
+  padding: 12px 12px 14px 16px;
+  border-bottom: var(--borda-padrao);
+  background: var(--carvao);
+}
+
+.identidade {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.avatar {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: var(--borda-destaque);
+  border-radius: 50%;
+}
+
+.titulos {
+  flex: 1;
+  min-width: 0;
+}
+
+.titulo {
+  font-size: 21px;
+  font-weight: 600;
+  line-height: 1.1;
+}
+
+.status {
+  color: var(--mofo-texto);
+  font-size: 12px;
+}
+
+.fechar {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: var(--alvo-toque);
+  height: var(--alvo-toque);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--creme);
+}
+
+.fechar:hover {
+  color: var(--ouro);
+}
+
+.abas {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px;
+  margin-top: 12px;
+  padding: 4px;
+  border-radius: var(--raio-pilula);
+  background: var(--cave);
+}
+
+.aba {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 0;
+  height: 40px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: var(--raio-pilula);
+  background: transparent;
+  color: var(--creme);
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.aba:hover {
+  color: var(--ouro);
+}
+
+.abaAtiva,
+.abaAtiva:hover {
+  background: var(--ouro);
+  color: var(--cave);
+  font-weight: 600;
+}
+
+.iconeWhatsapp {
+  display: inline-flex;
+  flex: none;
+  color: var(--whatsapp);
+}
+
+/* Painéis das abas */
+.painelDoAssistente,
+.painelDoQueijista {
+  flex: 1;
+  min-height: 0;
+  flex-direction: column;
+}
+
+.painelDoAssistente {
+  /* Conversa (120) + faixa de passagem (~65) + campo (~79): abaixo disso o painel rola (reflow). */
+  min-height: 270px;
+}
+
+.painelDoAssistente:not([hidden]),
+.painelDoQueijista:not([hidden]) {
+  display: flex;
+}
+
+/* Conversa (§8.2) */
+.mensagens {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 120px; /* Reflow: em janelas muito baixas o painel rola, a conversa não some. */
+  padding: 16px;
+  overflow-y: auto;
+}
+
+.doAssistente,
+.doCliente {
+  font-size: 14px;
+}
+
+.doAssistente {
+  align-self: flex-start;
+  max-width: 300px;
+  padding: 12px 14px;
+  border: var(--borda-padrao);
+  border-radius: 4px 16px 16px 16px;
+  background: var(--carvao);
+}
+
+.doCliente {
+  align-self: flex-end;
+  max-width: 280px;
+  padding: 10px 14px;
+  border-radius: 16px 4px 16px 16px;
+  background: var(--ouro);
+  color: var(--cave);
+  font-weight: 500;
+}
+
+.respostas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.resposta {
+  height: 36px;
+  padding: 0 12px;
+  border: var(--borda-campo);
+  border-radius: var(--raio-pilula);
+  background: transparent;
+  font-size: 12px;
+  line-height: 1;
+}
+
+.resposta:hover {
+  color: var(--ouro);
+}
+
+.sugerida {
+  border-color: var(--ouro);
+  font-weight: 600;
+}
+
+/* Cartão de produto no chat */
+.cartao {
+  display: flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 12px;
+  width: 300px;
+  max-width: 100%;
+  padding: 12px;
+  border: var(--borda-destaque);
+  border-radius: 14px;
+  background: var(--carvao);
+}
+
+.cartaoTexto {
+  flex: 1;
+  min-width: 0;
+}
+
+.cartaoTag {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--palha);
+}
+
+.cartaoNome {
+  font-family: var(--fonte-titulo), 'Cormorant Garamond', serif;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.15;
+}
+
+.cartaoPreco {
+  color: var(--ouro);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.cartaoLink {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--ouro);
+  color: var(--cave);
+}
+
+.cartaoLink:hover {
+  filter: brightness(0.95);
+}
+
+/* Faixa de passagem para humano */
+.passagem {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-top: var(--borda-padrao);
+  background: var(--cave-quiz);
+}
+
+.passagemTexto {
+  flex: 1;
+  min-width: 0;
+  color: var(--palha);
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.horarioPequeno {
+  display: block;
+  font-size: 11px;
+}
+
+.botaoWhatsapp {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 40px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: var(--raio-pilula);
+  background: var(--whatsapp);
+  color: var(--whatsapp-texto);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.botaoWhatsapp:hover {
+  filter: brightness(0.95);
+}
+
+/* Campo de mensagem */
+.formulario {
+  display: flex;
+  flex: none;
+  gap: 8px;
+  padding: 10px 12px 22px;
+  border-top: var(--borda-padrao);
+  background: var(--carvao);
+}
+
+.campo {
+  flex: 1;
+  min-width: 0;
+  height: 46px;
+  padding: 0 16px;
+  border: var(--borda-campo);
+  border-radius: var(--raio-pilula);
+  background: var(--cave);
+  font-size: 14px;
+}
+
+.campo::placeholder {
+  color: var(--placeholder);
+}
+
+.enviar {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--ouro);
+  color: var(--cave);
+}
+
+.enviar:hover {
+  filter: brightness(0.95);
+}
+
+/* Aba Queijista (WhatsApp): horário + botão (P5) */
+.painelDoQueijista {
+  gap: 16px;
+  padding: 16px;
+}
+
+.horario {
+  color: var(--palha);
+  font-size: 14px;
+}
+
+.painelDoQueijista .botaoWhatsapp {
+  align-self: flex-start;
+}
+
+/* Celular: tela cheia. */
+@media (max-width: 768px) {
+  .painel {
+    inset: 0;
+    width: 100%;
+    max-width: none;
+    height: 100vh;
+    height: 100dvh;
+    max-height: none;
+    border: 0;
+    border-radius: 0;
+  }
+}

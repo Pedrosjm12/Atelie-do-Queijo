@@ -22,6 +22,10 @@ O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 - Catálogo `/queijos` (§6) com filtro Todos / Brasil / Mundo refletido na URL, anúncio do total para leitores de tela e caixa de ajuda.
 - Modelo de título `%s — Ateliê do Queijo` para todas as páginas e `next typegen` antes do typecheck (ADR-0006).
 
+- Página de produto `/queijos/[slug]` (10 rotas estáticas) com trilha, perfil sensorial, `CheeseViewer` em SVG com alternador de corte, `PainelDeCompra` (formatos, preço, Pix e barra fixa no celular) e abas com navegação por teclado (`ProductTabs` e `useAbas`).
+- Painel de atendimento (§8) em `<dialog>` modal, aberto pelo botão flutuante, por "Fale conosco" e por "Pedir ajuda", com abas Assistente e Queijista e roteiro provisório em `lib/assistant.ts`.
+- Controles ainda sem função usam `aria-disabled` e seguem focáveis até as etapas 4 a 6.
+
 ### Corrigido
 
 - Largura do conteúdo: 1200 px úteis mais 32 px de respiro lateral (antes ficavam 1136 px por causa do `box-sizing`).
