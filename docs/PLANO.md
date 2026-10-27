@@ -654,9 +654,9 @@ Todas as recomendações abaixo foram **aceitas pelo dono em 2026-10-26** (P1, P
 | Teste e2e do foco após navegar pelo menu mobile (`test.fixme` em `e2e/layout-global.spec.ts`) | Depende de `/queijos` existir; **ativar na etapa 3** (tarefa 12). | `testes-e-qualidade` |
 | Pendências P1 a P16 da etapa 3 | Ver [Decisões do dono para a etapa 3](#decisões-do-dono-para-a-etapa-3). Cada uma tem um padrão provisório. | Dono do projeto |
 | Controles sem ação (Buscar, Minha conta, "Fale conosco", botão flutuante) | "Fale conosco" e o botão flutuante são ligados ao painel no fim da etapa 3; Buscar e Minha conta precisam de destino antes da publicação. | `frontend-nextjs` + dono do projeto |
-| Painel de atendimento: rolar a conversa até a última mensagem | Hoje não rola sozinha. **Aguarda decisão do dono.** | Dono do projeto |
-| Painel de atendimento: fechar ao mudar de rota | Hoje só o cartão de produto fecha o painel (e o `FocoNoConteudo` cuida do foco). Voltar/avançar do navegador mantém o painel aberto. **Aguarda decisão do dono.** | Dono do projeto |
-| Etapa 8 (`performance-e-seo`): enxugar o pacote global do painel | O provider fica no layout e leva `lib/catalogo` + `data/cheeses` ao pacote global. Enxugar (ex.: dados do cartão no próprio roteiro), sem `React.lazy`. | `performance-e-seo` |
+| Painel de atendimento: rolar a conversa até a última mensagem | **Resolvido:** ao abrir, só o log rola até o fim (suave; instantâneo com `prefers-reduced-motion`). Testes unitário e e2e. | Dono do projeto |
+| Painel de atendimento: fechar ao mudar de rota | **Resolvido:** `Atendimento.tsx` fecha o painel (sem devolver o foco) quando o `usePathname()` muda; mudança só de searchParams não fecha. Testes unitário e e2e (`goBack`). | Dono do projeto |
+| Etapa 8 (`performance-e-seo`): enxugar o pacote global do painel | **Resolvido:** o cartão do chat usa `lib/cartaoDoChat.ts` (módulo estático, conferido por teste contra `dadosDoCartao`); o painel não importa mais `lib/catalogo` nem `data/cheeses`. | `performance-e-seo` |
 | Busca e conta no celular | O cabeçalho compacto (§7.6) não tem Buscar nem Minha conta. Definir outro caminho quando essas funções existirem. | Dono do projeto |
 
 ## Decisões de interpretação da spec (etapa 2)

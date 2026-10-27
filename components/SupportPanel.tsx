@@ -2,9 +2,8 @@
 
 import Link from 'next/link';
 import { useEffect, useId, useRef, type FormEvent, type ReactNode } from 'react';
-import type { SlugDoQueijo } from '@/data/cheeses';
 import { ROTEIRO_DO_PROTOTIPO, type MensagemDoChat } from '@/lib/assistant';
-import { dadosDoCartao, obterQueijo } from '@/lib/catalogo';
+import { CARTAO_DO_CHAT } from '@/lib/cartaoDoChat';
 import { formatarPreco } from '@/lib/format';
 import type { OpcoesDeFechamento } from './Atendimento';
 import { Icone } from './icons';
@@ -27,8 +26,8 @@ type SupportPanelProps = {
 /**
  * Painel de atendimento (spec §8): <dialog> modal nativo (ADR-0005). O conteúdo só é montado
  * enquanto o painel está aberto, então a conversa recomeça a cada abertura e o DOM da página
- * não carrega a árvore do painel fechado. O código do painel, porém, está no pacote global
- * (o provider fica no layout): ver pendência de enxugamento na etapa 8 do PLANO.md.
+ * não carrega a árvore do painel fechado. O código do painel está no pacote global (o provider
+ * fica no layout); por isso o cartão do chat usa `lib/cartaoDoChat`, sem o catálogo inteiro.
  */
 export function SupportPanel({ aberto, aoSolicitarFechamento, aoFechado }: SupportPanelProps) {
   const dialogo = useRef<HTMLDialogElement>(null);
@@ -39,7 +38,10 @@ export function SupportPanel({ aberto, aoSolicitarFechamento, aoFechado }: Suppo
   useEffect(() => {
     const el = dialogo.current;
     if (!el) return;
-    if (aberto && !el.open) el.showModal();
+    if (aberto && !el.open) {
+      el.showModal();
+      rolarConversaAteOFim(el);
+    }
     if (!aberto && el.open) el.close();
   }, [aberto]);
 
@@ -66,6 +68,19 @@ export function SupportPanel({ aberto, aoSolicitarFechamento, aoFechado }: Suppo
       )}
     </dialog>
   );
+}
+
+/**
+ * Leva a conversa à última mensagem ao abrir. Só a área do log rola: cabeçalho, abas e campo
+ * continuam visíveis. Suave apenas se a pessoa não pediu menos movimento.
+ */
+function rolarConversaAteOFim(dialogo: HTMLDialogElement) {
+  const conversa = dialogo.querySelector<HTMLElement>('[role="log"]');
+  if (!conversa) return;
+  const reduzir =
+    typeof window.matchMedia === 'function' &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  conversa.scrollTo({ top: conversa.scrollHeight, behavior: reduzir ? 'auto' : 'smooth' });
 }
 
 /**
@@ -277,35 +292,28 @@ function Mensagem({
         </div>
       );
     case 'produto':
-      return <CartaoDoChat slug={mensagem.slug} aoIrParaOProduto={aoIrParaOProduto} />;
+      if (mensagem.slug !== CARTAO_DO_CHAT.slug) return null;
+      return <CartaoDoChat aoIrParaOProduto={aoIrParaOProduto} />;
   }
 }
 
-function CartaoDoChat({
-  slug,
-  aoIrParaOProduto,
-}: {
-  slug: SlugDoQueijo;
-  aoIrParaOProduto: () => void;
-}) {
-  const queijo = obterQueijo(slug);
-  if (!queijo) return null;
-  const { tag, linhaPequena, preco } = dadosDoCartao(queijo, 'chat');
+function CartaoDoChat({ aoIrParaOProduto }: { aoIrParaOProduto: () => void }) {
+  const { slug, nome, tag, linhaPequena, preco } = CARTAO_DO_CHAT;
 
   return (
     <article className={estilos.cartao}>
       <MiniaturaDoChat />
       <div className={estilos.cartaoTexto}>
         <p className={estilos.cartaoTag}>{tag}</p>
-        <h3 className={estilos.cartaoNome}>{queijo.nome}</h3>
+        <h3 className={estilos.cartaoNome}>{nome}</h3>
         <p className={estilos.cartaoPreco}>
           {linhaPequena} {formatarPreco(preco)}
         </p>
       </div>
       <Link
-        href={`/queijos/${queijo.slug}`}
+        href={`/queijos/${slug}`}
         className={estilos.cartaoLink}
-        aria-label={`Ver ${queijo.nome} em 3D`}
+        aria-label={`Ver ${nome} em 3D`}
         onClick={aoIrParaOProduto}
       >
         <Icone nome="seta-direita" tamanho={18} espessura={1.75} />

@@ -199,6 +199,66 @@ test.describe('painel de atendimento', () => {
     await expect(page.getByRole('heading', { level: 1, name: 'Canastra curado' })).toBeVisible();
   });
 
+  test('ao abrir, a conversa rola até o fim e cabeçalho, cartão, respostas e campo ficam visíveis', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto('/');
+    await page.getByRole('button', { name: 'Abrir atendimento' }).click();
+    const p = painel(page);
+
+    await expect(p.getByRole('heading', { name: 'Assistente do Ateliê' })).toBeInViewport();
+    await expect(p.getByRole('tab', { name: 'Assistente' })).toBeInViewport();
+    await expect(p.getByRole('link', { name: 'Ver Canastra curado em 3D' })).toBeInViewport();
+    await expect(p.getByRole('button', { name: 'Sim, com cartão' })).toBeInViewport();
+    await expect(p.getByRole('button', { name: 'Ver outras opções' })).toBeInViewport();
+    await expect(p.getByLabel('Escreva sua mensagem')).toBeInViewport();
+  });
+
+  test('janela baixa: a conversa abre rolada até o fim (instantâneo com movimento reduzido)', async ({
+    page,
+  }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.setViewportSize({ width: 1440, height: 560 });
+    await page.goto('/');
+    await page.getByRole('button', { name: 'Abrir atendimento' }).click();
+    const log = painel(page).getByRole('log');
+
+    const noFim = await log.evaluate((el) => ({
+      rola: el.scrollHeight > el.clientHeight,
+      fim: el.scrollHeight - el.clientHeight - el.scrollTop,
+    }));
+    expect(noFim.rola).toBe(true);
+    expect(noFim.fim).toBeLessThanOrEqual(1);
+    await expect(
+      painel(page).getByRole('heading', { name: 'Assistente do Ateliê' }),
+    ).toBeInViewport();
+    await expect(painel(page).getByRole('button', { name: 'Ver outras opções' })).toBeInViewport();
+  });
+
+  test('voltar do navegador fecha o painel; o cartão continua funcionando depois', async ({
+    page,
+  }) => {
+    await page.goto('/');
+    await page.getByRole('button', { name: 'Abrir atendimento' }).click();
+    await painel(page).getByRole('link', { name: 'Ver Canastra curado em 3D' }).click();
+    await expect(page).toHaveURL(/\/queijos\/canastra-curado$/);
+    await expect(painel(page)).toBeHidden();
+
+    await page.getByRole('button', { name: 'Abrir atendimento' }).click();
+    await expect(painel(page)).toBeVisible();
+    await page.goBack();
+    await expect(page).toHaveURL(/\/$/);
+    await expect(painel(page)).toBeHidden();
+    await expect(page.locator('#conteudo')).toBeFocused();
+
+    await page.getByRole('button', { name: 'Abrir atendimento' }).click();
+    await painel(page).getByRole('link', { name: 'Ver Canastra curado em 3D' }).click();
+    await expect(page).toHaveURL(/\/queijos\/canastra-curado$/);
+    await expect(painel(page)).toBeHidden();
+    await expect(page.getByRole('heading', { level: 1, name: 'Canastra curado' })).toBeVisible();
+  });
+
   test('sem ids duplicados e com todo url(#…) resolvido, com o painel aberto', async ({ page }) => {
     for (const rota of ['/', '/queijos', '/queijos/canastra-curado']) {
       await page.goto(rota);

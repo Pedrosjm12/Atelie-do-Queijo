@@ -1,8 +1,15 @@
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { AtendimentoProvider, BotaoAbrirAtendimento, useAtendimento } from './Atendimento';
 import { SupportFab } from './SupportFab';
+
+const { usePathname } = vi.hoisted(() => ({ usePathname: vi.fn<() => string>() }));
+vi.mock('next/navigation', () => ({ usePathname: () => usePathname() }));
+
+beforeEach(() => {
+  usePathname.mockReturnValue('/');
+});
 
 function EstadoAberto() {
   const { aberto } = useAtendimento();
@@ -114,12 +121,72 @@ describe('Atendimento', () => {
     expect(usuario).toBeDefined();
   });
 
+  it('fecha ao mudar de rota e leva o foco a #conteudo, não ao gatilho; não fecha ao re-renderizar sem mudar o caminho', async () => {
+    const usuario = userEvent.setup();
+    const { rerender } = render(
+      <AtendimentoProvider>
+        <main id="conteudo" tabIndex={-1} />
+        <BotaoAbrirAtendimento>Fale conosco</BotaoAbrirAtendimento>
+      </AtendimentoProvider>,
+    );
+    const gatilho = screen.getByRole('button', { name: 'Fale conosco' });
+    await usuario.click(gatilho);
+    expect(painel()).toBeInTheDocument();
+    // O jsdom não move o foco para o <dialog>; o navegador move (o e2e cobre).
+    screen.getByRole('button', { name: 'Fechar atendimento' }).focus();
+
+    // searchParams não entram no pathname: nada muda para o provider.
+    rerender(
+      <AtendimentoProvider>
+        <main id="conteudo" tabIndex={-1} />
+        <BotaoAbrirAtendimento>Fale conosco</BotaoAbrirAtendimento>
+      </AtendimentoProvider>,
+    );
+    expect(painel()).toBeInTheDocument();
+
+    usePathname.mockReturnValue('/queijos');
+    rerender(
+      <AtendimentoProvider>
+        <main id="conteudo" tabIndex={-1} />
+        <BotaoAbrirAtendimento>Fale conosco</BotaoAbrirAtendimento>
+      </AtendimentoProvider>,
+    );
+    expect(painel()).not.toBeInTheDocument();
+    expect(gatilho).not.toHaveFocus();
+    expect(document.getElementById('conteudo')).toHaveFocus();
+  });
+
   it('exige o provider', () => {
     expect(() => render(<SupportFab />)).toThrow('AtendimentoProvider');
   });
 });
 
 describe('SupportPanel', () => {
+  it('rola a conversa até o fim ao abrir: suave, ou instantâneo com movimento reduzido', async () => {
+    const rolar = vi.fn();
+    const original = Element.prototype.scrollTo;
+    Element.prototype.scrollTo = rolar;
+    const matchMediaOriginal = window.matchMedia;
+    try {
+      for (const reduzido of [false, true]) {
+        window.matchMedia = ((consulta: string) => ({
+          matches: reduzido && consulta.includes('prefers-reduced-motion'),
+        })) as typeof window.matchMedia;
+        rolar.mockClear();
+        const { unmount } = renderizar();
+        await userEvent.setup().click(screen.getByRole('button', { name: 'Abrir atendimento' }));
+        expect(rolar).toHaveBeenCalledTimes(1);
+        expect(rolar).toHaveBeenCalledWith(
+          expect.objectContaining({ behavior: reduzido ? 'auto' : 'smooth' }),
+        );
+        unmount();
+      }
+    } finally {
+      Element.prototype.scrollTo = original;
+      window.matchMedia = matchMediaOriginal;
+    }
+  });
+
   async function abrir() {
     const usuario = userEvent.setup();
     renderizar();

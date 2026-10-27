@@ -1,9 +1,11 @@
 'use client';
 
+import { usePathname } from 'next/navigation';
 import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -16,7 +18,14 @@ import { SupportPanel } from './SupportPanel';
 export type OpcoesDeFechamento = {
   /** `false` quando a ação já leva o foco a outro lugar (ex.: navegar para o produto). */
   devolverFoco?: boolean;
+  /**
+   * Fechamento por mudança de rota: o foco vai para #conteudo depois do close() nativo, que
+   * senão o devolveria ao gatilho por cima do que o FocoNoConteudo fez com o diálogo ainda aberto.
+   */
+  focarConteudo?: boolean;
 };
+
+type DestinoDoFoco = 'gatilho' | 'conteudo' | 'nenhum';
 
 type ValorDoAtendimento = {
   aberto: boolean;
@@ -35,18 +44,22 @@ const ContextoDoAtendimento = createContext<ValorDoAtendimento | null>(null);
 export function AtendimentoProvider({ children }: { children: ReactNode }) {
   const [aberto, setAberto] = useState(false);
   const gatilho = useRef<HTMLElement | null>(null);
-  const devolverFoco = useRef(true);
+  const destinoDoFoco = useRef<DestinoDoFoco>('gatilho');
 
   const abrir = useCallback((origem?: HTMLElement) => {
     // O Safari não foca o botão ao clicar: por isso o gatilho vem do evento, com o foco como reserva.
     const ativo = document.activeElement;
     gatilho.current = origem ?? (ativo instanceof HTMLElement ? ativo : null);
-    devolverFoco.current = true;
+    destinoDoFoco.current = 'gatilho';
     setAberto(true);
   }, []);
 
   const fechar = useCallback((opcoes?: OpcoesDeFechamento) => {
-    devolverFoco.current = opcoes?.devolverFoco !== false;
+    destinoDoFoco.current = opcoes?.focarConteudo
+      ? 'conteudo'
+      : opcoes?.devolverFoco === false
+        ? 'nenhum'
+        : 'gatilho';
     setAberto(false);
   }, []);
 
@@ -55,8 +68,21 @@ export function AtendimentoProvider({ children }: { children: ReactNode }) {
     setAberto(false);
     const alvo = gatilho.current;
     gatilho.current = null;
-    if (devolverFoco.current && alvo?.isConnected) alvo.focus();
+    const destino = destinoDoFoco.current;
+    if (destino === 'gatilho' && alvo?.isConnected) alvo.focus();
+    if (destino === 'conteudo') document.getElementById('conteudo')?.focus({ preventScroll: true });
   }, []);
+
+  // Fecha ao mudar de rota (inclusive voltar/avançar). Só o caminho conta: searchParams não.
+  const caminho = usePathname();
+  const caminhoAnterior = useRef(caminho);
+  useEffect(() => {
+    if (caminhoAnterior.current === caminho) return;
+    caminhoAnterior.current = caminho;
+    // Sincroniza com o roteador (sistema externo): fechar() é a única saída do painel.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (aberto) fechar({ focarConteudo: true });
+  }, [caminho, aberto, fechar]);
 
   const valor = useMemo(() => ({ aberto, abrir, fechar }), [aberto, abrir, fechar]);
 

@@ -12,3 +12,9 @@ if (typeof HTMLDialogElement !== 'undefined' && !HTMLDialogElement.prototype.sho
     this.dispatchEvent(new Event('close'));
   };
 }
+
+// O jsdom não implementa Element.scrollTo (rolagem do chat): stub vazio; os testes que
+// verificam a rolagem substituem por um spy.
+if (typeof Element !== 'undefined' && !Element.prototype.scrollTo) {
+  Element.prototype.scrollTo = function scrollTo() {};
+}

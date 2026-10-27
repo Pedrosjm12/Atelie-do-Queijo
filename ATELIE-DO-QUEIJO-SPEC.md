@@ -471,11 +471,12 @@ Exemplo do protótipo: **Canastra curado**. Altura do protótipo a 1440 px: ~164
   - Indicador no canto superior direito (`position: absolute; right: 20px; top: 16px`): 11 px, `letter-spacing: 0.18em`, `--ouro`, 600, borda `--pedra-clara`, pílula, `padding: 4px 12px`. Texto **POR DENTRO** quando cortado, **PEÇA INTEIRA** quando inteiro.
   - Ilustração (`margin-top: 16px; width: 100%`): Apêndice A.5.1 (cortado) ou A.5.2 (inteiro). Com GLB, usar o `model-viewer` (seção 11).
   - Barra de controles `role="toolbar" aria-label="Controles do 3D"` (`display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 12px`). Botões pílula com altura mínima 44, 14 px, ícone 16 px + texto, `gap: 8px`:
-    - **Girar** (borda `--pedra-clara`, transparente): liga/desliga a rotação automática.
+    - **Girar** (borda `--pedra-clara`, transparente): liga/desliga a rotação automática. Ativo (`aria-pressed="true"`): borda `--ouro` e fundo `--ouro-vidro` (decisão do dono, 2026-10-27, P23).
     - **Alternador de corte** (borda `--ouro`, 600, `padding: 0 18px`, `aria-pressed`):
-      - Cortado (estado padrão): fundo `--ouro`, texto `--cave`, rótulo **Ver peça inteira**.
-      - Inteiro: fundo transparente, texto `--creme`, rótulo **Ver por dentro**.
-    - **Aproximar** (borda `--pedra-clara`): alterna o zoom.
+      - Cortado (estado padrão): fundo `--ouro`, texto `--cave`, rótulo **Ver peça inteira** (rótulo substituído por P21, abaixo).
+      - Inteiro: fundo transparente, texto `--creme`, rótulo **Ver por dentro** (rótulo substituído por P21, abaixo).
+      - **Decisão do dono (2026-10-27, P21):** o rótulo é fixo, **Ver por dentro**, com `aria-pressed="true"` quando cortado (o padrão ARIA não combina rótulo alternado com `aria-pressed`). O indicador **POR DENTRO** / **PEÇA INTEIRA** continua alternando. A barra de controles tem navegação por setas, Home e End.
+    - **Aproximar** (borda `--pedra-clara`): alterna o zoom. Ativo: igual ao **Girar** (P23).
     - **Tela cheia** (somente ícone, 44 × 44, `aria-label="Tela cheia"`).
 - Miniaturas: `display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-top: 12px;` cada uma `aspect-ratio: 1; border-radius: 10px; background: var(--carvao);` 12 px centralizado. A primeira (**3D**, ativa) tem borda `--ouro` e texto `--palha`; as outras têm borda `--pedra` e texto `--placeholder`: **[FOTO: na tábua]**, **[FOTO: produtor]**, **[FOTO: fazenda]**.
 
@@ -486,7 +487,7 @@ Exemplo do protótipo: **Canastra curado**. Altura do protótipo a 1440 px: ~164
 3. 14 px `--palha`: **Queijaria [NOME DO PRODUTOR]**
 4. Selos (`margin-top: 16px`, `gap: 8px`): **Selo Arte** (origem) · **Leite cru** (maturação) · **60 dias de cura** (maturação)
 5. Descrição (`margin-top: 20px`, 17 px, `--creme-suave`): **Casca firme e dourada, massa amarelada e levemente esfarelada. Sabor intenso, com notas de manteiga tostada e um final picante que fica na boca.**
-6. Formato — `<fieldset>` sem borda (`margin-top: 28px`), `<legend>` sobretítulo **FORMATO** (`margin-bottom: 10px`). Botões (`display: flex; flex-wrap: wrap; gap: 10px`), cada um com altura mínima 56, `padding: 6px 18px`, raio 12, texto à esquerda em duas linhas: nome (600, 14 px) e "peso · preço" (12 px `--palha`). Selecionado: borda `--ouro`, fundo `--ouro-vidro`; não selecionado: borda `--pedra-clara`, transparente. `aria-pressed`.
+6. Formato — `<fieldset>` sem borda (`margin-top: 28px`), `<legend>` sobretítulo **FORMATO** (`margin-bottom: 10px`). Botões (`display: flex; flex-wrap: wrap; gap: 10px`), cada um com altura mínima 56, `padding: 6px 18px`, raio 12, texto à esquerda em duas linhas: nome (600, 14 px) e "peso · preço" (12 px `--palha`). Selecionado: borda `--ouro`, fundo `--ouro-vidro`; não selecionado: borda `--pedra-clara`, transparente. Implementado como `<input type="radio">` visualmente oculto com `<label>` estilizado, mantendo este visual (decisão do dono, 2026-10-27, P22; substitui o `aria-pressed`).
 
    | Formato | Linha 2 | Preço | Pix (−5%) |
    | --- | --- | --- | --- |
@@ -745,7 +746,7 @@ Use os mesmos componentes, cabeçalhos de seção (sobretítulo + h2 + parágraf
 - [ ] Hero: título em 76 px com "escolhidos à mão." em itálico dourado; ilustração A.3; pílula "Arraste para girar"; etiqueta do Canastra no canto inferior direito.
 - [ ] Faixa de confiança com 4 itens e ícones dourados.
 - [ ] Catálogo com 10 queijos, filtro Todos (10) / Brasil (7) / Mundo (3) funcionando e refletido na URL.
-- [ ] Página de produto: alternador "Ver por dentro / Ver peça inteira" troca a ilustração e o indicador; formatos mudam preço e valor no Pix; abas funcionam.
+- [ ] Página de produto: alternador "Ver por dentro" (rótulo fixo, `aria-pressed`; P21) troca a ilustração e o indicador POR DENTRO / PEÇA INTEIRA; formatos mudam preço e valor no Pix; abas funcionam.
 - [ ] Mobile: barra fixa com preço e "Adicionar à sacola"; botão flutuante acima dela.
 - [ ] Painel de atendimento com as duas abas, roteiro do assistente, horário e botão verde do WhatsApp com mensagem pré-preenchida.
 - [ ] Sacola com contador, barra de frete grátis (R$ 180) e desconto de 5% no Pix.
