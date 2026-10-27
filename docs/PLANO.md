@@ -359,7 +359,7 @@ export function dadosDoCartao(q: Cheese, contexto: 'home' | 'catalogo' | 'chat')
   { tag: string; nota: string; linhaPequena: string; preco: Centavos };
 ```
 
-#### `lib/commerce.ts` (criado agora só com o cálculo do Pix; a etapa 4 acrescenta `calcularFrete` e `criarPedido`)
+#### `lib/commerce.ts` (criado agora só com o cálculo do Pix; a etapa 4 acrescenta as funções puras de frete, CEP e totais; `calcularFrete` e `criarPedido` ficam em `lib/pedido.server.ts`)
 
 ```ts
 export const DESCONTO_PIX_PERCENTUAL = 5;
@@ -736,16 +736,15 @@ export function faltaParaFreteGratis(subtotal: Centavos): Centavos;
 
 /** CEP só com os 8 dígitos. Marca nominal: só nasce de `normalizarCep`. */
 export type Cep = string & { readonly __marca: 'Cep' };
-/** Mais de 9 caracteres → null antes de qualquer replace. Depois tira tudo que não é dígito; 8 dígitos → Cep; caso contrário null. */
+/** Mais de 9 caracteres (ou não texto) → null antes de qualquer outra operação. Depois do trim, só aceita /^\d{5}-?\d{3}$/ (dígitos ASCII); senão null. */
 export function normalizarCep(entrada: string): Cep | null;
 /** Máscara progressiva para o campo: "0131" → "0131", "01310100" → "01310-100" (no máximo 9 caracteres). */
 export function mascararCep(entrada: string): string;
 
+// (tipo; a função SIMULADA `calcularFrete(cep: Cep): Promise<ResultadoDoFrete>` fica em lib/pedido.server.ts)
 export type ResultadoDoFrete =
   | { situacao: 'atendido'; prazoDiasUteis: number | null; valor: Centavos | null }   // null = lacuna [N] / [PREÇO] (P27)
   | { situacao: 'fora-de-area' };
-/** SIMULADO. Faixa 00000-000 a 00999-999 → fora de área (P28); demais → atendido com prazo e valor null. */
-export function calcularFrete(cep: Cep): Promise<ResultadoDoFrete>;
 /** Aplica o frete grátis: subtotal ≥ 18000 → 0; senão o valor do resultado (pode ser null). */
 export function valorDoFrete(r: Extract<ResultadoDoFrete, { situacao: 'atendido' }>, subtotal: Centavos): Centavos | null;
 
@@ -763,8 +762,10 @@ export type ResultadoDoPedido =
   | { ok: false; motivo: 'pagamento-recusado' | 'fora-de-area' | 'sacola-invalida' };
 /**
  * SIMULADO (spec §2: `criarPedido(sacola)`; aqui recebe o pedido já validado e precificado).
- * Não grava nada. Número: "AQ-" + 6 dígitos de crypto.randomInt, gerado no servidor; é só rótulo
- * de exibição, nunca chave de acesso. Recusa o pagamento quando cliente.email === 'recusa@exemplo.com'
+ * Não grava nada. Número: "AQ-" + 6 dígitos de crypto.getRandomValues (Web Crypto, amostragem por
+ * rejeição, sem viés de módulo), gerado no servidor; é só rótulo de exibição, nunca chave de acesso
+ * e NÃO é único por si (1 milhão de números): com persistência, unicidade no banco ou 8 dígitos.
+ * Mora em lib/pedido.server.ts (`import 'server-only'`); só o tipo PedidoPrecificado fica em commerce.ts. Recusa o pagamento quando cliente.email === 'recusa@exemplo.com'
  * (domínio reservado RFC 2606), só na implementação simulada e marcado com
  * `// SIMULAÇÃO: remover com o gateway`, para testar o erro da §10.2.
  */
@@ -780,10 +781,11 @@ export type CampoDoCheckout =
   | 'bairro' | 'cidade' | 'uf' | 'mensagem' | 'dataDeEntrega' | 'pagamento';
 
 // Regras (P32, P34): limite de tamanho conferido antes de qualquer regex; trim e NFC em todos os
-// textos; caracteres de controle (Cc) e bidirecionais (U+202A–U+202E, U+2066–U+2069) recusados.
-// nome 2–100 · email válido ≤ 254 · telefone 10–11 dígitos · cep 8 dígitos · logradouro 1–120
+// textos; controle (Cc), invisíveis e bidirecionais recusados (lista completa na tarefa 3);
+// mensagem com até 6 linhas (\n é o único Cc liberado, só nela).
+// nome 2–100 · email válido ≤ 254 · telefone DDD [1-9][1-9] + 8–9 dígitos · cep 8 dígitos · logradouro 1–120
 // número 1–10 · complemento ≤ 60 (opcional) · bairro 1–60 · cidade 1–60 · uf ∈ UFS
-// presente: mensagem ≤ 200 caracteres (contados por ponto de código) · dataDeEntrega AAAA-MM-DD,
+// presente: mensagem ≤ 200 caracteres (contados por ponto de código) e ≤ 6 linhas · dataDeEntrega AAAA-MM-DD,
 //   de amanhã até +60 dias, calculada em America/Sao_Paulo · pagamento ∈ {'pix','cartao'}
 export const esquemaEntrega;      // cliente + endereço + presente (null se não for presente)
 export const esquemaPagamento;
@@ -911,11 +913,18 @@ Resultado da auditoria do `auditor-de-seguranca` (2026-10-27) sobre este plano e
 
 **Tarefa 3 (`lib/commerce.ts`, `lib/pedido.ts`)**
 
-- Textos sem caracteres de controle (categoria Cc) e sem bidirecionais (U+202A–U+202E, U+2066–U+2069); normalização NFC antes de contar os 200 pontos de código da mensagem.
+- Textos sem caracteres de controle (categoria Cc, exceto `\n` na mensagem) e sem bidirecionais nem invisíveis (ver a lista abaixo); normalização NFC e `\r\n`/`\r` → `\n` antes de contar os 200 pontos de código e as 6 linhas da mensagem.
 - Limite de tamanho conferido antes de qualquer regex (teste: e-mail de 1 MB recusado em menos de 50 ms).
 - `normalizarCep` recusa entrada com mais de 9 caracteres antes do `replace`.
 - Gatilho `recusa@exemplo.com` só na implementação simulada, com o comentário `// SIMULAÇÃO: remover com o gateway`.
-- Número do pedido com `crypto.randomInt` no servidor, documentado como rótulo de exibição e nunca como chave de acesso.
+- Número do pedido com `crypto.getRandomValues` (Web Crypto) e amostragem por rejeição, sem viés de módulo, no servidor; **não** `crypto.randomInt`, porque o módulo `node:crypto` não pode ser importado por código que também roda no navegador (o `commerce.ts` e o `pedido.ts` são compartilhados). Documentado como rótulo de exibição e nunca como chave de acesso.
+- **Unicidade do número `AQ-`:** 6 dígitos dão só 1 milhão de números (colisão provável por volta de mil pedidos, pelo paradoxo do aniversário). Quando houver persistência, a unicidade tem de ser garantida **no banco** (índice único e nova tentativa em caso de colisão) ou o número passa a ter 8 dígitos. Registrado no ADR-0008 §3.
+- **Separação cliente/servidor (`lib/pedido.server.ts`):** `calcularFrete` e `criarPedido` (implementações simuladas) ficam em `lib/pedido.server.ts` com `import 'server-only'`. A documentação do Next 16 diz que o pacote npm `server-only` é opcional (o Next trata o import internamente e traz as próprias declarações de tipo), então **nenhuma dependência foi instalada**. No Vitest o import é um alias para `vitest.server-only.ts` (módulo vazio). As funções puras (`precoNoPix`, `mascararCep`, `faltaParaFreteGratis`, `valorDoFrete`, `calcularTotais`, `normalizarCep`) continuam em `commerce.ts`, importável no cliente.
+- **Teto de R$ 1.000.000** (100.000.000 centavos) em `exigirCentavos` (`lib/dinheiro.ts`), `precoNoPix`, `calcularTotais` (inclusive o total) e `precificarSacola` (preço de cada formato e subtotal); a mensagem do `RangeError` nunca repete o valor recebido.
+- **Texto (decisão de segurança da auditoria):** proibidos `\p{Cc}`, `\p{Cs}`, `\p{Co}`, `\p{Zl}`, `\p{Zp}`, U+200B–U+200F, U+061C, U+FEFF, U+2060–U+2064, U+00AD, U+E0000–U+E007F e os bidirecionais; `isWellFormed()`; ZWJ (U+200D) e VS16 (U+FE0F) liberados **só** na `mensagem`; nome, logradouro, bairro e cidade exigem ao menos uma letra ou número. Esses caracteres são sempre escritos em **escape** no código e nos testes, nunca literais invisíveis.
+- **E-mail:** lista permitida só ASCII (local `[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]{1,64}`, domínio em rótulos `[A-Za-z0-9-]{1,63}`; IDN só em punycode), minúsculas, regex linear. **Telefone:** DDD `[1-9][1-9]` (sem zero) + 8 ou 9 dígitos. **CEP:** `/^\d{5}-?\d{3}$/` após `trim`.
+- **Mensagem do cartão (decisão do dono, 2026-10-27):** aceita quebra de linha, **até 6 linhas**; `\r\n` e `\r` viram `\n` antes de contar; `\n` é o único Cc permitido e só no campo `mensagem` (nos outros campos continua recusado); demais Cc e bidi seguem proibidos; mais de 6 linhas é recusado; a quebra conta nos 200 pontos de código. Texto de erro do campo (padrão do P17): **Escreva uma mensagem de até 200 caracteres e 6 linhas, por exemplo Feliz aniversário.** Na interface (tarefa 14), o `<textarea>` não deve usar `maxLength` que corte o `\n` de forma diferente do servidor, e o cartão impresso/exibição deve preservar as quebras como texto (`white-space: pre-line`), nunca como HTML.
+- **Array `itens` do Zod:** `maxLength(30)` só é conferido **depois** de validar os elementos; a pré-checagem de `itens.length` da tarefa 13 é **obrigatória** (comentário em `lib/pedido.ts`).
 - `MENSAGENS_DE_ERRO` fixas, sem interpolar o valor digitado.
 
 **Tarefa 5 (`SacolaProvider`)**
@@ -992,8 +1001,8 @@ Cada tarefa termina com `lint`, `typecheck`, `format:check`, `test`, `build` e `
    - **Pronto quando:** os testes passam e nenhum arquivo de `lib/sacola.ts` nem de `lib/formatosDaSacola.ts` importa valor de `data/` (só `import type`), o que pode ser conferido por busca.
    - **Requisitos de segurança:** ver a [lista](#requisitos-de-segurança-por-tarefa) (tarefa 2).
 
-3. **[engenheiro-de-ecommerce] `lib/commerce.ts` (frete, totais, pedido) e `lib/pedido.ts`** (~400 com testes)
-   - Testes: `mascararCep('01310100') === '01310-100'`, `mascararCep('0131') === '0131'`, `mascararCep('01310-1009') === '01310-100'`; `normalizarCep('01310-100')` → `'01310100'`, e com 7 dígitos ou letras → `null`; `calcularFrete('00500000')` → fora de área; `faltaParaFreteGratis(17999) === 1`, `(18000) === 0`; `valorDoFrete` com subtotal 18000 → 0; `calcularTotais(13600, null, 'pix')` → `descontoPix 680`, `total null`; `calcularTotais(18000, 0, 'pix')` → `total 17100`; `criarPedido` com `recusa@exemplo.com` → `pagamento-recusado`; esquemas: mensagem de 201 caracteres é rejeitada, 200 com acentos e emoji é aceita, UF `'XX'` é rejeitada, data de hoje é rejeitada e amanhã é aceita (relógio falso em America/Sao_Paulo).
+3. **[engenheiro-de-ecommerce] `lib/commerce.ts` (frete, totais), `lib/pedido.server.ts` (frete e pedido simulados, só servidor) e `lib/pedido.ts`** (~400 com testes)
+   - Testes: `mascararCep('01310100') === '01310-100'`, `mascararCep('0131') === '0131'`, `mascararCep('01310-1009') === '01310-100'`; `normalizarCep('01310-100')` → `'01310100'`, e com 7 dígitos ou letras → `null`; `calcularFrete('00500000')` (em `lib/pedido.server.test.ts`) → fora de área; `faltaParaFreteGratis(17999) === 1`, `(18000) === 0`; `valorDoFrete` com subtotal 18000 → 0; `calcularTotais(13600, null, 'pix')` → `descontoPix 680`, `total null`; `calcularTotais(18000, 0, 'pix')` → `total 17100`; `criarPedido` com `recusa@exemplo.com` → `pagamento-recusado`; esquemas: mensagem de 201 caracteres é rejeitada, 200 com acentos e emoji é aceita, UF `'XX'` é rejeitada, data de hoje é rejeitada e amanhã é aceita (relógio falso em America/Sao_Paulo).
    - **Pronto quando:** os testes passam e `MENSAGENS_DE_ERRO` traz os textos aprovados em P25.
    - **Requisitos de segurança:** ver a [lista](#requisitos-de-segurança-por-tarefa) (tarefa 3).
 

@@ -1,6 +1,6 @@
 # ADR-0007 — Validação na borda com Zod (`zod/mini`)
 
-- **Status:** Aceito (aprovado pelo dono em 2026-10-27). A versão instalada, os dados de procedência e a medição do pacote são registrados na tarefa 1 da etapa 4, na seção [Registro da instalação](#registro-da-instalação-tarefa-1-da-etapa-4).
+- **Status:** Aceito (aprovado pelo dono em 2026-10-27). Versão instalada: `zod@4.6.7`; dados de procedência e medição do pacote em [Registro da instalação](#registro-da-instalação-tarefa-1-da-etapa-4).
 - **Data:** 2026-10-27
 - **Contexto da etapa:** 4 (ver `docs/PLANO.md`)
 
@@ -53,16 +53,21 @@ O provider da sacola fica no `app/layout.tsx`. Tudo o que ele importa entra no p
 
 ## Registro da instalação (tarefa 1 da etapa 4)
 
-A preencher por quem instalar:
+Preenchido em 2026-10-27 pelo `engenheiro-de-ecommerce`.
 
 | Item | Valor |
 | --- | --- |
-| Versão instalada | `[A REGISTRAR]` |
-| Data de publicação da versão no npm | `[A REGISTRAR]` |
-| Licença | `[A REGISTRAR]` (esperado: MIT) |
-| Dependências do pacote | `[A REGISTRAR]` (esperado: nenhuma) |
-| `npm audit signatures` | `[A REGISTRAR]` |
-| `npm audit --omit=dev` | `[A REGISTRAR]` |
-| *First Load JS* compartilhado antes da etapa 4 (linha de base) | `[A REGISTRAR]` |
-| *First Load JS* compartilhado depois do bloco B (limite: +8 kB gzip) | `[A REGISTRAR]` |
+| Versão instalada | `4.6.7` (`npm view zod version` = `4.6.7`, a mais recente estável; instalada com `npm i zod@4.6.7 --save-exact`; `package.json`: `"zod": "4.6.7"`, sem `^`/`~`) |
+| Data de publicação da versão no npm | 2026-10-12T16:29:37Z (15 dias antes da instalação; o mínimo exigido é 7) |
+| Licença | MIT |
+| Dependências do pacote | Nenhuma (`dependencies` e `peerDependencies` vazios no registro) |
+| Procedência no `package-lock.json` | `resolved`: `https://registry.npmjs.org/zod/-/zod-4.6.7.tgz`; `integrity`: `sha512-g8W2D2kU6a8untc053fX1uVBKzM7yqAxW/3zwk83+6RyF2+SKOuV+c0wBDhUwzV1PaGapmZH+rmcUzPf+3CGwg==` |
+| `npm audit signatures` | 437 pacotes com assinaturas do registro verificadas; 117 com atestados (*attestations*) verificados; nenhum inválido |
+| `npm audit --omit=dev` | `found 0 vulnerabilities` |
+| *First Load JS* compartilhado antes da etapa 4 (linha de base) | **180,05 kB gzip** (184.371 bytes): 8 arquivos `.js` comuns a todas as páginas pré-renderizadas, medidos depois de `npm run build` e **antes** de qualquer outra mudança. Método abaixo |
+| *First Load JS* compartilhado depois do bloco B (limite: +8 kB gzip) | `[A REGISTRAR]` (limite: 188,05 kB gzip) |
 | Medição final da etapa 4 (tarefa 17) | `[A REGISTRAR]` |
+
+**Método da medição.** O Next 16.4.3 (Turbopack) não imprime a tabela *First Load JS* no `npm run build`. Por isso a medição é feita nos arquivos gerados: depois do `build`, lê-se cada HTML pré-renderizado em `.next/server/app` (exceto `_not-found` e `_global-error`), extraem-se os `<script src="/_next/static/…js">`, comprime-se cada arquivo com gzip (padrão do Node) e soma-se **a interseção** dos arquivos presentes em todas as páginas. Repetir exatamente o mesmo método nas medições seguintes (o script usado na linha de base ficou fora do repositório; se a equipe quiser, vale versioná-lo em `scripts/`). A rota `/queijos` é dinâmica e não tem HTML pré-renderizado; ela entra pelos mesmos arquivos do layout. Na linha de base as páginas individuais ficaram entre 184,27 kB (Home) e 185,19 kB (produto).
+
+**Nota.** Ao fim da tarefa 3, `zod/mini` já é importado por `lib/sacola.ts` e `lib/pedido.ts`, mas nenhum componente importa esses módulos ainda; por isso o pacote compartilhado continuou em 180,05 kB. O custo real aparece quando o `SacolaProvider` (tarefa 5) importar `lib/sacola.ts` no layout.

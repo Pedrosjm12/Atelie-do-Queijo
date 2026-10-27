@@ -40,8 +40,9 @@ Ambiente: Next.js 16.4.3 e React 19.3.0. Na documentação instalada (`guides/se
 
 ### 3. Frete e pedido atrás de Server Actions
 
-- `lib/commerce.ts` guarda as regras e as implementações **simuladas** (`calcularFrete`, `criarPedido`, totais, frete grátis, CEP). As funções de rede são `async` desde já, para que a troca pela integração real não mude quem as chama.
-- Os componentes **não** chamam `lib/commerce.ts` para frete e pedido. Eles chamam dois Server Actions finos, em `app/_acoes/frete.ts` (`consultarFrete`) e `app/_acoes/pedido.ts` (`confirmarPedido`), com `'use server'`. Cada um:
+- `lib/commerce.ts` guarda as regras **puras**, importáveis no cliente (totais, frete grátis, CEP, `precoNoPix`). As implementações **simuladas** que um dia falarão com a rede (`calcularFrete`, `criarPedido`) ficam em `lib/pedido.server.ts`, com `import 'server-only'` (o pacote npm é opcional no Next; nenhuma dependência nova). As funções de rede são `async` desde já, para que a troca pela integração real não mude quem as chama.
+- O número do pedido (`AQ-` + 6 dígitos) é só rótulo de exibição e **não é único por si**: são apenas 1 milhão de números. Quando houver persistência, a unicidade tem de ser garantida **no banco** (índice único, com nova tentativa em caso de colisão) ou o número passa a ter 8 dígitos.
+- Os componentes **não** chamam `lib/pedido.server.ts` (frete e pedido). Eles chamam dois Server Actions finos, em `app/_acoes/frete.ts` (`consultarFrete`) e `app/_acoes/pedido.ts` (`confirmarPedido`), com `'use server'`. Cada um:
   - valida a entrada com os esquemas compartilhados (ADR-0007);
   - **recalcula tudo no servidor** a partir de `data/cheeses` (preços, esgotados, frete grátis, desconto do Pix e o próprio frete pelo CEP), sem aceitar preço nem total vindo do cliente;
   - devolve só o que a interface mostra: uniões discriminadas `{ ok: true, … } | { ok: false, motivo }`, sem pilha de erro nem detalhe interno;
