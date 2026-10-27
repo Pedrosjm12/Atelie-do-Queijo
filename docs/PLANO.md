@@ -1,22 +1,20 @@
 # Plano de implementação — Ateliê do Queijo
 
 > Fonte da verdade: `ATELIE-DO-QUEIJO-SPEC.md`. Decisões técnicas: `docs/adr/`.
-> Última atualização: 2026-10-27. Etapas 1, 2 e 3 concluídas. Próxima: **4 (sacola, frete e checkout simulado)**.
+> Última atualização: 2026-10-27. Etapas 1, 2 e 3 concluídas. Etapa 4 (sacola, frete e checkout simulado) **detalhada e decidida**: P24 a P38 e ADR-0007 decididos pelo dono em 2026-10-27; requisitos de segurança do `auditor-de-seguranca` incorporados.
 >
-> **Onde paramos (2026-10-27):** etapa 3 concluída, com os cinco blocos (dados, Home, Catálogo, Produto e painel de atendimento). **Próximo passo: etapa 4, sacola, frete simulado e checkout simulado, a detalhar pelo `arquiteto-de-software`** (contrato de `calcularFrete` e `criarPedido` em `lib/commerce.ts`, contexto da sacola conforme o [ADR-0003](adr/0003-estado-da-sacola.md); o `auditor-de-seguranca` volta a entrar). Os controles sem ação seguem `aria-disabled` até as etapas 4 a 6 (ver [Controles sem ação](#controles-sem-ação-ao-fim-da-etapa-3)).
+> **Onde paramos (2026-10-27):** etapa 3 concluída, com os cinco blocos (dados, Home, Catálogo, Produto e painel de atendimento). **Etapa 4 detalhada** em [Etapa 4](#etapa-4--sacola-frete-simulado-e-checkout-simulado), com decisões no [ADR-0007](adr/0007-validacao-com-zod-mini.md) (Zod via `zod/mini`) e no [ADR-0008](adr/0008-sacola-frete-e-checkout-simulados.md) (persistência, Server Actions, rotas, dados pessoais). P24 a P38 decididos pelo dono em 2026-10-27 ([lista](#decisões-do-dono-para-a-etapa-4)); ADR-0007 aceito. **Próximo passo:** o bloco A pelo `engenheiro-de-ecommerce`, seguindo os [requisitos de segurança por tarefa](#requisitos-de-segurança-por-tarefa). Os controles sem ação seguem `aria-disabled` até ganharem ação (ver [Controles ao fim da etapa 4](#controles-ao-fim-da-etapa-4)).
 >
 > **Pendências abertas para o dono:**
 >
-> - **Rolagem automática da conversa** do painel de atendimento até a última mensagem: hoje não rola sozinha. Decidir.
-> - **Fechar o painel ao mudar de rota:** hoje só o cartão de produto fecha o painel; voltar/avançar do navegador o mantém aberto. Decidir.
+> - **Etapa 4:** nenhuma decisão pendente para começar (P24 a P38 decididos em 2026-10-27). Continua em aberto o destinatário do presente (dados do presenteado, LGPD), sem bloquear a etapa.
 > - **Contraste de `--placeholder`** (`#8c8070`, 4,47:1 sobre `--carvao`): aceito como provisório; rever antes da publicação (a spec fixa o token).
 > - **`AnnouncementBar` fora de landmark** (apontado pelo axe): não alterado; tratar no cabeçalho.
-> - **Etapa 8:** enxugar o pacote global do catálogo (o provider do painel no layout leva `lib/catalogo` e `data/cheeses` ao pacote global), sem `React.lazy`.
 > - **Spec §14:** anotar a decisão P21 (botão de corte do 3D com rótulo fixo "Ver por dentro") no checklist, como desvio de texto. A spec só muda com aprovação do dono.
 > - **Etapa 5 (P11):** **Ver na mesa** só entra com GLB real.
 > - Demais itens em [Pendências e decisões em aberto](#pendências-e-decisões-em-aberto) e nas decisões do dono P1 a P23.
 >
-> Fluxo usado em cada bloco: `frontend-nextjs` (ou o especialista da tarefa) implementa → `guardiao-do-design` (porta 3000, build), `especialista-em-acessibilidade` (`next dev -p 3001`, sem build) e `revisor-de-codigo` conferem em paralelo, sem editar → correções pelo implementador → lint, typecheck, format:check, test, build e test:e2e → commit e push. Reaproveitar `BotaoEmBreve`/`BotaoDaSacola` para controles sem ação e o token `--largura-conteiner` nos contêineres.
+> Fluxo usado em cada bloco: `frontend-nextjs` (ou o especialista da tarefa) implementa → `guardiao-do-design` (porta 3000, build), `especialista-em-acessibilidade` (`next dev -p 3001`, sem build) e `revisor-de-codigo` conferem em paralelo, sem editar → correções pelo implementador → lint, typecheck, format:check, test, build e test:e2e → commit e push. Na etapa 4, o `auditor-de-seguranca` entra nos blocos B, C e E. Reaproveitar `BotaoEmBreve` para controles sem ação (o `BotaoDaSacola` some na etapa 4, tarefa 7) e o token `--largura-conteiner` nos contêineres.
 
 Convenções deste plano:
 
@@ -33,14 +31,14 @@ Convenções deste plano:
 | 1 | Base do projeto e ferramentas | `devops-e-deploy`, `arquiteto-de-software` | Concluída |
 | 2 | Tokens de design e componentes globais | `frontend-nextjs`, `guardiao-do-design` | Concluída |
 | 3 | Home → Catálogo → Produto (com `ProductCard`, `data/cheeses.ts` e ilustrações do Apêndice A) → interface do painel de Atendimento (§8). Sem sacola real, frete, 3D real nem roteiro do assistente | `frontend-nextjs`, `especialista-3d-webgl`, `engenheiro-de-ecommerce`, `guardiao-do-design` | Concluída ([detalhe](#etapa-3--home--catálogo--produto--painel-de-atendimento)) |
-| 4 | Sacola (contexto + `localStorage`), frete simulado e checkout simulado em `lib/commerce.ts` | `engenheiro-de-ecommerce` | A detalhar |
+| 4 | Sacola (contexto + `localStorage`), frete simulado e checkout simulado em `lib/commerce.ts` | `engenheiro-de-ecommerce`, `frontend-nextjs`, `auditor-de-seguranca` | Detalhada ([detalhe](#etapa-4--sacola-frete-simulado-e-checkout-simulado)); P24 a P38 decididos em 2026-10-27; pronta para o bloco A |
 | 5 | Visualizador 3D (`CheeseViewer` com `@google/model-viewer`) e fallback SVG do Apêndice A | `especialista-3d-webgl` | A detalhar |
 | 6 | Assistente com roteiro determinístico, horários e links do WhatsApp no painel de atendimento | `especialista-em-ia-conversacional` | A detalhar |
 | 7 | Páginas restantes: Presentes, Aprenda, Produtores, 404 (textos da §12) | `frontend-nextjs` | A detalhar |
-| 8 | Rodada de qualidade: testes, acessibilidade, performance e SEO, segurança | `testes-e-qualidade`, `especialista-em-acessibilidade`, `performance-e-seo`, `auditor-de-seguranca` | A detalhar |
-| 9 | CI completo, ambientes e checklist de aceite da §14 | `devops-e-deploy`, `documentador-tecnico` | A detalhar |
+| 8 | Rodada de qualidade: testes, acessibilidade, performance e SEO, segurança | `testes-e-qualidade`, `especialista-em-acessibilidade`, `performance-e-seo`, `auditor-de-seguranca` | A detalhar; herda itens de segurança da etapa 4 ([lista](#fica-para-depois-segurança-e-lgpd)) |
+| 9 | CI completo, ambientes e checklist de aceite da §14 | `devops-e-deploy`, `documentador-tecnico` | A detalhar; herda itens de segurança da etapa 4 ([lista](#fica-para-depois-segurança-e-lgpd)) |
 
-As etapas 4 a 9 serão detalhadas pelo `arquiteto-de-software` no início de cada uma.
+As etapas 5 a 9 serão detalhadas pelo `arquiteto-de-software` no início de cada uma.
 
 ---
 
@@ -576,8 +574,10 @@ Cada commit só sai depois do veredito ✅ (ou ⚠️ resolvido) do `revisor-de-
 
 | Controle | Onde | Ganha ação na |
 | --- | --- | --- |
-| Adicionar / Adicionar à sacola | Cartões, quiz, produto, barra fixa | Etapa 4. Até lá: `aria-disabled="true"` + `aria-describedby` para o texto `.sr-only` "Sacola disponível em breve" (botão focável, visual igual) |
-| Calcular (frete), Embalar para presente | Produto | Etapa 4 |
+| Adicionar / Adicionar à sacola | Cartões, quiz, produto, barra fixa | Etapa 4, tarefa 7 (`BotaoAdicionar`). Até lá: `aria-disabled="true"` + `aria-describedby` para o texto `.sr-only` "Sacola disponível em breve" (botão focável, visual igual) |
+| Contador da sacola (cabeçalho desktop e celular) | Cabeçalho | Etapa 4, tarefa 6 (`LinkDaSacola`) |
+| Calcular (frete) | Produto | Etapa 4, tarefa 9 |
+| Embalar para presente | Produto | Etapa 4, tarefa 7 (P31) |
 | Avise-me (esgotado) | Produto | Pendência P15 |
 | Girar, Aproximar (efeito visual), Tela cheia | Produto | Etapa 5 |
 | Fale com um queijista, Falar com um queijista (verde) | Produto e painel | Etapa 6 |
@@ -641,12 +641,531 @@ Todas as recomendações abaixo foram **aceitas pelo dono em 2026-10-26** (P1, P
 
 ---
 
+## Etapa 4 — Sacola, frete simulado e checkout simulado
+
+**Objetivo:** fazer a compra funcionar de ponta a ponta **em simulação**. Os botões Adicionar alimentam uma sacola persistida no navegador, o contador do cabeçalho reflete a soma das quantidades, a calculadora de frete responde por CEP, a página `/sacola` mostra subtotal e frete grátis, e o `/checkout` percorre Entrega → Pagamento → Confirmação (spec §7.2, itens 8 a 10; §7.5; §10.1; §10.2; §14, item "Sacola"). Nenhuma cobrança, nenhum gateway, nada publicado.
+
+**Pré-requisito:** etapa 3 concluída (`0664bf7`) e as decisões P24 a P38 respondidas. **Atendido:** decididas pelo dono em 2026-10-27.
+
+**Decisões:** [ADR-0003](adr/0003-estado-da-sacola.md) (contexto + `useReducer` + `localStorage`, preços derivados), [ADR-0007](adr/0007-validacao-com-zod-mini.md) (Zod via `zod/mini`, orçamento de pacote; **aprovado pelo dono em 2026-10-27**), [ADR-0008](adr/0008-sacola-frete-e-checkout-simulados.md) (formato salvo e tolerância a falhas, índice do catálogo, Server Actions, rotas, dados pessoais).
+
+**Skills:** antes de cada tarefa, o agente confere o mapa em `SKILLS-ATELIE-DO-QUEIJO.md`. Em especial, as regras `client-localstorage-schema` e `rerender-*` da `vercel-react-best-practices` valem para as tarefas 2 e 5. A spec vence em caso de conflito.
+
+### Escopo: o que entra e o que fica para depois
+
+| Item | Etapa 4 | Depois |
+| --- | --- | --- |
+| Sacola (§10.1) | `SacolaProvider` no layout, `localStorage` versionado, sincronização entre abas, contador no cabeçalho | Sacola entre dispositivos (exige conta e backend) |
+| Adicionar (cartões, quiz, produto, barra fixa) | Ligado à sacola, com o aviso **Adicionado à sacola. Boa escolha.** | O assistente adiciona à sacola pelo chat (etapa 6) |
+| Embalar para presente | Adiciona à sacola e marca o pedido como presente (P31); cartão com mensagem (até 200 caracteres) e data no checkout | Kits de `/presentes` (etapa 7); preço da embalagem, se houver (P31) |
+| Frete (§7.2, item 10) | Máscara de CEP, `calcularFrete(cep)` **simulado** (prazo `[N]`, valor `R$ [PREÇO]` abaixo de R$ 180), fora de área simulado (P27, P28) | Tabela real de frete/transportadora; preenchimento do endereço pelo CEP (ViaCEP ou parecido, com ADR) |
+| `/sacola` | Lista, quantidade, remover, subtotal, barra de frete grátis, estado vazio | "Combina com este queijo" na sacola (fora da spec) |
+| `/checkout` (§10.2) | Três etapas na mesma rota, aviso de envio, Pix ou Cartão **sem coletar dado de cartão**, erro de pagamento simulado, confirmação | Gateway real (Shopify Storefront, Mercado Pago ou Pagar.me), QR code do Pix, parcelamento real, e-mail transacional, nota fiscal, webhooks (Route Handlers), estoque real |
+| Pedido | `criarPedido` **simulado** no servidor: valida, recalcula, devolve número; não grava | Persistência de pedidos, "Onde está meu pedido?" (etapa 6 + gateway) |
+| Avise-me (esgotado) | Continua sem ação (P15) | Com P9/P15 (provedor de e-mail) |
+| Fale com um queijista, WhatsApp | Sem mudança | Etapa 6 |
+| Metadados | `title` e `robots: noindex` de `/sacola` e `/checkout` | JSON-LD `Product` e sitemap (etapa 8; sacola e checkout ficam fora do sitemap) |
+
+**Fora, por regra do projeto:** nenhuma conta em gateway, nenhuma chave real, nenhuma cobrança e nenhuma publicação (CLAUDE.md). Nenhuma variável de ambiente nova nesta etapa.
+
+### Contratos
+
+Todos os valores em dinheiro são `Centavos` (inteiros). Nenhum preço sai do navegador para o servidor.
+
+#### `lib/sacola.ts` (puro, sem React; usado no cliente e no servidor)
+
+```ts
+import type { SlugDoQueijo } from '@/data/cheeses';   // só tipo: não entra no pacote
+import type { Centavos } from './dinheiro';
+
+export const CHAVE_DA_SACOLA = 'atelie:sacola:v1';
+export const VERSAO_DA_SACOLA = 1;
+export const QUANTIDADE_MAXIMA_POR_ITEM = 10;   // P35
+export const MAXIMO_DE_LINHAS = 30;
+export const TAMANHO_MAXIMO_SALVO = 8 * 1024;   // caracteres do JSON salvo
+
+export interface ItemDaSacola { slug: SlugDoQueijo; formatoId: string; quantidade: number }
+export interface Sacola { itens: readonly ItemDaSacola[]; presente: boolean }
+export const SACOLA_VAZIA: Sacola;
+
+export type AcaoDaSacola =
+  | { tipo: 'adicionar'; slug: SlugDoQueijo; formatoId: string; quantidade: number; presente?: boolean }
+  | { tipo: 'alterar-quantidade'; slug: SlugDoQueijo; formatoId: string; quantidade: number }
+  | { tipo: 'remover'; slug: SlugDoQueijo; formatoId: string }
+  | { tipo: 'definir-presente'; presente: boolean }
+  | { tipo: 'limpar' }
+  | { tipo: 'substituir'; sacola: Sacola };          // leitura do storage e evento de outra aba
+
+/** Puro. Soma linhas iguais, limita a 1..QUANTIDADE_MAXIMA_POR_ITEM e ignora formato inexistente ou esgotado. */
+export function reduzirSacola(s: Sacola, a: AcaoDaSacola): Sacola;
+/** Soma das quantidades (contador do cabeçalho, §10.1). */
+export function totalDeItens(s: Sacola): number;
+/** Nunca lança. Aplica a sanitização do ADR-0008 §1. `corrigida` indica que é preciso regravar. */
+export function lerSacolaSalva(bruto: string | null): { sacola: Sacola; corrigida: boolean };
+export function serializarSacola(s: Sacola): string;
+
+/** O que /sacola e /checkout recebem do servidor (sem textos de detalhe). */
+export interface ResumoParaSacola {
+  slug: SlugDoQueijo; nome: string; esgotado: boolean;
+  ilustracao: { shape: Shape; side: string; top: string };
+  formatos: readonly { id: string; nome: string; peso: string; preco: Centavos }[];
+}
+export interface LinhaPrecificada extends ItemDaSacola {
+  nome: string; formatoNome: string; peso: string; precoUnitario: Centavos; total: Centavos;
+}
+/** Junta itens e catálogo. Itens sem correspondência vão para `ignorados` (não quebram a página). */
+export function precificarSacola(s: Sacola, catalogo: readonly ResumoParaSacola[]):
+  { linhas: readonly LinhaPrecificada[]; subtotal: Centavos; ignorados: number };
+```
+
+#### `lib/formatosDaSacola.ts` (índice estático, ADR-0008 §2)
+
+```ts
+/** slug → ids de formato válidos. Escrito à mão; teste de paridade com QUEIJOS. Não importa data/. */
+export const FORMATOS_POR_QUEIJO: Readonly<Record<SlugDoQueijo, readonly string[]>>;
+export const ESGOTADOS: ReadonlySet<SlugDoQueijo>;   // hoje vazio (P15)
+export function ehFormatoValido(slug: unknown, formatoId: unknown): slug is SlugDoQueijo;
+```
+
+#### `lib/commerce.ts` (acrescenta à etapa 3; `precoNoPix` não muda)
+
+```ts
+export const FRETE_GRATIS_A_PARTIR_DE: Centavos = 18000;              // §1 e §10.1; ≥, P29
+/** max(0, 18000 − subtotal). 0 → "Frete grátis garantido." */
+export function faltaParaFreteGratis(subtotal: Centavos): Centavos;
+
+/** CEP só com os 8 dígitos. Marca nominal: só nasce de `normalizarCep`. */
+export type Cep = string & { readonly __marca: 'Cep' };
+/** Mais de 9 caracteres → null antes de qualquer replace. Depois tira tudo que não é dígito; 8 dígitos → Cep; caso contrário null. */
+export function normalizarCep(entrada: string): Cep | null;
+/** Máscara progressiva para o campo: "0131" → "0131", "01310100" → "01310-100" (no máximo 9 caracteres). */
+export function mascararCep(entrada: string): string;
+
+export type ResultadoDoFrete =
+  | { situacao: 'atendido'; prazoDiasUteis: number | null; valor: Centavos | null }   // null = lacuna [N] / [PREÇO] (P27)
+  | { situacao: 'fora-de-area' };
+/** SIMULADO. Faixa 00000-000 a 00999-999 → fora de área (P28); demais → atendido com prazo e valor null. */
+export function calcularFrete(cep: Cep): Promise<ResultadoDoFrete>;
+/** Aplica o frete grátis: subtotal ≥ 18000 → 0; senão o valor do resultado (pode ser null). */
+export function valorDoFrete(r: Extract<ResultadoDoFrete, { situacao: 'atendido' }>, subtotal: Centavos): Centavos | null;
+
+export type FormaDePagamento = 'pix' | 'cartao';
+export interface TotaisDoPedido {
+  subtotal: Centavos;
+  frete: Centavos | null;          // null → "R$ [PREÇO]"
+  descontoPix: Centavos;           // subtotal − precoNoPix(subtotal) se Pix; 0 se cartão (P30)
+  total: Centavos | null;          // null se o frete for null
+}
+export function calcularTotais(subtotal: Centavos, frete: Centavos | null, pagamento: FormaDePagamento): TotaisDoPedido;
+
+export type ResultadoDoPedido =
+  | { ok: true; numero: string; email: string; totais: TotaisDoPedido }
+  | { ok: false; motivo: 'pagamento-recusado' | 'fora-de-area' | 'sacola-invalida' };
+/**
+ * SIMULADO (spec §2: `criarPedido(sacola)`; aqui recebe o pedido já validado e precificado).
+ * Não grava nada. Número: "AQ-" + 6 dígitos de crypto.randomInt, gerado no servidor; é só rótulo
+ * de exibição, nunca chave de acesso. Recusa o pagamento quando cliente.email === 'recusa@exemplo.com'
+ * (domínio reservado RFC 2606), só na implementação simulada e marcado com
+ * `// SIMULAÇÃO: remover com o gateway`, para testar o erro da §10.2.
+ */
+export function criarPedido(pedido: PedidoPrecificado): Promise<ResultadoDoPedido>;
+```
+
+#### `lib/pedido.ts` (esquemas `zod/mini` compartilhados e mensagens; ADR-0007)
+
+```ts
+export const UFS: readonly ['AC', 'AL', /* … as 27 */ 'TO'];
+export type CampoDoCheckout =
+  | 'nome' | 'email' | 'telefone' | 'cep' | 'logradouro' | 'numero' | 'complemento'
+  | 'bairro' | 'cidade' | 'uf' | 'mensagem' | 'dataDeEntrega' | 'pagamento';
+
+// Regras (P32, P34): limite de tamanho conferido antes de qualquer regex; trim e NFC em todos os
+// textos; caracteres de controle (Cc) e bidirecionais (U+202A–U+202E, U+2066–U+2069) recusados.
+// nome 2–100 · email válido ≤ 254 · telefone 10–11 dígitos · cep 8 dígitos · logradouro 1–120
+// número 1–10 · complemento ≤ 60 (opcional) · bairro 1–60 · cidade 1–60 · uf ∈ UFS
+// presente: mensagem ≤ 200 caracteres (contados por ponto de código) · dataDeEntrega AAAA-MM-DD,
+//   de amanhã até +60 dias, calculada em America/Sao_Paulo · pagamento ∈ {'pix','cartao'}
+export const esquemaEntrega;      // cliente + endereço + presente (null se não for presente)
+export const esquemaPagamento;
+export const esquemaEntradaDoPedido;   // { itens: ItemDaSacola[] (1..30), presente, entrega, pagamento }
+export type EntradaDoPedido = z.infer<typeof esquemaEntradaDoPedido>;
+
+/** Mensagens em pt-BR por campo, no padrão do P17 ("Informe …, por exemplo …"). Textos: P25. */
+export const MENSAGENS_DE_ERRO: Readonly<Record<CampoDoCheckout, string>>;
+export function validarEntrega(bruto: unknown):
+  | { ok: true; valor: z.infer<typeof esquemaEntrega> }
+  | { ok: false; erros: Partial<Record<CampoDoCheckout, string>> };
+```
+
+#### Server Actions (ADR-0008 §3)
+
+```ts
+// app/_acoes/frete.ts — 'use server'; exporta SÓ consultarFrete
+'use server';
+/** Confere typeof e tamanho antes de normalizar. Retorno só { ok, resultado | erro }, sem eco da entrada. */
+export async function consultarFrete(entrada: unknown):
+  Promise<{ ok: true; resultado: ResultadoDoFrete } | { ok: false; erro: 'cep-invalido' }>;
+
+// app/_acoes/pedido.ts — 'use server'; exporta SÓ confirmarPedido
+'use server';
+/** Valida com esquemaEntradaDoPedido, confere o índice e o estoque, precifica com data/cheeses,
+ *  recalcula o frete pelo CEP e chama criarPedido. Não registra log com dados pessoais. */
+export async function confirmarPedido(entrada: unknown): Promise<
+  | ResultadoDoPedido
+  | { ok: false; motivo: 'dados-invalidos'; erros: Partial<Record<CampoDoCheckout, string>> }
+>;
+```
+
+#### Sacola no cliente (`components/Sacola.tsx`, client; mesmo padrão de `Atendimento.tsx`)
+
+```ts
+export function SacolaProvider(props: { children: ReactNode }): JSX.Element; // renderiza children + <AvisoDaSacola/>
+export function useSacola(): {
+  sacola: Sacola;
+  pronta: boolean;                 // false no servidor e até ler o localStorage
+  totalDeItens: number;
+  adicionar(item: { slug: SlugDoQueijo; formatoId: string; quantidade?: number; presente?: boolean }): void; // mostra o aviso
+  alterarQuantidade(slug: SlugDoQueijo, formatoId: string, quantidade: number): void;
+  remover(slug: SlugDoQueijo, formatoId: string): void;
+  definirPresente(presente: boolean): void;
+  limpar(): void;
+};
+/** Substitui BotaoDaSacola. <button type="button"> com as variantes visuais do Button. */
+export function BotaoAdicionar(props: { slug: SlugDoQueijo; formatoId: string; quantidade?: number;
+  presente?: boolean; children: ReactNode } & /* variante, tamanho, aria-label, style */): JSX.Element;
+/** Link do cabeçalho: "Sacola" + contador; aria-label "Sacola, N itens" (1 → "item"). */
+export function LinkDaSacola(props: { className?: string }): JSX.Element;
+```
+
+- `lib/catalogo.ts` ganha `resumoParaSacola(): readonly ResumoParaSacola[]` e `formatoDeVitrine(q: Cheese): Formato`, o formato cujo preço o cartão mostra (P24). O `ResumoDoQueijo` do quiz ganha `formatoIdDeVitrine`.
+- `BotaoDaSacola.tsx` é **apagado**. `BotaoEmBreve` continua existindo para Avise-me, o WhatsApp e o 3D.
+
+### Persistência em `localStorage` (resumo do ADR-0008 §1)
+
+| Situação | Comportamento |
+| --- | --- |
+| Primeira visita, sem chave | Sacola vazia; nada é gravado até a primeira mudança |
+| JSON corrompido, mais de 8 KB, `v` diferente de 1 | Sacola vazia; a chave é sobrescrita na próxima gravação |
+| Item com `slug`/`formatoId` inexistente, esgotado ou fora do esquema | Só esse item é descartado; a versão limpa é regravada |
+| Quantidade 0, negativa, fracionária, texto ou > 10 | Limitada a 1..10 (texto ou não inteiro → item descartado) |
+| Linhas repetidas | Somadas e limitadas a 10 |
+| Chaves extras, `__proto__`, preço ou nome no JSON | Ignorados (o esquema descarta as chaves desconhecidas; o preço sempre vem do catálogo) |
+| `localStorage` indisponível ou cheio (`SecurityError`, `QuotaExceededError`) | Sacola só em memória, sem erro visível |
+| Outra aba muda a sacola | Evento `storage` → relê e sanitiza e substitui **só em memória, sem regravar**; `newValue: null` → vazia |
+| Hidratação | Servidor e 1ª renderização: vazia, `pronta: false`; leitura no `useEffect`; **nunca grava antes de ler** |
+| Versão futura (v2) | `v: 1` passa por `migrarDeV1` antes do esquema novo; a chave muda para `atelie:sacola:v2` e a v1 é removida |
+
+### Aviso "Adicionado à sacola. Boa escolha." (§7.5)
+
+| Estado | O que acontece |
+| --- | --- |
+| Inicial | Uma região `role="status"` (`aria-live="polite"`, `aria-atomic="true"`) já existe vazia no DOM desde a hidratação, montada pelo `SacolaProvider`. Assim o primeiro anúncio não se perde |
+| Mostrando | `adicionar()` → o texto **Adicionado à sacola. Boa escolha.** aparece e fica visível por 4 s (P26). O foco **não** sai do botão |
+| Nova adição durante a exibição | Reinicia o tempo; o texto é limpo e reinserido no quadro seguinte para o leitor de tela anunciar de novo |
+| Limite atingido (10 unidades) | Texto de limite (P25) em vez do de sucesso; a quantidade não muda |
+| Saindo | Some sem animação com `prefers-reduced-motion`; com movimento, transição curta de opacidade |
+| Posição | Não cobre o FAB nem a barra fixa: no celular da página de produto, fica acima da barra (`body:has([data-barra-compra])`, como o FAB); nos demais casos, P26 |
+| Mudança de rota | Continua até o tempo acabar (o provider fica no layout) |
+
+O contador do cabeçalho muda junto, e o `aria-label` "Sacola, N itens" é a confirmação permanente. Por isso o aviso temporário atende à WCAG 2.2.1 e 4.1.3.
+
+### Fronteiras Server/Client da etapa 4
+
+| Página / componente | Tipo | Motivo |
+| --- | --- | --- |
+| `SacolaProvider`, `AvisoDaSacola` (em `components/Sacola.tsx`) | Client, no `app/layout.tsx` | Estado, `localStorage`, evento `storage`, aviso. Importa só `lib/sacola.ts` e `lib/formatosDaSacola.ts`, **nunca** `data/cheeses` |
+| `Header` | Server (continua) | Só o link da sacola vira ilha |
+| `LinkDaSacola` | Client | Lê `totalDeItens` |
+| `ProductCard` | Server (continua) | Calcula `formatoDeVitrine` no servidor e renderiza a ilha `BotaoAdicionar` |
+| `BotaoAdicionar` | Client | Chama `adicionar()` |
+| `Quiz`, `PainelDeCompra` | Client (já eram) | Passam a usar `useSacola()` |
+| `ShippingCalculator` | Client (era Server) | Máscara, envio do formulário, estados, chama `consultarFrete` |
+| `app/_acoes/frete.ts`, `app/_acoes/pedido.ts` | Server Actions | Validação e recálculo no servidor (ADR-0008) |
+| `app/sacola/page.tsx` | Server, **estática**, `noindex` | Metadados + `resumoParaSacola()` como *props* |
+| `ConteudoDaSacola` (em `app/sacola/_sacola/`) | Client | Lê a sacola; quantidade, remover, subtotal, barra de frete grátis |
+| `app/checkout/page.tsx` | Server, **estática**, `noindex` | Idem |
+| `FluxoDoCheckout` + `EtapaDeEntrega`, `EtapaDePagamento`, `Confirmacao`, `ResumoDoPedido` (em `app/checkout/_checkout/`) | Client | Estado das etapas e dos dados pessoais (só em memória) |
+| `QuantityStepper` | Movido de `app/queijos/[slug]/_produto/` para `components/` | Dois usos reais: produto e sacola. Ganha `maximo` (+ desabilitado em 10, opacidade 0,5 do P19) |
+
+Metadados: `/sacola` → `title: 'Sacola'`; `/checkout` → `title: 'Finalizar compra'` (P25); ambos com `robots: { index: false, follow: false }`.
+
+### Requisitos de segurança por tarefa
+
+Resultado da auditoria do `auditor-de-seguranca` (2026-10-27) sobre este plano e os ADR-0007 e 0008. Cada item é critério de **Pronto quando** da tarefa indicada, além dos critérios próprios dela. O `auditor-de-seguranca` confere os itens na verificação de cada bloco.
+
+**Tarefa 1 (Zod)**
+
+- Versão exata no `package.json`, sem `^` nem `~`; `package-lock.json` com `integrity` `sha512-…` e `resolved` em `registry.npmjs.org`.
+- Não instalar versão publicada há menos de 7 dias.
+- Registrar no ADR-0007: data de publicação da versão, licença MIT, ausência de dependências, resultado de `npm audit signatures` e de `npm audit --omit=dev`.
+- Importar sempre de `zod/mini`: nenhum `from 'zod'` no código (conferido por busca).
+
+**Tarefa 2 (`lib/sacola.ts`, `lib/formatosDaSacola.ts`)**
+
+- Busca no índice só com `Object.hasOwn`, `Map` ou objeto sem protótipo. Proibido `slug in OBJ` e `OBJ[slug]` com valor vindo de fora.
+- Testes com `constructor`, `toString`, `hasOwnProperty` e `__proto__` como `slug` e como `formatoId`: o item é descartado, sem lançar.
+- Limites: `slug` e `formatoId` com no máximo 64 caracteres; quantidade inteira.
+- Limite de 8 KB conferido em `bruto.length` **antes** do `JSON.parse`.
+- `serializarSacola` grava só `v`, `itens[{ slug, formatoId, quantidade }]` e `presente`.
+- Links `/queijos/${slug}` montados só com `slug` já validado.
+
+**Tarefa 3 (`lib/commerce.ts`, `lib/pedido.ts`)**
+
+- Textos sem caracteres de controle (categoria Cc) e sem bidirecionais (U+202A–U+202E, U+2066–U+2069); normalização NFC antes de contar os 200 pontos de código da mensagem.
+- Limite de tamanho conferido antes de qualquer regex (teste: e-mail de 1 MB recusado em menos de 50 ms).
+- `normalizarCep` recusa entrada com mais de 9 caracteres antes do `replace`.
+- Gatilho `recusa@exemplo.com` só na implementação simulada, com o comentário `// SIMULAÇÃO: remover com o gateway`.
+- Número do pedido com `crypto.randomInt` no servidor, documentado como rótulo de exibição e nunca como chave de acesso.
+- `MENSAGENS_DE_ERRO` fixas, sem interpolar o valor digitado.
+
+**Tarefa 5 (`SacolaProvider`)**
+
+- Evento `storage`: sanitiza e substitui só em memória, sem regravar (teste com espião em `setItem`).
+- `getItem`, `setItem` e o tratamento do evento em `try/catch`, sem erro no console.
+
+**Tarefa 8 (verificação do bloco B)**
+
+- E2e com `localStorage` = `{"v":1,"itens":[{"slug":"constructor","formatoId":"x","quantidade":1}]}` e outro com `__proto__`: a página abre com contador 0 e console limpo.
+
+**Tarefa 9 (`consultarFrete`, `ShippingCalculator`)**
+
+- Assinatura `consultarFrete(entrada: unknown)`, com `typeof` e tamanho conferidos.
+- `app/_acoes/frete.ts` (`'use server'`) exporta **só** `consultarFrete`.
+- `<form action={…}>` ou `method="post"`, nunca o GET padrão (e2e: envio antes de hidratar não põe o CEP na URL).
+- Retorno só `{ ok, resultado | erro }`, sem eco da entrada.
+- Testes com `null`, `{}`, `123` e `['01310100']` → `cep-invalido`.
+
+**Tarefa 13 (`confirmarPedido`)**
+
+- `app/_acoes/pedido.ts` exporta **só** `confirmarPedido`.
+- Pré-checagem: a entrada é objeto simples; `itens` é array com no máximo 30 linhas.
+- Só `safeParse`, com `try/catch` geral e retorno genérico; nunca `throw` com dado da entrada.
+- Nenhum `console.*` na ação nem em `criarPedido` (teste com espiões).
+- Chaves de `erros` só da lista fixa de `CampoDoCheckout`, com valores de `MENSAGENS_DE_ERRO` (nada de mensagem ou `path` do Zod).
+- O servidor recusa quantidade fora de 1–10 ou não inteira, soma linhas repetidas e recusa se a soma passar de 10, e confere esgotado em `data/cheeses`.
+- Testes: `NaN`/`Infinity`, quantidade 11, duas linhas de 6, `itens` com 31 e com 10.000 linhas, entrada `Map` e `null`; `presente: false` com mensagem → a mensagem é descartada.
+- `next.config.ts` com `serverActions.bodySizeLimit: '32kb'`.
+
+**Tarefas 14 e 15 (checkout)**
+
+- `<form action>` ou `method="post"`; e2e sem dado pessoal em `page.url()`.
+- Depois de `ok: true`: zerar o estado do formulário (guardar só o e-mail exibido) e limpar a sacola.
+- E2e ao fim do fluxo: `localStorage`, `sessionStorage` e cookies sem nenhum dos valores digitados.
+- Zero `dangerouslySetInnerHTML` e `innerHTML`; nenhum campo de cartão, CVV ou CPF.
+- A confirmação mostra os totais devolvidos pelo servidor.
+
+**Tarefas 16 e 17**
+
+- Tarefa 16 (`auditor-de-seguranca`): rever as tarefas 13 a 15 no diff e rodar de novo `npm audit --omit=dev`.
+- Tarefa 17: o README rotula a loja como simulada e registra `recusa@exemplo.com` como gatilho de teste a remover com o gateway.
+
+#### Fica para depois (segurança e LGPD)
+
+Não entram na etapa 4. Ficam registrados aqui e devem ser copiados para o detalhamento das etapas 8 e 9 e para o futuro ADR do gateway.
+
+| Item | Destino |
+| --- | --- |
+| ADR de CSP (nonce exige renderização dinâmica; avaliar o custo com o `performance-e-seo`) | Etapa 8 |
+| Cabeçalhos estáticos em `next.config` `headers()`: HSTS sem `preload`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy` com `camera`, `microphone`, `geolocation` e `payment` vazios, `frame-ancestors 'none'`, `poweredByHeader: false`; teste de cabeçalhos no e2e | Etapa 8 |
+| `/sacola` e `/checkout` fora do sitemap e **sem** `Disallow` no `robots` (o `noindex` precisa ser lido) | Etapa 8 |
+| Limite de taxa nas duas Server Actions (obrigatório antes de e-mail transacional ou de API paga) | Etapa 8, ou antes, se esses serviços chegarem primeiro |
+| Dependabot ou Renovate; `npm ci`, `npm audit` e `npm audit signatures` no CI | Etapa 9 |
+| Conferir `Host`/`X-Forwarded-Host` na hospedagem, `serverActions.allowedOrigins` exatos e `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` estável entre instâncias | Etapa 9 |
+| Logs da hospedagem sem corpo de POST | Etapa 9 |
+| LGPD: aviso de privacidade com link antes de **Confirmar pedido**; base legal (art. 7º, V, e obrigação fiscal); justificar o telefone ou torná-lo opcional; prazo de retenção; canal do titular; `localStorage` declarado como estritamente necessário; dados do presenteado quando existirem (depende da pendência do dono sobre o destinatário do presente) | Etapa 9 (antes da publicação), com o dono |
+| ADR do gateway: tokenização (nenhum dado de cartão no nosso servidor); webhooks com assinatura, proteção contra *replay* e idempotência; segredos só em módulos `server-only`; identificador do pedido opaco de 128 bits com prova de posse; remover `recusa@exemplo.com`; recalcular e recusar total divergente; codificar a mensagem do presente conforme o contexto de saída | ADR do gateway |
+
+### Tarefas
+
+Cada tarefa termina com `lint`, `typecheck`, `format:check`, `test`, `build` e `test:e2e` passando. A estimativa de linhas está entre parênteses.
+
+**Bloco A — Regras puras (commit 1)**
+
+1. **[engenheiro-de-ecommerce] Zod** (~10 + ADR)
+   - `npm view zod version` → `npm i zod@<versão exata>` (publicada há 7 dias ou mais). Conferir a API do `zod/mini` em zod.dev para essa versão. Registrar a versão no ADR-0007 (já Aceito pelo dono em 2026-10-27). Anotar o *First Load JS* compartilhado do `npm run build` **antes** de qualquer outra tarefa (linha de base do orçamento).
+   - **Pronto quando:** `package.json` com a versão exata, `package-lock.json` atualizado, `npm audit --omit=dev` sem alerta alto ou crítico, e a linha de base anotada no ADR-0007.
+   - **Requisitos de segurança:** ver a [lista](#requisitos-de-segurança-por-tarefa) (tarefa 1).
+
+2. **[engenheiro-de-ecommerce] `lib/sacola.ts` e `lib/formatosDaSacola.ts`** (~350 com testes)
+   - Contratos acima. Teste de paridade entre o índice e `QUEIJOS`.
+   - Testes de `lerSacolaSalva`, um por linha da tabela de persistência: `null`, `'{'`, `'[]'`, `{"v":2,…}`, texto de 9 KB, slug inexistente, `formatoId` de outro queijo, quantidade `0`/`-1`/`1.5`/`"2"`/`99`, linha repetida, `__proto__` e `preco` no JSON, 31 linhas. `reduzirSacola`: somar, limitar a 10, remover, `definir-presente`, `limpar`. `precificarSacola`: Canastra "meia" × 2 = 15600; item ignorado sem quebrar.
+   - **Pronto quando:** os testes passam e nenhum arquivo de `lib/sacola.ts` nem de `lib/formatosDaSacola.ts` importa valor de `data/` (só `import type`), o que pode ser conferido por busca.
+   - **Requisitos de segurança:** ver a [lista](#requisitos-de-segurança-por-tarefa) (tarefa 2).
+
+3. **[engenheiro-de-ecommerce] `lib/commerce.ts` (frete, totais, pedido) e `lib/pedido.ts`** (~400 com testes)
+   - Testes: `mascararCep('01310100') === '01310-100'`, `mascararCep('0131') === '0131'`, `mascararCep('01310-1009') === '01310-100'`; `normalizarCep('01310-100')` → `'01310100'`, e com 7 dígitos ou letras → `null`; `calcularFrete('00500000')` → fora de área; `faltaParaFreteGratis(17999) === 1`, `(18000) === 0`; `valorDoFrete` com subtotal 18000 → 0; `calcularTotais(13600, null, 'pix')` → `descontoPix 680`, `total null`; `calcularTotais(18000, 0, 'pix')` → `total 17100`; `criarPedido` com `recusa@exemplo.com` → `pagamento-recusado`; esquemas: mensagem de 201 caracteres é rejeitada, 200 com acentos e emoji é aceita, UF `'XX'` é rejeitada, data de hoje é rejeitada e amanhã é aceita (relógio falso em America/Sao_Paulo).
+   - **Pronto quando:** os testes passam e `MENSAGENS_DE_ERRO` traz os textos aprovados em P25.
+   - **Requisitos de segurança:** ver a [lista](#requisitos-de-segurança-por-tarefa) (tarefa 3).
+
+4. **[revisor-de-codigo] Revisão do bloco A** → commit `feat(sacola): adiciona regras da sacola, do frete e do pedido simulados`.
+
+**Bloco B — Sacola no navegador (commit 2)**
+
+5. **[engenheiro-de-ecommerce] `SacolaProvider` e `useSacola`** (~250 com testes)
+   - Montado no `app/layout.tsx`, por dentro do `AtendimentoProvider`, para o assistente poder adicionar à sacola na etapa 6. Persistência conforme a tabela; `useReducer(reduzirSacola)`; `pronta` só depois da leitura; gravação só com `pronta`; evento `storage`; `try/catch` em `getItem`/`setItem`.
+   - Testes (jsdom): JSON corrompido não quebra e mostra 0; `setItem` que lança `QuotaExceededError` mantém a sacola em memória; evento `storage` atualiza; nada é gravado antes da leitura (espião em `setItem`); `adicionar` duas vezes soma.
+   - **Pronto quando:** os testes passam e o `build` não acusa erro de hidratação em nenhuma rota (console do e2e limpo).
+   - **Requisitos de segurança:** ver a [lista](#requisitos-de-segurança-por-tarefa) (tarefa 5).
+
+6. **[frontend-nextjs] `LinkDaSacola` e `AvisoDaSacola`** (~200)
+   - `LinkDaSacola` no lugar do link estático do `Header` (desktop e celular, medidas da §4.3 e §7.6 já existentes). Aviso conforme a tabela de estados e o visual do P26.
+   - **Pronto quando:** teste: após `adicionar`, o `aria-label` vira "Sacola, 1 item" e depois "Sacola, 3 itens"; a região `role="status"` existe antes da primeira adição e recebe o texto exato **Adicionado à sacola. Boa escolha.**; com timers falsos, some em 4 s; duas adições seguidas reiniciam o tempo.
+
+7. **[frontend-nextjs] `BotaoAdicionar` nos quatro lugares + Embalar para presente** (~250)
+   - `ProductCard` (formato do P24, quantidade 1), `Quiz` (mesma regra), `PainelDeCompra` e barra fixa (formato e quantidade escolhidos), **Embalar para presente** (P31: adiciona o formato e a quantidade escolhidos com `presente: true`). Esgotado continua com **Avise-me** sem ação. `QuantityStepper` vai para `components/` com `maximo={10}`. Apagar `BotaoDaSacola.tsx` e o aviso "Sacola disponível em breve".
+   - **Pronto quando:** não sobra `aria-disabled` em nenhum Adicionar (busca no código); teste do `PainelDeCompra`: "Meia peça" × 2 → `adicionar({ slug: 'canastra-curado', formatoId: 'meia', quantidade: 2 })`; e2e (tarefa 8).
+
+8. **Verificação do bloco B, em paralelo:**
+   - **[testes-e-qualidade]** e2e: Adicionar no catálogo → contador 1 e aviso visível; recarregar → contador 1; `localStorage` com lixo (via `page.addInitScript`) → página abre com 0 e sem erro no console; duas abas (dois `page` no mesmo `context`) → a segunda reflete a primeira; a 390 px na página de produto, o aviso não sobrepõe a barra fixa nem o FAB.
+   - **[especialista-em-acessibilidade]** anúncio do aviso (NVDA/VoiceOver), foco que não se move, nome do link da sacola.
+   - **[guardiao-do-design]** visual do aviso (P26) e contador.
+   - **[auditor-de-seguranca]** sanitização da leitura do `localStorage` e ausência de dado pessoal salvo. **Requisitos de segurança:** ver a [lista](#requisitos-de-segurança-por-tarefa) (tarefa 8: e2e com `constructor` e `__proto__`).
+   - **[performance-e-seo]** *First Load JS* compartilhado contra a linha de base: no máximo +8 kB gzip (ADR-0007).
+   - → `revisor-de-codigo` → commit `feat(sacola): liga os botões Adicionar e o contador do cabeçalho`.
+
+**Bloco C — Frete no produto (commit 3)**
+
+9. **[engenheiro-de-ecommerce] `consultarFrete` e `ShippingCalculator`** (~250 com testes)
+   - O `ShippingCalculator` vira `<form>` (Enter envia; **Calcular** é `type="submit"`), máscara com `mascararCep` a cada digitação (com o cursor no lugar certo), `maxLength={9}`, `autoComplete="postal-code"`, `inputMode="numeric"`. Estados: ocioso → calculando (botão com `aria-disabled` e sem novo envio) → resultado **Chega refrigerado em até [N] dias úteis.** (ícone frio, `--mofo-texto`; `[N]` enquanto o prazo for `null`) **ou** fora de área **Ainda não chegamos ao seu CEP com segurança refrigerada. Deixe seu e-mail e avisamos.** **ou** CEP inválido (texto do P25, `--casca-texto`, `aria-invalid` + `aria-describedby`, padrão do P17). Resultado numa região `aria-live="polite"`. Erro de rede ou de ação não encontrada → mensagem genérica (P25) e nova tentativa.
+   - O "Deixe seu e-mail e avisamos" **não** abre campo de e-mail nesta etapa (P9/P15).
+   - **Pronto quando:** teste de componente com `consultarFrete` simulado nos três resultados; teste do Server Action chamado direto com `'abc'`, `''`, `'0'.repeat(10_000)` → `cep-invalido`, sem lançar; e2e: digitar `01310100` mostra `01310-100` e, ao enviar, o texto de prazo; `00500-000` → fora de área.
+   - **Requisitos de segurança:** ver a [lista](#requisitos-de-segurança-por-tarefa) (tarefa 9).
+
+10. **Verificação do frete** (guardião: §7.2, item 10; acessibilidade: erro e resultado anunciados; `auditor-de-seguranca`: entrada do Server Action) → `revisor-de-codigo` → commit `feat(frete): adiciona a calculadora de frete simulada`.
+
+**Bloco D — Página da sacola (commit 4)**
+
+11. **[frontend-nextjs] `/sacola`** (~350)
+    - Server: `metadata`, `resumoParaSacola()`, h1 (P25), contêiner `--largura-conteiner`. Client `ConteudoDaSacola`: com `pronta === false`, não mostra nada que dependa da sacola (nem "vazia"); lista com miniatura A.6 (`CheeseIllustration`), nome como link para `/queijos/[slug]`, "formato · peso", preço unitário, `QuantityStepper` (`aria-label` com o nome do item), **Remover** (P25) com `aria-label` completo e foco levado ao próximo item ou ao título depois de remover; subtotal; barra de frete grátis **Faltam R$ [valor] para o frete grátis.** (com o valor formatado) ou **Frete grátis garantido.** (P29, P38); se o pedido é presente, a linha "Embalagem para presente" com opção de tirar (P31); botão principal para `/checkout` (P25). Sacola vazia: **Sua tábua ainda está vazia.** + **Explorar a cave** (→ `/queijos`, §10.5).
+    - **Pronto quando:** testes: subtotal 17999 → "Faltam R$ 0,01 para o frete grátis."; 18000 → "Frete grátis garantido."; vazia → texto e link; `pronta: false` não mostra "vazia". E2e: adicionar dois queijos → `/sacola` lista os dois, + e − mudam o subtotal, Remover tira; sem rolagem horizontal de 360 a 1920 px.
+
+12. **Verificação da sacola** (guardião: tokens e padrões da Home, já que a página não foi prototipada, §12; acessibilidade: lista, stepper, remoção e foco) → `revisor-de-codigo` → commit `feat(sacola): adiciona a página da sacola`.
+
+**Bloco E — Checkout (commit 5)**
+
+13. **[engenheiro-de-ecommerce] `confirmarPedido`** (~200 com testes)
+    - Contrato acima. Recalcula tudo no servidor. Itens: valida o esquema, confere o índice e o estoque, precifica com `data/cheeses`; um item inválido → `sacola-invalida` (não "conserta" em silêncio no servidor). Fora de área → `fora-de-area`. Sem `console.log` com a entrada.
+    - **Pronto quando:** testes chamando a função direto: entrada com `preco: 1` no item → o preço é ignorado e o total vem do catálogo; `slug` inexistente → `sacola-invalida`; e-mail inválido → `dados-invalidos` com `erros.email`; `recusa@exemplo.com` → `pagamento-recusado`; caso feliz → `numero` no formato `AQ-\d{6}` e `totais` iguais a `calcularTotais`.
+    - **Requisitos de segurança:** ver a [lista](#requisitos-de-segurança-por-tarefa) (tarefa 13).
+
+14. **[frontend-nextjs] Checkout, etapa 1 (Entrega)** (~400; se passar, separar o bloco do presente em 14b)
+    - `FluxoDoCheckout` com o indicador **1. Entrega · 2. Pagamento · 3. Confirmação** (`<ol>`, `aria-current="step"`); aviso **Enviamos de segunda a quarta, para que seu queijo nunca passe o fim de semana em trânsito.**; campos do P32 com `<label>` visível, `autoComplete` correto (`name`, `email`, `tel`, `postal-code`, `address-line1`, `address-level2`, `address-level1`…), erros por campo no padrão do P17 e um resumo de erros focado ao enviar com falha; CEP com máscara e frete (reusa `consultarFrete`); fora de área impede avançar. Presente (marcado se `sacola.presente`): cartão com mensagem (`<textarea maxLength={200}>` + contador "N de 200" em `aria-live="polite"` só perto do limite, P25) e data de entrega (`<input type="date">` com `min`/`max` do P34); nota **nota fiscal sem valor visível ao presenteado** como texto informativo (§10.2). Ao avançar, o foco vai para o título da etapa (mesmo padrão do quiz).
+    - **Pronto quando:** testes de componente para campo obrigatório vazio, e-mail inválido e mensagem de 201 caracteres bloqueada; e2e só com teclado até a etapa 2.
+    - **Requisitos de segurança:** ver a [lista](#requisitos-de-segurança-por-tarefa) (tarefas 14 e 15).
+
+15. **[frontend-nextjs] Checkout, etapa 2 (Pagamento), erro e etapa 3 (Confirmação)** (~350)
+    - `<fieldset>` com rádios **Pix (5% de desconto)** · **Cartão em até [n]x sem juros** (P33; nenhum campo de cartão). `ResumoDoPedido` com subtotal, frete (`formatarPrecoOuLacuna`), desconto do Pix e total (rótulos do P25). Botão de confirmar (P25) → `confirmarPedido` dentro de `startTransition`, botão sem novo envio enquanto pendente. Erro → **Não conseguimos confirmar o pagamento. Nada foi cobrado. Tente outra forma ou fale com a gente.** em `role="alert"`, com "fale com a gente" como `BotaoAbrirAtendimento` (P25). Sucesso → `limpar()` e etapa 3 com o título **Seu queijo já está sendo preparado.** e **Enviamos os detalhes para [e-mail]. Você vai receber o código de rastreio assim que a caixa sair da cave.**, onde `[e-mail]` é o e-mail digitado (P36). Voltar da etapa 2 para a 1 mantém os dados. Checkout com a sacola vazia mostra o mesmo estado vazio da `/sacola`.
+    - **Pronto quando:** e2e: fluxo completo (adicionar → sacola → checkout → Pix → confirmação com o e-mail digitado → contador 0); `recusa@exemplo.com` → mensagem de erro, sacola intacta; troca Pix ↔ Cartão muda o total; sem rolagem horizontal de 360 a 1920 px.
+    - **Requisitos de segurança:** ver a [lista](#requisitos-de-segurança-por-tarefa) (tarefas 14 e 15).
+
+16. **Verificação do checkout, em paralelo:**
+    - **[auditor-de-seguranca]** (obrigatório) Server Actions (validação, recálculo, retornos restritos, ausência de log), dados pessoais só em memória (nenhuma escrita em `localStorage`/`sessionStorage`/cookie com dado do cliente; conferir no e2e), mensagem do presente renderizada como texto (sem `dangerouslySetInnerHTML`), `npm audit`, e nenhum campo de cartão nem CPF. **Requisitos de segurança:** ver a [lista](#requisitos-de-segurança-por-tarefa) (tarefa 16: rever 13 a 15 no diff e novo `npm audit --omit=dev`).
+    - **[especialista-em-acessibilidade]** formulário (rótulos, erros, `autocomplete`, resumo de erros), indicador de etapas, foco entre etapas, alerta de erro, rádios.
+    - **[guardiao-do-design]** textos literais da §10.2 e padrões visuais (inputs no padrão do CEP §7.2, opções no padrão dos formatos).
+    - **[testes-e-qualidade]** e2e do fluxo completo e do erro; teste de documento sem `id` duplicado em `/sacola` e `/checkout`.
+    - → `revisor-de-codigo` → commit `feat(checkout): adiciona o checkout simulado`.
+
+17. **[documentador-tecnico] Fechamento da etapa 4**
+    - README (rotas `/sacola` e `/checkout`, a simulação e o e-mail de recusa para testes), este plano (situação, pendências respondidas), nota no ADR-0007 com a medição final do pacote.
+    - **Pronto quando:** commit `docs: fecha a etapa 4` publicado (ou incluído no commit 5).
+    - **Requisitos de segurança:** ver a [lista](#requisitos-de-segurança-por-tarefa) (tarefa 17: loja rotulada como simulada; `recusa@exemplo.com` registrado como gatilho de teste a remover com o gateway). Copiar a tabela [Fica para depois](#fica-para-depois-segurança-e-lgpd) para as etapas 8 e 9 quando forem detalhadas.
+
+### Commits da etapa 4
+
+| # | Conteúdo | Mensagem | Situação |
+| --- | --- | --- | --- |
+| 1 | Tarefas 1 a 4 | `feat(sacola): adiciona regras da sacola, do frete e do pedido simulados` | A fazer |
+| 2 | Tarefas 5 a 8 | `feat(sacola): liga os botões Adicionar e o contador do cabeçalho` | A fazer |
+| 3 | Tarefas 9 e 10 | `feat(frete): adiciona a calculadora de frete simulada` | A fazer |
+| 4 | Tarefas 11 e 12 | `feat(sacola): adiciona a página da sacola` | A fazer |
+| 5 | Tarefas 13 a 17 | `feat(checkout): adiciona o checkout simulado` | A fazer |
+
+Ordem: A → B → (C e D podem correr em paralelo) → E. O E depende de C (reusa `consultarFrete`) e de D (estado vazio, `QuantityStepper` em `components/`).
+
+### Controles ao fim da etapa 4
+
+| Controle | Onde | Situação ao fim da etapa 4 |
+| --- | --- | --- |
+| Adicionar / Adicionar à sacola | Cartões (Home e catálogo), quiz, produto, barra fixa | **Com ação** (tarefa 7) |
+| Contador da sacola | Cabeçalho (desktop e celular) | **Com ação** (tarefa 6) |
+| Calcular (frete) | Produto e checkout | **Com ação** (tarefas 9 e 14) |
+| Embalar para presente | Produto | **Com ação** (tarefa 7, P31) |
+| Avise-me (esgotado) | Produto | Sem ação (P15) |
+| "Deixe seu e-mail e avisamos" (frete fora de área) | Produto | Só texto, sem campo (P9/P15) |
+| Girar, Aproximar (efeito visual), Tela cheia | Produto | Etapa 5 |
+| Fale com um queijista, Falar com um queijista (verde) | Produto e painel | Etapa 6 |
+| Respostas rápidas, campo de mensagem, Enviar | Painel | Etapa 6 |
+| Buscar, Minha conta | Cabeçalho | Pendente (ver tabela geral) |
+
+### Verificação (vale para cada bloco)
+
+- **`guardiao-do-design`:** `/sacola` e `/checkout` não têm protótipo. A conferência é por **tokens e padrões** da spec (§3, §4.4, campos no padrão do CEP §7.2, opções no padrão dos formatos §7.2, item 6, contêiner e respiros da Home, §12). Os textos da §7.5, §10.1 e §10.2 são conferidos letra a letra.
+- **`especialista-em-acessibilidade`:** WCAG 2.2 AA. Pontos de atenção: aviso `role="status"`, nome do link da sacola, formulários (rótulos, erros, `autocomplete`, 3.3.1/3.3.3/3.3.7), indicador de etapas, foco entre etapas e depois de remover, alvos de 44 px, `aria-disabled` no envio pendente.
+- **`testes-e-qualidade`:** unidade em `lib/` (sacola, commerce, pedido) e nos componentes client; e2e do fluxo de compra, persistência, duas abas e lixo no `localStorage`; sem rolagem horizontal em `/sacola` e `/checkout` de 360 a 1920 px.
+- **`auditor-de-seguranca`:** **obrigatório** nos blocos B (persistência), C (Server Action do frete) e E (dados do cliente e pedido). Lista mínima: validação na borda (cliente e servidor), recálculo de preço no servidor, sanitização do `localStorage`, nenhum dado pessoal persistido nem registrado em log, retornos dos Server Actions restritos, ausência de `dangerouslySetInnerHTML`, `npm audit` com o Zod, nenhum dado de cartão nem CPF coletado.
+- **`performance-e-seo`:** orçamento do ADR-0007 no bloco B; `noindex` em `/sacola` e `/checkout`.
+- **`revisor-de-codigo`:** antes de cada commit.
+
+### Critérios de pronto da etapa 4
+
+- Item "Sacola com contador, barra de frete grátis (R$ 180) e desconto de 5% no Pix" da §14 atendido.
+- Item "Mobile: barra fixa com preço e Adicionar à sacola" continua atendido, agora com ação.
+- Textos da §7.2 (frete), §7.5 (aviso), §10.1 e §10.2 idênticos à spec, com as lacunas `[N]`, `[PREÇO]`, `[n]`, `[valor]` e `[e-mail]` preenchidas só onde houver dado real (o `[valor]` da barra e o `[e-mail]` da confirmação são preenchidos; `[N]`, `[PREÇO]` e `[n]` continuam visíveis).
+- Fluxo completo e erro de pagamento cobertos por e2e; persistência e tolerância a falhas cobertas por testes de unidade.
+- Nenhuma escrita de dado pessoal no navegador; nenhum preço aceito do cliente.
+- Sem rolagem horizontal de 360 a 1920 px em todas as rotas existentes.
+- Única dependência nova: `zod` (ADR-0007), com o orçamento de pacote respeitado.
+
+### Riscos da etapa 4
+
+- **Sacola salva apagada na montagem** (gravar o estado vazio antes de ler) → `pronta` como trava; teste com espião em `setItem`.
+- **Erro de hidratação no contador ou na `/sacola`** → servidor e 1ª renderização sempre vazios; nada dependente da sacola antes de `pronta`; console do e2e sem avisos.
+- **Pacote global crescendo** (provider, aviso e `zod/mini` no layout) → linha de base na tarefa 1, medição na tarefa 8; plano B do ADR-0007 (*type guard* à mão para a sacola salva).
+- **Índice do catálogo desatualizado** → teste de paridade com `QUEIJOS`.
+- **Adulteração de preço ou de quantidade** (pelo `localStorage` ou por POST direto) → preço nunca salvo nem aceito; servidor recalcula; quantidade limitada a 10.
+- **Totais com lacuna** (frete `R$ [PREÇO]` abaixo de R$ 180 deixa o total em `R$ [PREÇO]`) → é a regra das lacunas da spec, confirmada pelo dono no P27 (2026-10-27); some quando houver tabela ou valor fixo. A interface não pode mostrar `R$ 0,00` nem `NaN`, o que um teste garante.
+- **Arredondamento do Pix** (por item × sobre o subtotal) → uma regra só, `precoNoPix(subtotal)` (P30), com teste; o produto continua mostrando o Pix por unidade.
+- **Fuso da data de entrega** (servidor em UTC × cliente) → `America/Sao_Paulo` nos dois lados, com relógio falso nos testes.
+- **Server Action não encontrado depois de nova publicação** → mensagem genérica com nova tentativa (ADR-0008).
+- **Tarefas 14 e 15 no limite de 400 linhas** → dividir o presente (14b) e o resumo (15b) se passarem.
+- **Aviso cobrindo o FAB, a barra fixa ou o painel de atendimento** → e2e a 390 px; o aviso fica abaixo do `<dialog>` modal (que está na camada superior).
+- **Expectativa de cobrança real** → tudo rotulado como simulado no README; nenhum campo de cartão; o e-mail de recusa fica documentado só para testes.
+
+### Decisões do dono para a etapa 4
+
+Todas as perguntas abaixo foram **decididas pelo dono em 2026-10-27**. P24 e P27 foram confirmadas individualmente; P25, P26 e P28 a P38 seguem o padrão recomendado, aprovado em bloco. Na mesma data, o dono aprovou o [ADR-0007](adr/0007-validacao-com-zod-mini.md) (Zod via `zod/mini`), que passou a Aceito.
+
+| # | Pergunta | Decisão (decidido pelo dono em 2026-10-27) |
+| --- | --- | --- |
+| P24 | Qual formato o **Adicionar** do cartão (Home, catálogo) e do quiz põe na sacola? O cartão mostra "a partir de" + o menor preço, mas o formato padrão do produto é o primeiro (o mais caro). | **Confirmada pelo dono:** o formato **cujo preço o cartão mostra** (o menor; no Canastra, a Fração de R$ 49,00), quantidade 1. Quem quiser outro formato escolhe na página de produto. |
+| P25 | Textos que a spec não define. | h1 da sacola **Sua sacola**; botão **Finalizar compra** (sacola → checkout) e título do checkout **Finalizar compra**; **Remover**; resumo **Subtotal**, **Frete**, **Desconto no Pix**, **Total**; frete grátis no resumo **Grátis**; botões **Continuar para o pagamento**, **Voltar para a entrega**, **Confirmar pedido**; título da opção **Embalar para presente**, rótulos **Mensagem do cartão** e **Data de entrega**; contador **N de 200 caracteres**; limite **Você já tem 10 unidades deste queijo na sacola.**; CEP inválido **Informe um CEP com 8 números, por exemplo 01310-100.**; falha genérica **Não conseguimos calcular agora. Tente de novo em instantes.**; erros de campo no padrão do P17 ("Informe seu nome.", "Informe um e-mail válido, por exemplo voce@email.com.", "Informe um telefone com DDD, por exemplo (11) 91234-5678." etc.); na mensagem de erro de pagamento, "fale com a gente" abre o painel de atendimento. |
+| P26 | Visual e tempo do aviso **Adicionado à sacola. Boa escolha.** (a spec só dá o texto). | Fundo `--carvao`, borda `1px solid var(--pedra)`, raio 12 px, texto `--creme` 14 px 500, `padding: 12px 16px`, sem sombra e sem botão. Desktop: canto inferior **esquerdo** (`left: 28px; bottom: 28px`), longe do FAB. Celular: `left: 16px; right: 86px` (deixa livre a coluna do FAB), `bottom: 16px`; na página de produto, acima da barra fixa, `bottom: 100px`. Visível por 4 s. Sem link "Ver sacola". |
+| P27 | Valor do frete abaixo de R$ 180 e o prazo `[N]` (a spec não tem tabela). | **Confirmada pelo dono:** lacunas visíveis: valor **R$ [PREÇO]** e prazo **[N]**. Com isso, o total de pedidos abaixo de R$ 180 aparece como **R$ [PREÇO]** até o dono fornecer a tabela ou um valor fixo. |
+| P28 | Quais CEPs ficam "fora de área" na simulação? | Só a faixa **00000-000 a 00999-999**, que não existe nos Correios. Serve apenas para testar a mensagem, sem afetar nenhum cliente real. A regra real vem com a transportadora. |
+| P29 | Frete grátis "acima de R$ 180" (§1, §4.2) ou "ao atingir R$ 180" (§10.1)? E o limite conta antes ou depois do desconto do Pix? | **A partir de R$ 180,00** (≥), sobre o subtotal dos produtos **antes** do desconto do Pix. |
+| P30 | Sobre o que incide o desconto de 5% do Pix no pedido? | Só sobre o **subtotal dos produtos** (sem frete), com um único arredondamento: `precoNoPix(subtotal)`. |
+| P31 | O que faz **Embalar para presente** na página de produto, e a embalagem tem custo? | Adiciona o formato e a quantidade escolhidos à sacola e marca o **pedido inteiro** como presente (um cartão e uma data por pedido, §10.2). Mesmo aviso de sucesso. **Sem custo** na simulação. A sacola mostra a linha "Embalagem para presente" com opção de tirar. |
+| P32 | Quais dados o checkout pede? (a spec não lista campos) | Mínimo para entregar: nome completo, e-mail, telefone, CEP, endereço, número, complemento (opcional), bairro, cidade, UF. **Sem CPF** e sem preenchimento automático pelo CEP nesta etapa (LGPD: coletar só o necessário). O CPF entra com o gateway real, se ele exigir. |
+| P33 | Pagamento simulado: o que aparece ao escolher Pix ou Cartão? | Só a escolha (rádios). **Nenhum campo de cartão** (nada de número, CVV ou validade) e nenhum QR code; **Confirmar pedido** confirma direto. `[n]` de "Cartão em até [n]x sem juros" continua lacuna. |
+| P34 | Regras da data de entrega do presente. | De **amanhã até 60 dias** à frente (fuso de São Paulo), qualquer dia. O aviso de envio de segunda a quarta continua só informativo. A regra real (prazo pelo CEP, sem fim de semana) vem com a transportadora. |
+| P35 | Quantidade máxima por item (a spec só define o mínimo 1). | **10 unidades** por linha (formato), no produto e na sacola. O **+** fica desabilitado em 10 (opacidade 0,5, P19). |
+| P36 | A confirmação mostra o número do pedido? | **Não**, para seguir o texto literal da §10.2. O número (`AQ-123456`) é gerado e fica disponível para a etapa 6 (mensagem de pedido do WhatsApp). Se o dono quiser exibi-lo, sugestão: **Pedido nº AQ-123456** acima do título. |
+| P37 | Os dados digitados no checkout devem sobreviver a um recarregamento da página? | **Não.** Ficam só em memória (ADR-0008); recarregar limpa o formulário. Nada de dado pessoal no navegador. |
+| P38 | Visual da "barra de frete grátis" (§10.1). | Texto + barra de progresso decorativa (`aria-hidden`) de 6 px, raio 3, `--ouro` sobre `--pedra` (o mesmo desenho das barras do perfil sensorial), cheia ao atingir R$ 180. |
+
+---
+
 ## Pendências e decisões em aberto
 
 | Item | Situação | Quem decide |
 | --- | --- | --- |
 | Hospedagem (ex.: Vercel ou outra) | **Não decidida.** Nada de publicar em produção sem aprovação. Será tratada na etapa 9 com ADR próprio. | Dono do projeto |
-| Gateway de pagamento (Shopify Storefront, Mercado Pago ou Pagar.me, com Pix) | **Não decidido.** Até lá, só funções simuladas em `lib/commerce.ts` (spec §2). | Dono do projeto |
+| Gateway de pagamento (Shopify Storefront, Mercado Pago ou Pagar.me, com Pix) | **Não decidido.** Até lá, só funções simuladas em `lib/commerce.ts` (spec §2), atrás dos Server Actions da etapa 4 (ADR-0008). A integração real exige ADR, chaves em variável de ambiente e aprovação do dono. | Dono do projeto |
+| Pendências P24 a P38 da etapa 4 | **Decididas pelo dono em 2026-10-27** (ver [Decisões do dono para a etapa 4](#decisões-do-dono-para-a-etapa-4)). ADR-0007 aceito na mesma data. | Dono do projeto |
+| Aviso de privacidade (LGPD) e termos de compra | O checkout simulado coleta dados pessoais só em memória. Antes da publicação (etapa 9), é preciso ter um texto de privacidade e definir a base legal, junto com o P9 (newsletter). Itens detalhados pelo `auditor-de-seguranca` em [Fica para depois](#fica-para-depois-segurança-e-lgpd). | Dono do projeto + `auditor-de-seguranca` |
+| Destinatário do presente (nome e endereço do presenteado) | **Em aberto.** Hoje o checkout tem um endereço só. Se o presenteado tiver dados próprios, entram na LGPD (ver [Fica para depois](#fica-para-depois-segurança-e-lgpd)). Não bloqueia a etapa 4. | Dono do projeto |
+| Segurança herdada da etapa 4 (CSP, cabeçalhos, limite de taxa, CI, hospedagem, ADR do gateway) | Registrada em [Fica para depois](#fica-para-depois-segurança-e-lgpd); copiar para as etapas 8 e 9 e para o ADR do gateway. | `arquiteto-de-software` + `auditor-de-seguranca` |
+| Tabela de frete, prazos e área atendida | Simulados na etapa 4 (P27, P28). Os valores reais dependem da transportadora. | Dono do projeto |
 | Número do WhatsApp, CNPJ, endereço, `[PREÇO]` e demais lacunas | Ficam visíveis entre colchetes até o dono preencher. | Dono do projeto |
 | Provedor de IA para o assistente | Etapa 6 começa com roteiro determinístico; integração com IA real exigirá ADR. | Dono do projeto + `especialista-em-ia-conversacional` |
 | Destino de "Entregas refrigeradas", "Trocas e devoluções" e "Perguntas frequentes" (rodapé) | A spec não define rotas. Ficam como texto não interativo até existir página. | Dono do projeto |

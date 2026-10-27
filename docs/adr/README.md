@@ -17,3 +17,5 @@ Cada decisão técnica relevante do Ateliê do Queijo fica registrada aqui, em `
 | [0004](0004-ajustes-de-ferramentas-da-etapa-1.md) | Ajustes de ferramentas da etapa 1 | Aceito | 2026-10-26 |
 | [0005](0005-renderizacao-e-interatividade-da-etapa-3.md) | Renderização e interatividade de Home, Catálogo, Produto e Atendimento | Aceito | 2026-10-26 |
 | [0006](0006-typecheck-com-next-typegen.md) | Typecheck com `next typegen` | Aceito | 2026-10-26 |
+| [0007](0007-validacao-com-zod-mini.md) | Validação na borda com Zod (`zod/mini`) | Aceito | 2026-10-27 |
+| [0008](0008-sacola-frete-e-checkout-simulados.md) | Sacola persistida, frete e checkout simulados: fronteiras e persistência | Aceito | 2026-10-27 |
