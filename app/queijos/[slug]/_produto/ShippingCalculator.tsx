@@ -32,7 +32,7 @@ export function ShippingCalculator() {
         >
           Calcular
         </button>
-        <span id={idDoAviso} className="sr-only">
+        <span id={idDoAviso} hidden>
           Cálculo de frete disponível em breve
         </span>
       </div>

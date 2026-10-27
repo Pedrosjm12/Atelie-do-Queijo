@@ -31,7 +31,10 @@ test.describe('página de produto', () => {
     await page.goto('/queijos/canastra-curado');
 
     await expect(page.getByText('ou R$ 129,20 no Pix (5% off)')).toBeVisible();
-    await page.getByRole('button', { name: /Meia peça/ }).click();
+    await page
+      .locator('label')
+      .filter({ has: page.getByRole('radio', { name: /Meia peça/ }) })
+      .click();
     await expect(page.getByText('ou R$ 74,10 no Pix (5% off)')).toBeVisible();
 
     await page.getByRole('tab', { name: 'A história' }).focus();

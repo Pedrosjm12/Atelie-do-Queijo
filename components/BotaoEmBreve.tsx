@@ -22,7 +22,7 @@ export function BotaoEmBreve({ children, aviso, ...resto }: BotaoEmBreveProps) {
       <Button {...resto} aria-disabled="true" aria-describedby={idDoAviso}>
         {children}
       </Button>
-      <span id={idDoAviso} className="sr-only">
+      <span id={idDoAviso} hidden>
         {aviso}
       </span>
     </>

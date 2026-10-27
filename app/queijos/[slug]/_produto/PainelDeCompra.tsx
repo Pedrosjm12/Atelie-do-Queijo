@@ -23,6 +23,7 @@ type PainelDeCompraProps = {
 function avisoDeEstoque(estoque: Estoque): string | null {
   switch (estoque.situacao) {
     case 'ultimas':
+      if (estoque.restam === 1) return 'Resta 1 peça deste lote.';
       return `Restam ${estoque.restam ?? '[n]'} peças deste lote.`;
     case 'esgotado':
       return 'Esgotado neste lote. Avise-me quando voltar.';
@@ -85,9 +86,12 @@ export function PainelDeCompra({ formatos, estoque, frete }: PainelDeCompraProps
         </BotaoEmBreve>
       </div>
 
-      <LinkDoQueijista className={estilos.secaoQueijista} />
+      {/* Duas posições, só uma visível: a ordem de Tab acompanha a ordem visual em cada largura. */}
+      <LinkDoQueijista className={`${estilos.secaoQueijista} ${estilos.queijistaCelular}`} />
 
       <div className={estilos.secaoFrete}>{frete}</div>
+
+      <LinkDoQueijista className={`${estilos.secaoQueijista} ${estilos.queijistaDesktop}`} />
 
       <div className={estilos.barra} data-barra-compra>
         <div aria-live="polite">

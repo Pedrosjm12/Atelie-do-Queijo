@@ -48,6 +48,8 @@
   --borda-campo: 1px solid var(--pedra-clara);
   --borda-destaque: 1px solid var(--ouro);
   --alvo-toque: 44px;
+  /* Barra fixa de compra do produto (celular): 14 + 52 + 22 px de respiro + 1 px de borda. */
+  --altura-barra-compra: 89px;
 }
 
 /* Reset mínimo */
@@ -266,7 +268,7 @@ h2,
   /* Reserva a altura da barra fixa de compra do produto (14 + 52 + 22 px + 1 px de borda)
      para ela não cobrir o rodapé ao fim da rolagem, e mantém o foco fora da barra. */
   body:has([data-barra-compra]) {
-    padding-bottom: 89px;
+    padding-bottom: var(--altura-barra-compra);
   }
 
   html:has([data-barra-compra]) {

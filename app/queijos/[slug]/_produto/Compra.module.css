@@ -31,7 +31,9 @@
 }
 
 .formato {
+  position: relative;
   display: flex;
+  cursor: pointer;
   flex-direction: column;
   justify-content: center;
   align-items: flex-start;
@@ -47,6 +49,11 @@
 .formatoAtivo {
   border-color: var(--ouro);
   background: var(--ouro-vidro);
+}
+
+.formato:has(input:focus-visible) {
+  outline: 2px solid var(--ouro);
+  outline-offset: 2px;
 }
 
 .formatoNome {
@@ -190,14 +197,18 @@
   font-weight: 600;
 }
 
+.calcular[aria-disabled='true'] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .calcular:hover:not([aria-disabled='true']) {
   color: var(--ouro);
 }
 
-/* Dúvidas (§7.2, item 11). No DOM vem antes do frete (ordem de foco do celular); no desktop
-   `order` o devolve para depois do frete. */
+/* Dúvidas (§7.2, item 11). Renderizado em duas posições do DOM (antes do frete no celular,
+   depois no desktop), alternadas por display, para a ordem de Tab seguir a ordem visual. */
 .secaoQueijista {
-  order: 1;
   margin-top: 16px;
 }
 
@@ -208,6 +219,10 @@
   gap: 8px;
   font-size: 14px;
   color: var(--palha);
+}
+
+.queijista.queijistaCelular {
+  display: none;
 }
 
 .iconeWhatsapp {
@@ -245,6 +260,14 @@
 
   .secaoFrete {
     order: 5;
+  }
+
+  .queijista.queijistaCelular {
+    display: flex;
+  }
+
+  .queijista.queijistaDesktop {
+    display: none;
   }
 
   /* A barra fixa substitui o preço e a compra inline. */
@@ -293,6 +316,7 @@
     align-items: center;
     gap: 14px;
     padding: 14px 16px 22px;
+    min-height: var(--altura-barra-compra);
     border-top: var(--borda-padrao);
     background: var(--carvao);
   }

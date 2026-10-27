@@ -1,6 +1,14 @@
 'use client';
 
-import { useId, useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type FocusEvent,
+  type KeyboardEvent,
+} from 'react';
 import type { Cheese } from '@/data/cheeses';
 import { CheeseIllustration } from './CheeseIllustration';
 import { Icone } from './icons';
@@ -19,6 +27,14 @@ type EstadoDoVisualizador = {
 };
 
 const FOTOS = ['na tábua', 'produtor', 'fazenda'] as const;
+
+/** Botões que o leitor de tela e o teclado alcançam: ignora os ocultos por CSS (display: none). */
+function botoesVisiveis(barra: HTMLElement | null): HTMLButtonElement[] {
+  if (!barra) return [];
+  return Array.from(barra.querySelectorAll<HTMLButtonElement>('button')).filter(
+    (botao) => getComputedStyle(botao).display !== 'none',
+  );
+}
 
 /**
  * Palco do queijo (spec §7.2, §7.6 e §10.3). Nesta etapa só mostra ilustração SVG;
@@ -40,6 +56,58 @@ export function CheeseViewer({ queijo }: CheeseViewerProps) {
   const marcarInteracao = () => setInteragiu(true);
 
   const idDoAvisoTelaCheia = useId();
+
+  // Barra de ferramentas com tabIndex móvel (roving): um só botão visível entra na ordem de Tab.
+  // O tabindex é ajustado direto no DOM porque depende do CSS (botões ocultos por breakpoint).
+  const barraRef = useRef<HTMLDivElement>(null);
+  const ativoRef = useRef<HTMLButtonElement | null>(null);
+
+  const sincronizarTabIndex = useCallback(() => {
+    const visiveis = botoesVisiveis(barraRef.current);
+    const alvo =
+      ativoRef.current && visiveis.includes(ativoRef.current) ? ativoRef.current : visiveis[0];
+    for (const botao of barraRef.current?.querySelectorAll('button') ?? []) {
+      botao.tabIndex = botao === alvo ? 0 : -1;
+    }
+  }, []);
+
+  useEffect(() => {
+    sincronizarTabIndex();
+    window.addEventListener('resize', sincronizarTabIndex);
+    return () => window.removeEventListener('resize', sincronizarTabIndex);
+  }, [sincronizarTabIndex, temCorte]);
+
+  const aoTeclar = (evento: KeyboardEvent<HTMLDivElement>) => {
+    const visiveis = botoesVisiveis(barraRef.current);
+    const atual = visiveis.findIndex((botao) => botao === document.activeElement);
+    if (atual === -1) return;
+    let proximo: number;
+    switch (evento.key) {
+      case 'ArrowRight':
+        proximo = (atual + 1) % visiveis.length;
+        break;
+      case 'ArrowLeft':
+        proximo = (atual - 1 + visiveis.length) % visiveis.length;
+        break;
+      case 'Home':
+        proximo = 0;
+        break;
+      case 'End':
+        proximo = visiveis.length - 1;
+        break;
+      default:
+        return;
+    }
+    evento.preventDefault();
+    visiveis[proximo]?.focus();
+  };
+
+  const aoFocar = (evento: FocusEvent<HTMLDivElement>) => {
+    if (evento.target instanceof HTMLButtonElement) {
+      ativoRef.current = evento.target;
+      sincronizarTabIndex();
+    }
+  };
 
   return (
     <div>
@@ -83,7 +151,14 @@ export function CheeseViewer({ queijo }: CheeseViewerProps) {
           )}
         </div>
 
-        <div role="group" aria-label="Controles do 3D" className={estilos.barra}>
+        <div
+          ref={barraRef}
+          role="toolbar"
+          aria-label="Controles do 3D"
+          className={estilos.barra}
+          onKeyDown={aoTeclar}
+          onFocus={aoFocar}
+        >
           <button
             type="button"
             className={`${estilos.botao} ${estilos.soDesktop}`}
@@ -102,15 +177,14 @@ export function CheeseViewer({ queijo }: CheeseViewerProps) {
             <button
               type="button"
               className={`${estilos.botao} ${estilos.corte}`}
-              // Desvio do plano: sem aria-pressed, pois o rótulo já muda ("Ver por dentro" /
-              // "Ver peça inteira") e os dois sinais juntos confundem leitores de tela.
+              aria-pressed={cortado}
               onClick={() => {
                 marcarInteracao();
                 setEstado((e) => ({ ...e, cortado: !e.cortado }));
               }}
             >
               <Icone nome="ver-por-dentro" tamanho={16} />
-              {cortado ? 'Ver peça inteira' : 'Ver por dentro'}
+              Ver por dentro
             </button>
           )}
 
@@ -137,7 +211,7 @@ export function CheeseViewer({ queijo }: CheeseViewerProps) {
           >
             <Icone nome="tela-cheia" tamanho={16} />
           </button>
-          <span id={idDoAvisoTelaCheia} className="sr-only">
+          <span id={idDoAvisoTelaCheia} hidden>
             Tela cheia disponível em breve
           </span>
         </div>

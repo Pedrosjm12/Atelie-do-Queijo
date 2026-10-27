@@ -85,6 +85,16 @@
   outline-offset: 2px;
 }
 
+.botao[aria-pressed='true'] {
+  border-color: var(--ouro);
+  background: var(--ouro-vidro);
+}
+
+.botao[aria-disabled='true'] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .corte {
   padding: 0 18px;
   border-color: var(--ouro);

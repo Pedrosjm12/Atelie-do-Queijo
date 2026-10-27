@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { obterQueijo } from '@/lib/catalogo';
 import { CheeseViewer } from './CheeseViewer';
 
@@ -17,21 +17,27 @@ describe('CheeseViewer', () => {
     render(<CheeseViewer queijo={queijo('canastra-curado')} />);
     expect(screen.getByRole('img', { name: ROTULO_CORTADO })).toBeInTheDocument();
     expect(screen.getByText('POR DENTRO')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Ver peça inteira' })).not.toHaveAttribute(
+    expect(screen.getByRole('button', { name: 'Ver por dentro' })).toHaveAttribute(
       'aria-pressed',
+      'true',
     );
   });
 
-  it('o alternador troca o SVG, o indicador e o rótulo', () => {
+  it('o alternador troca o SVG, o indicador e o aria-pressed, com rótulo fixo', () => {
     render(<CheeseViewer queijo={queijo('canastra-curado')} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Ver peça inteira' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Ver por dentro' }));
 
     expect(screen.getByRole('img', { name: ROTULO_INTEIRO })).toBeInTheDocument();
     expect(screen.queryByRole('img', { name: ROTULO_CORTADO })).not.toBeInTheDocument();
     expect(screen.getByText('PEÇA INTEIRA')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Ver por dentro' })).not.toHaveAttribute(
+    expect(screen.getByRole('button', { name: 'Ver por dentro' })).toHaveAttribute(
       'aria-pressed',
+      'false',
     );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Ver por dentro' }));
+    expect(screen.getByText('POR DENTRO')).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: ROTULO_CORTADO })).toBeInTheDocument();
   });
 
   it('a dica some após a primeira interação', () => {
@@ -61,7 +67,7 @@ describe('CheeseViewer', () => {
 
   it('expõe a barra de controles, Tela cheia e as miniaturas', () => {
     render(<CheeseViewer queijo={queijo('canastra-curado')} />);
-    expect(screen.getByRole('group', { name: 'Controles do 3D' })).toBeInTheDocument();
+    expect(screen.getByRole('toolbar', { name: 'Controles do 3D' })).toBeInTheDocument();
     const telaCheia = screen.getByRole('button', { name: 'Tela cheia' });
     expect(telaCheia).toHaveAttribute('aria-disabled', 'true');
     expect(telaCheia).toHaveAccessibleDescription('Tela cheia disponível em breve');
@@ -71,11 +77,32 @@ describe('CheeseViewer', () => {
     }
   });
 
+  it('barra de ferramentas: um só botão na ordem de Tab e setas, Home e End movem o foco', () => {
+    render(<CheeseViewer queijo={queijo('canastra-curado')} />);
+    const barra = screen.getByRole('toolbar', { name: 'Controles do 3D' });
+    const botoes = within(barra).getAllByRole('button');
+    expect(botoes.map((b) => b.tabIndex)).toEqual([0, -1, -1, -1]);
+
+    botoes[0]?.focus();
+    fireEvent.keyDown(botoes[0] as HTMLElement, { key: 'ArrowRight' });
+    expect(botoes[1]).toHaveFocus();
+    expect(botoes.map((b) => b.tabIndex)).toEqual([-1, 0, -1, -1]);
+
+    fireEvent.keyDown(botoes[1] as HTMLElement, { key: 'End' });
+    expect(botoes[3]).toHaveFocus();
+    fireEvent.keyDown(botoes[3] as HTMLElement, { key: 'ArrowRight' });
+    expect(botoes[0]).toHaveFocus();
+    fireEvent.keyDown(botoes[0] as HTMLElement, { key: 'ArrowLeft' });
+    expect(botoes[3]).toHaveFocus();
+    fireEvent.keyDown(botoes[3] as HTMLElement, { key: 'Home' });
+    expect(botoes[0]).toHaveFocus();
+  });
+
   it('queijo sem arte A.5 usa a A.6, sem alternador de corte e com PEÇA INTEIRA', () => {
     render(<CheeseViewer queijo={queijo('manchego')} />);
     expect(screen.getByText('PEÇA INTEIRA')).toBeInTheDocument();
     expect(screen.getByRole('img', { name: /Manchego DOP, ilustração do queijo/ })).toBeVisible();
-    expect(screen.queryByRole('button', { name: /Ver peça inteira|Ver por dentro/ })).toBeNull();
+    expect(screen.queryByRole('button', { name: /Ver por dentro/ })).toBeNull();
     expect(screen.queryByText(/Ver na mesa/)).toBeNull();
   });
 });

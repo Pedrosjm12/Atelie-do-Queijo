@@ -3,7 +3,14 @@
 > Fonte da verdade: `ATELIE-DO-QUEIJO-SPEC.md`. Decisões técnicas: `docs/adr/`.
 > Última atualização: 2026-10-27. Etapas 1 e 2 concluídas. Etapa em andamento: **3 (Home → Catálogo → Produto → painel de Atendimento)**.
 >
-> **Onde paramos (2026-10-26):** etapa 3 com os blocos A (dados, ilustrações, `ProductCard`), B (Home), C (Catálogo) e D (Produto) publicados. **Próximo passo: bloco E, painel de atendimento (tarefas 19 a 22).** Pendências do bloco D para o dono: estilo visual de `aria-pressed` em Girar/Aproximar, formatos como rádio, borda dos campos (P18), "Ver na mesa" (P11) e singular "Resta 1 peça" (§7.5); `useAbas` deve ser reaproveitado pelo `SupportPanel`. Ver [Commits da etapa 3](#commits-da-etapa-3) e as decisões do dono P1 a P20.
+> **Onde paramos (2026-10-27):** etapa 3 com os blocos A (dados, ilustrações, `ProductCard`), B (Home), C (Catálogo) e D (Produto) publicados. **Próximo passo: bloco E, painel de atendimento (tarefas 19 a 22).** Decisões do dono aplicadas no bloco D: Girar/Aproximar ativos com borda `--ouro` e fundo `--ouro-vidro`; formatos como rádios; borda dos campos mantida (P18); "Ver na mesa" não exibido (P11); singular "Resta 1 peça deste lote."; barra do 3D como `toolbar` com setas (spec §7.2) e botão de corte com `aria-pressed` e rótulo fixo "Ver por dentro". `useAbas` deve ser reaproveitado pelo `SupportPanel`.
+>
+> **Pendências abertas:**
+>
+> - **Etapa 5 (P11):** **Ver na mesa** só entra com GLB real.
+> - **Contraste de `--placeholder`** (`#8c8070`) em textos miúdos: conferir e decidir com o dono (a spec fixa o token).
+> - **`AnnouncementBar` fora de landmark** (apontado pelo axe): não alterado; tratar no cabeçalho.
+> - Ver [Commits da etapa 3](#commits-da-etapa-3) e as decisões do dono P1 a P20.
 >
 > Fluxo usado em cada bloco: `frontend-nextjs` (ou o especialista da tarefa) implementa → `guardiao-do-design` (porta 3000, build), `especialista-em-acessibilidade` (`next dev -p 3001`, sem build) e `revisor-de-codigo` conferem em paralelo, sem editar → correções pelo implementador → lint, typecheck, format:check, test, build e test:e2e → commit e push. Reaproveitar `BotaoEmBreve`/`BotaoDaSacola` para controles sem ação e o token `--largura-conteiner` nos contêineres.
 
@@ -513,7 +520,7 @@ Cada tarefa termina com testes passando (`lint`, `typecheck`, `test`, `build`, `
     - **Pronto quando:** teste de componente: o clique no alternador troca o `aria-label` do SVG visível, o indicador e o `aria-pressed`; a dica some após a primeira interação.
 
 16. **[frontend-nextjs] `PainelDeCompra`: formatos, preço, Pix, quantidade e barra fixa** (~400)
-    - `FormatPicker` (`<fieldset>` + `<legend>` **FORMATO**, botões `aria-pressed`, linha 2 "peso · preço"), preço 40 px e **ou R$ X no Pix (5% off)** com `precoNoPix`, `QuantityStepper` (mínimo 1, `aria-label`s da §7.2), **Adicionar à sacola** sem ação, **Embalar para presente**, `ShippingCalculator` (só marcação), **Dúvidas sobre este queijo? Fale com um queijista** (sem ação).
+    - `FormatPicker` (`<fieldset>` + `<legend>` **FORMATO**, rádios (P22), linha 2 "peso · preço"), preço 40 px e **ou R$ X no Pix (5% off)** com `precoNoPix`, `QuantityStepper` (mínimo 1, `aria-label`s da §7.2), **Adicionar à sacola** sem ação, **Embalar para presente**, `ShippingCalculator` (só marcação), **Dúvidas sobre este queijo? Fale com um queijista** (sem ação).
     - Estados de estoque da §7.5 (últimas unidades, esgotado com o botão virando **Avise-me**, sem ação; P15), cobertos por teste com dados fictícios.
     - Barra fixa ≤ 768 px (§7.6) com o preço do formato escolhido e o atributo `data-barra-compra`. `z-index` abaixo do `SupportFab` (40). A página reserva `padding-bottom` igual à altura da barra, para ela não cobrir o rodapé.
     - `SupportFab`: em `SupportFab.module.css`, `@media (max-width: 768px) { :global(body:has([data-barra-compra])) .fab { bottom: 100px; } }`. Sem JavaScript; só vale onde a barra existe de fato.
@@ -619,6 +626,9 @@ Todas as recomendações abaixo foram **aceitas pelo dono em 2026-10-26** (P1, P
 | P18 | Borda dos campos (`--pedra-clara`, 1,71:1 sobre `--carvao`) abaixo dos 3:1 da WCAG 1.4.11. | **Mantida a spec pelo dono**, com rótulo visível, fundo próprio e foco dourado nos campos. Desvio aceito; rever antes da publicação. Vale também para CEP e mensagem do chat. |
 | P19 | Estado desabilitado de botões (não existe na spec nem no protótipo). | **Aprovado pelo dono:** opacidade 0,5, para qualquer botão desabilitado do site. |
 | P20 | Desempate do quiz: "suaves + presente + cerveja" recomenda o Tipo Gruyère (empata com o Brie e vem antes no catálogo). | **Mantido pelo dono** (2026-10-26): desempate pela ordem do catálogo, sem prioridade por sabor. |
+| P21 | Botão de corte do 3D: a §7.2 pede rótulo alternado ("Ver peça inteira" / "Ver por dentro") e `aria-pressed`, o que o WAI-ARIA desaconselha em conjunto. | **Decidido pelo dono** (2026-10-27): `role="toolbar"` com setas e `aria-pressed` com rótulo fixo **Ver por dentro**; o indicador POR DENTRO / PEÇA INTEIRA continua alternando. Desvio de texto a anotar no checklist da §14. |
+| P22 | Formatos (§7.2, item 6) com `aria-pressed`. | **Decidido pelo dono** (2026-10-27): rádios reais (`input type=radio` oculto + `label`), mesmo visual. |
+| P23 | Estado ativo de Girar e Aproximar (a spec só define o repouso). | **Decidido pelo dono** (2026-10-27): borda `--ouro` e fundo `--ouro-vidro`, como nos formatos ativos. |
 
 ---
 

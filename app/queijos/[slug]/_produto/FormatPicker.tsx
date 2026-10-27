@@ -1,3 +1,4 @@
+import { useId } from 'react';
 import { Overline } from '@/components/Overline';
 import type { Formato } from '@/data/cheeses';
 import { formatarPreco } from '@/lib/format';
@@ -14,6 +15,7 @@ type FormatPickerProps = {
  * "peso · preço". No celular, três colunas com o nome curto e só o peso.
  */
 export function FormatPicker({ formatos, selecionadoId, onSelecionar }: FormatPickerProps) {
+  const nomeDoGrupo = useId();
   return (
     <fieldset className={estilos.formatos}>
       <legend className={estilos.legenda}>
@@ -23,15 +25,20 @@ export function FormatPicker({ formatos, selecionadoId, onSelecionar }: FormatPi
         {formatos.map((formato) => {
           const selecionado = formato.id === selecionadoId;
           return (
-            <button
+            <label
               key={formato.id}
-              type="button"
               className={
                 selecionado ? `${estilos.formato} ${estilos.formatoAtivo}` : estilos.formato
               }
-              aria-pressed={selecionado}
-              onClick={() => onSelecionar(formato.id)}
             >
+              <input
+                type="radio"
+                name={nomeDoGrupo}
+                value={formato.id}
+                checked={selecionado}
+                onChange={() => onSelecionar(formato.id)}
+                className="sr-only"
+              />
               <span className={estilos.formatoNome}>
                 <span className={estilos.soDesktop}>{formato.nome}</span>
                 <span className={estilos.soCelular}>{formato.nomeCurto ?? formato.nome}</span>
@@ -40,7 +47,7 @@ export function FormatPicker({ formatos, selecionadoId, onSelecionar }: FormatPi
                 {formato.peso}
                 <span className={estilos.soDesktop}> · {formatarPreco(formato.preco)}</span>
               </span>
-            </button>
+            </label>
           );
         })}
       </div>

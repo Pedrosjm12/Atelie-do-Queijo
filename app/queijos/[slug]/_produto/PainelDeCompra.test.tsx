@@ -25,7 +25,7 @@ const barra = () => {
 };
 
 const botoesDeFormato = () =>
-  within(screen.getByRole('group', { name: 'FORMATO' })).getAllByRole('button');
+  within(screen.getByRole('group', { name: 'FORMATO' })).getAllByRole('radio');
 
 const botaoDeFormato = (indice: number) => {
   const botao = botoesDeFormato()[indice];
@@ -40,8 +40,8 @@ describe('PainelDeCompra', () => {
     expect(semNbsp(container.textContent)).toContain('ou R$ 129,20 no Pix (5% off)');
     const botoes = botoesDeFormato();
     expect(botoes).toHaveLength(3);
-    expect(botoes[0]).toHaveAttribute('aria-pressed', 'true');
-    expect(botoes[1]).toHaveAttribute('aria-pressed', 'false');
+    expect(botoes[0]).toBeChecked();
+    expect(botoes[1]).not.toBeChecked();
   });
 
   it('"Meia peça" mostra R$ 78,00 e Pix R$ 74,10 no painel e na barra', async () => {
@@ -50,7 +50,7 @@ describe('PainelDeCompra', () => {
 
     await usuario.click(botaoDeFormato(1));
 
-    expect(botaoDeFormato(1)).toHaveAttribute('aria-pressed', 'true');
+    expect(botaoDeFormato(1)).toBeChecked();
     expect(semNbsp(container.textContent)).toContain('ou R$ 74,10 no Pix (5% off)');
     expect(semNbsp(screen.getByTestId('preco-do-painel').textContent)).toBe('R$ 78,00');
     expect(semNbsp(barra().textContent)).toContain('R$ 78,00');
@@ -100,11 +100,11 @@ describe('PainelDeCompra', () => {
       'aria-disabled',
       'true',
     );
-    expect(screen.getByRole('button', { name: 'Fale com um queijista' })).toHaveAttribute(
-      'aria-disabled',
-      'true',
-    );
-    expect(screen.getByText('Dúvidas sobre este queijo?')).toBeInTheDocument();
+    // Duas posições (celular antes do frete, desktop depois), alternadas por CSS.
+    const queijistas = screen.getAllByRole('button', { name: 'Fale com um queijista' });
+    expect(queijistas).toHaveLength(2);
+    for (const botao of queijistas) expect(botao).toHaveAttribute('aria-disabled', 'true');
+    expect(screen.getAllByText('Dúvidas sobre este queijo?')).toHaveLength(2);
     expect(screen.getByText('Frete fictício')).toBeInTheDocument();
   });
 
@@ -118,6 +118,12 @@ describe('PainelDeCompra', () => {
     renderizar({ situacao: 'ultimas', restam: 3 });
     expect(screen.getByText('Restam 3 peças deste lote.')).toBeInTheDocument();
     expect(screen.getAllByRole('button', { name: 'Adicionar à sacola' })).toHaveLength(2);
+  });
+
+  it('última peça: singular "Resta 1 peça deste lote."', () => {
+    renderizar({ situacao: 'ultimas', restam: 1 });
+    expect(screen.getByText('Resta 1 peça deste lote.')).toBeInTheDocument();
+    expect(screen.queryByText(/Restam/)).not.toBeInTheDocument();
   });
 
   it('últimas unidades sem número: mantém a lacuna "[n]"', () => {
