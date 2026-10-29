@@ -75,7 +75,7 @@ describe('ProductCard', () => {
     const botao = screen.getByRole('button', { name: 'Adicionar Canastra curado à sacola' });
     expect(botao).not.toHaveAttribute('aria-disabled');
     await usuario.click(botao);
-    expect(screen.getByRole('link', { name: 'Sacola, 1 item' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Sacola 1 item' })).toBeInTheDocument();
     expect(JSON.parse(window.localStorage.getItem('atelie:sacola:v1') ?? '{}').itens).toEqual([
       { slug: 'canastra-curado', formatoId: 'fracao', quantidade: 1 },
     ]);

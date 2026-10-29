@@ -6,6 +6,8 @@ import estilos from './AvisoDaSacola.module.css';
 
 /** Tempo de exibição (P26). */
 export const DURACAO_DO_AVISO_MS = 4000;
+/** Saída curta de opacidade; o texto só é removido depois dela. */
+export const DURACAO_DA_SAIDA_MS = 150;
 
 type AvisoDaSacolaProps = { aoExpirar: () => void };
 
@@ -34,14 +36,25 @@ export function AvisoDaSacola({ aoExpirar }: AvisoDaSacolaProps) {
     };
   }, [id, texto, aoExpirar]);
 
-  const visivel = aviso !== null && exibido !== null && exibido.id === aviso.id;
+  // Aviso expirado: o texto fica mais um instante para a saída (opacidade) e então é removido.
+  useEffect(() => {
+    if (id !== null || exibido === null) return;
+    const saida = setTimeout(() => setExibido(null), DURACAO_DA_SAIDA_MS);
+    return () => clearTimeout(saida);
+  }, [id, exibido]);
+
+  const saindo = aviso === null && exibido !== null;
+  const visivel = exibido !== null && (aviso === null || exibido.id === aviso.id);
+  const classes = [estilos.aviso, visivel ? estilos.visivel : '', saindo ? estilos.saindo : '']
+    .filter(Boolean)
+    .join(' ');
 
   return (
     <div
       role="status"
       aria-live="polite"
       aria-atomic="true"
-      className={visivel ? `${estilos.aviso} ${estilos.visivel}` : estilos.aviso}
+      className={classes}
       data-aviso-da-sacola
     >
       {visivel ? exibido.texto : ''}

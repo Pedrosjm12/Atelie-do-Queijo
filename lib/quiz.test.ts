@@ -13,11 +13,10 @@ import {
   type Uso,
 } from './quiz';
 
-const QUEIJOS_DO_QUIZ: readonly QueijoDoQuiz[] = listarQueijos().flatMap((q) =>
-  ehSlugDoQueijo(q.slug)
-    ? [{ slug: q.slug, maiorFormatoEmGramas: maiorFormatoEmGramas(q.formatos) }]
-    : [],
-);
+const QUEIJOS_DO_QUIZ: readonly QueijoDoQuiz[] = listarQueijos().map((q) => ({
+  slug: q.slug,
+  maiorFormatoEmGramas: maiorFormatoEmGramas(q.formatos),
+}));
 
 const recomendar = (r: RespostasDoQuiz) => recomendarQueijo(r, QUEIJOS_DO_QUIZ);
 

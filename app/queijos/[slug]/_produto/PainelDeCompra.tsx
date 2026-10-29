@@ -5,7 +5,7 @@ import { BotaoAdicionar } from '@/components/BotaoAdicionar';
 import { BotaoEmBreve } from '@/components/BotaoEmBreve';
 import { Icone } from '@/components/icons';
 import { QuantityStepper } from '@/components/QuantityStepper';
-import { useSacola } from '@/components/SacolaProvider';
+import { useEstadoDaSacola } from '@/components/SacolaProvider';
 import type { Estoque, Formato, SlugDoQueijo } from '@/data/cheeses';
 import { precoNoPix } from '@/lib/commerce';
 import { formatarPreco } from '@/lib/format';
@@ -45,7 +45,7 @@ function avisoDeEstoque(estoque: Estoque): string | null {
 export function PainelDeCompra({ slug, formatos, estoque, frete }: PainelDeCompraProps) {
   const [formatoId, setFormatoId] = useState<string>(formatos[0].id);
   const [quantidade, setQuantidade] = useState(1);
-  const { sacola, pronta } = useSacola();
+  const { sacola, pronta } = useEstadoDaSacola();
 
   const formato = formatos.find((f) => f.id === formatoId) ?? formatos[0];
   const preco = formatarPreco(formato.preco);
@@ -109,9 +109,12 @@ export function PainelDeCompra({ slug, formatos, estoque, frete }: PainelDeCompr
             {textoDoPresente}
           </BotaoAdicionar>
         )}
-        {pronta && sacola.presente && (
-          <p className={estilos.notaDoPresente}>Pedido marcado como presente</p>
-        )}
+        {/* Região sempre montada (vazia sem presente): a inserção da nota é anunciada (WCAG 4.1.3). */}
+        <div role="status">
+          {pronta && sacola.presente && (
+            <p className={estilos.notaDoPresente}>Pedido marcado como presente</p>
+          )}
+        </div>
       </div>
 
       {/* Duas posições, só uma visível: a ordem de Tab acompanha a ordem visual em cada largura. */}

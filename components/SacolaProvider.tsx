@@ -37,11 +37,15 @@ export type ItemParaAdicionar = {
   presente?: boolean;
 };
 
-export type ValorDaSacola = {
+export type EstadoDaSacola = {
   sacola: Sacola;
   /** `false` no servidor, na primeira renderização e até ler o localStorage. */
   pronta: boolean;
   totalDeItens: number;
+};
+
+/** Ações estáveis (identidade fixa): quem só dispara ações não re-renderiza com a sacola. */
+export type AcoesDaSacola = {
   adicionar: (item: ItemParaAdicionar) => void;
   alterarQuantidade: (slug: SlugDoQueijo, formatoId: string, quantidade: number) => void;
   remover: (slug: SlugDoQueijo, formatoId: string) => void;
@@ -49,7 +53,10 @@ export type ValorDaSacola = {
   limpar: () => void;
 };
 
-const ContextoDaSacola = createContext<ValorDaSacola | null>(null);
+export type ValorDaSacola = EstadoDaSacola & AcoesDaSacola;
+
+const ContextoDoEstado = createContext<EstadoDaSacola | null>(null);
+const ContextoDasAcoes = createContext<AcoesDaSacola | null>(null);
 
 /** `null` quando o localStorage não existe ou lança (SecurityError, modo privado, etc.). */
 function lerDoStorage(): string | null {
@@ -147,11 +154,8 @@ export function SacolaProvider({ children }: { children: ReactNode }) {
 
   const esconderAviso = useCallback(() => setAviso(null), []);
 
-  const valor = useMemo<ValorDaSacola>(
+  const acoes = useMemo<AcoesDaSacola>(
     () => ({
-      sacola,
-      pronta,
-      totalDeItens: somarItens(sacola),
       adicionar,
       alterarQuantidade: (slug, formatoId, quantidade) =>
         despachar({ tipo: 'alterar-quantidade', slug, formatoId, quantidade }),
@@ -159,21 +163,44 @@ export function SacolaProvider({ children }: { children: ReactNode }) {
       definirPresente: (presente) => despachar({ tipo: 'definir-presente', presente }),
       limpar: () => despachar({ tipo: 'limpar' }),
     }),
-    [sacola, pronta, despachar, adicionar],
+    [despachar, adicionar],
+  );
+
+  const estado = useMemo<EstadoDaSacola>(
+    () => ({ sacola, pronta, totalDeItens: somarItens(sacola) }),
+    [sacola, pronta],
   );
 
   return (
-    <ContextoDaSacola value={valor}>
-      <ContextoDoAviso value={aviso}>
-        {children}
-        <AvisoDaSacola aoExpirar={esconderAviso} />
-      </ContextoDoAviso>
-    </ContextoDaSacola>
+    <ContextoDasAcoes value={acoes}>
+      <ContextoDoEstado value={estado}>
+        <ContextoDoAviso value={aviso}>
+          {children}
+          <AvisoDaSacola aoExpirar={esconderAviso} />
+        </ContextoDoAviso>
+      </ContextoDoEstado>
+    </ContextoDasAcoes>
   );
 }
 
+/** Só as ações (identidade estável): não re-renderiza quando a sacola muda. */
+export function useAcoesDaSacola(): AcoesDaSacola {
+  const acoes = useContext(ContextoDasAcoes);
+  if (!acoes) throw new Error('useAcoesDaSacola precisa estar dentro de <SacolaProvider>.');
+  return acoes;
+}
+
+/** Só o estado (sacola, pronta, totalDeItens). */
+export function useEstadoDaSacola(): EstadoDaSacola {
+  const estado = useContext(ContextoDoEstado);
+  if (!estado) throw new Error('useEstadoDaSacola precisa estar dentro de <SacolaProvider>.');
+  return estado;
+}
+
+/** Compatibilidade: estado e ações juntos (re-renderiza a cada mudança da sacola). */
 export function useSacola(): ValorDaSacola {
-  const valor = useContext(ContextoDaSacola);
-  if (!valor) throw new Error('useSacola precisa estar dentro de <SacolaProvider>.');
-  return valor;
+  const estado = useContext(ContextoDoEstado);
+  const acoes = useContext(ContextoDasAcoes);
+  if (!estado || !acoes) throw new Error('useSacola precisa estar dentro de <SacolaProvider>.');
+  return { ...estado, ...acoes };
 }

@@ -102,8 +102,15 @@
     height: 22px;
   }
 
+  /* Oculto só visualmente: continua no nome acessível do link (WCAG 2.5.3). */
   .sacolaTexto {
-    display: none;
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
 
   .contador {

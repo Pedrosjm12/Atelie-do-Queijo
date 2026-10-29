@@ -83,7 +83,9 @@ describe('PainelDeCompra', () => {
     renderizar();
     const menos = screen.getByRole('button', { name: 'Diminuir quantidade' });
     const mais = screen.getByRole('button', { name: 'Aumentar quantidade' });
-    const quantidade = screen.getByLabelText('Quantidade');
+    const quantidade = within(screen.getByRole('group', { name: 'Quantidade' })).getByRole(
+      'status',
+    );
 
     expect(quantidade).toHaveTextContent('1');
     expect(menos).toHaveAttribute('aria-disabled', 'true');
@@ -130,7 +132,7 @@ describe('PainelDeCompra', () => {
     await usuario.click(screen.getByRole('button', { name: 'Aumentar quantidade' }));
     await usuario.click(screen.getAllByRole('button', { name: 'Adicionar à sacola' })[0]!);
     expect(salva().itens).toEqual([{ slug: 'canastra-curado', formatoId: 'meia', quantidade: 2 }]);
-    expect(screen.getByRole('link', { name: 'Sacola, 2 itens' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Sacola 2 itens' })).toBeInTheDocument();
     await waitFor(() => expect(aviso()).toHaveTextContent('Adicionado à sacola. Boa escolha.'));
   });
 
@@ -149,7 +151,9 @@ describe('PainelDeCompra', () => {
     renderizar();
     const mais = screen.getByRole('button', { name: 'Aumentar quantidade' });
     for (let i = 0; i < 12; i++) await usuario.click(mais);
-    expect(screen.getByLabelText('Quantidade')).toHaveTextContent('10');
+    expect(
+      within(screen.getByRole('group', { name: 'Quantidade' })).getByRole('status'),
+    ).toHaveTextContent('10');
     expect(mais).toHaveAttribute('aria-disabled', 'true');
     const adicionar = screen.getAllByRole('button', { name: 'Adicionar à sacola' })[0]!;
     await usuario.click(adicionar);
@@ -181,6 +185,19 @@ describe('PainelDeCompra', () => {
     expect(screen.getByText('Pedido marcado como presente')).toBeVisible();
     expect(presente.parentElement).toHaveAttribute('data-presente', 'true');
     expect(presente).toHaveFocus();
+  });
+
+  it('a nota do presente fica numa região role="status" montada desde o início (vazia sem presente)', async () => {
+    const usuario = userEvent.setup();
+    renderizar();
+    const regiao = screen
+      .getAllByRole('status')
+      .find((r) => r.parentElement?.hasAttribute('data-presente'));
+    expect(regiao).toBeDefined();
+    expect(regiao).toBeEmptyDOMElement();
+    await usuario.click(screen.getByRole('button', { name: /Embalar para presente/ }));
+    expect(regiao).toHaveTextContent('Pedido marcado como presente');
+    expect(regiao?.isConnected).toBe(true);
   });
 
   it('disponível: sem aviso de estoque', () => {

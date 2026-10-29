@@ -149,7 +149,7 @@ test.describe('página de produto só com teclado', () => {
     await page.goto(rota);
     const diminuir = page.getByRole('button', { name: 'Diminuir quantidade' });
     const aumentar = page.getByRole('button', { name: 'Aumentar quantidade' });
-    const quantidade = page.getByRole('status', { name: 'Quantidade' });
+    const quantidade = page.getByRole('group', { name: 'Quantidade' }).getByRole('status');
 
     await expect(diminuir).toHaveAttribute('aria-disabled', 'true');
     await tabAte(page, diminuir);

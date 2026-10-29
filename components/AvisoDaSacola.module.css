@@ -20,8 +20,19 @@
   animation: entrada 0.2s ease-out;
 }
 
+/* `.visivel.saindo` tem mais especificidade que `.visivel`: a saída vence a entrada, sem depender da ordem. */
+.visivel.saindo {
+  animation: saida 0.15s ease-in forwards;
+}
+
 @keyframes entrada {
   from {
+    opacity: 0;
+  }
+}
+
+@keyframes saida {
+  to {
     opacity: 0;
   }
 }
@@ -42,7 +53,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .visivel {
+  .visivel,
+  .saindo {
     animation: none;
   }
 }

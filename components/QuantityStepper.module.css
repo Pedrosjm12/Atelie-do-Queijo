@@ -19,7 +19,9 @@
 }
 
 .passo[aria-disabled='true'] {
-  opacity: 0.5;
+  /* Esmaece só o conteúdo (equivale a opacity .5, P19) e não o botão inteiro:
+     o contorno de foco continua pleno (WCAG 1.4.11). */
+  color: color-mix(in srgb, var(--creme) 50%, transparent);
   cursor: not-allowed;
 }
 

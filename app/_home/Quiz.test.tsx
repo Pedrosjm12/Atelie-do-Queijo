@@ -3,23 +3,17 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { LinkDaSacola } from '@/components/LinkDaSacola';
 import { SacolaProvider } from '@/components/SacolaProvider';
-import { ehSlugDoQueijo, formatoDeVitrine, listarQueijos } from '@/lib/catalogo';
+import { formatoDeVitrine, listarQueijos } from '@/lib/catalogo';
 import { maiorFormatoEmGramas } from '@/lib/quiz';
 import { Quiz, type ResumoDoQueijo } from './Quiz';
 
-const RESUMOS: readonly ResumoDoQueijo[] = listarQueijos().flatMap((q) =>
-  ehSlugDoQueijo(q.slug)
-    ? [
-        {
-          slug: q.slug,
-          nome: q.nome,
-          formatoIdDeVitrine: formatoDeVitrine(q).id,
-          ilustracao: q.ilustracao,
-          maiorFormatoEmGramas: maiorFormatoEmGramas(q.formatos),
-        },
-      ]
-    : [],
-);
+const RESUMOS: readonly ResumoDoQueijo[] = listarQueijos().map((q) => ({
+  slug: q.slug,
+  nome: q.nome,
+  formatoIdDeVitrine: formatoDeVitrine(q).id,
+  ilustracao: q.ilustracao,
+  maiorFormatoEmGramas: maiorFormatoEmGramas(q.formatos),
+}));
 
 function montar() {
   window.localStorage.clear();
@@ -110,7 +104,7 @@ describe('Quiz', () => {
     expect(adicionar).not.toHaveAttribute('aria-disabled');
     await usuario.click(adicionar);
     // P24: o formato do menor preço (Fração do Canastra), 1 unidade.
-    expect(screen.getByRole('link', { name: 'Sacola, 1 item' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Sacola 1 item' })).toBeInTheDocument();
     expect(JSON.parse(window.localStorage.getItem('atelie:sacola:v1') ?? '{}').itens).toEqual([
       { slug: 'canastra-curado', formatoId: 'fracao', quantidade: 1 },
     ]);

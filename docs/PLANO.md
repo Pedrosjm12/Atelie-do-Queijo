@@ -7,7 +7,8 @@
 >
 > - **Estado da árvore de trabalho:** arquivos alterados/novos do bloco B (tarefas 5, 6 e 7: `SacolaProvider`, `LinkDaSacola`, `AvisoDaSacola`, `BotaoAdicionar`, `QuantityStepper` em `components/`, `lib/catalogo.ts` com `formatoDeVitrine`, `e2e/_apoio/console.ts`, `e2e/sacola.spec.ts`, `e2e/adicionar.spec.ts`).
 > - **Verificação do bloco B feita (tarefa 8):** as correções foram aplicadas: aviso de sucesso só quando toda a quantidade entra (senão o do limite); `storageArea` conferido no evento `storage`; **Embalar para presente** sem `aria-pressed` (decisão do dono), com o texto visível **Pedido marcado como presente** e `data-presente` no contêiner; `lerSacolaSalva` com *type guard* à mão no lugar do Zod (orçamento do pacote, ver ADR-0007); e2e com `vigiarConsole` compartilhado e caso de duas abas.
-> - **Pontos que ficam para depois:** transição de saída do aviso (hoje some sem transição); separar contextos; retipar `Cheese.slug`; tratar esgotado. `resumoParaSacola()` entra no bloco D (tarefa 11). O filtro de 404 de prefetch (`_rsc=`) em `e2e/_apoio/console.ts` cobre `/sacola|checkout|presentes|aprenda|produtores`; tirar `sacola` na tarefa 11 (bloco D) e `checkout` no bloco E, e as demais quando as rotas existirem.
+> - **Pendências opcionais do bloco B (feitas depois do commit `b7f7e73`, ainda sem commit):** saída de opacidade de 150 ms no aviso (`DURACAO_DA_SAIDA_MS`; o texto só é removido depois dela); `QuantityStepper` com `role="group" aria-label="Quantidade"`, `<output>` sem rótulo próprio e `aria-describedby` com "Máximo de 10 por item" no limite; `SacolaProvider` em dois contextos (`useAcoesDaSacola` estável, `useEstadoDaSacola`, e `useSacola` mantido por compatibilidade), com `BotaoAdicionar` só nas ações; `Cheese.slug` agora é `SlugDoQueijo` (união explícita em `data/cheeses.ts`) e as guardas `ehSlugDoQueijo` saíram de `ProductCard`, Home e produto. **Rodada final (a11y em navegador):** `LinkDaSacola` sem `aria-label` (nome por conteúdo "Sacola N itens", "itens" só para leitores de tela; "Sacola" no celular fica oculto visualmente, não `display:none`) para passar 2.5.3 do axe; `.passo[aria-disabled]` esmaece a cor do texto (equivale a opacity .5) em vez do botão inteiro, deixando o foco pleno (1.4.11); a nota "Pedido marcado como presente" fica numa região `role="status"` sempre montada (4.1.3); paridade `SlugDoQueijo` × `QUEIJOS` fechada pelo `tsc`.
+> - **Pontos que ficam para depois:** pausar o prazo do aviso em hover/foco não foi feito (o aviso tem `pointer-events: none` e nenhum conteúdo focável, então não há como receber hover ou foco; duração mantida em 4 s). Esgotado: a spec (§7.5) só define o estado na página de produto (já implementado: texto e botão **Avise-me** sem ação, P15); para o botão **Adicionar** do cartão de um queijo esgotado a spec não define nada, e hoje `ESGOTADOS` está vazio. Quando houver estoque real, o dono decide o cartão (o reducer já ignora a adição de formato esgotado, sem aviso). `resumoParaSacola()` entra no bloco D (tarefa 11). O filtro de 404 de prefetch (`_rsc=`) em `e2e/_apoio/console.ts` cobre `/sacola|checkout|presentes|aprenda|produtores`; tirar `sacola` na tarefa 11 (bloco D) e `checkout` no bloco E, e as demais quando as rotas existirem.
 > - **Depois do bloco B (ordem do plano):** C (frete: Server Action `consultarFrete` + `ShippingCalculator`, tarefas 9 a 10) e D (página `/sacola`, tarefas 11 a 12) podem ir em paralelo; depois E (checkout: Server Action `confirmarPedido`, etapas Entrega, Pagamento e Confirmação, tarefas 13 a 16; é a primeira prova real do `import 'server-only'` no Next) e o fechamento pelo `documentador-tecnico` (tarefa 17). Textos de erro novos (nove campos) aguardam conferência do dono antes da tarefa 14.
 > - **Como retomar:** abra o Claude Code na pasta do projeto, peça "continue de onde paramos" e ele lerá esta nota. Rode `git status` (devem aparecer os 32 arquivos do bloco B) e `npm run lint && npm run typecheck && npm test && npm run build && npm run test:e2e` para confirmar o estado antes de seguir.
 >
@@ -324,8 +325,12 @@ export interface Cheese {
   estoque: Estoque;                             // +
 }
 
+/** União explícita (ordem livre). `Cheese.slug: SlugDoQueijo`; a paridade com `QUEIJOS` é fechada pelo `tsc`
+ *  (tipo condicional `ParidadeDosSlugs`, só tipos, sem custo no pacote). */
+export type SlugDoQueijo =
+  | 'canastra-curado' | 'canastra-meia-cura-premiado' | 'creme-do-marajo' | 'penadinho-de-bufala'
+  | /* … os 10 slugs da §9 */ 'manchego';
 export const QUEIJOS = [/* os 10 da §9, nesta ordem */] as const satisfies readonly Cheese[];
-export type SlugDoQueijo = (typeof QUEIJOS)[number]['slug'];
 ```
 
 Regras dos dados:
@@ -828,20 +833,23 @@ export async function confirmarPedido(entrada: unknown): Promise<
 
 ```ts
 export function SacolaProvider(props: { children: ReactNode }): JSX.Element; // renderiza children + <AvisoDaSacola/>
-export function useSacola(): {
-  sacola: Sacola;
-  pronta: boolean;                 // false no servidor e até ler o localStorage
-  totalDeItens: number;
+export type EstadoDaSacola = { sacola: Sacola; pronta: boolean /* false no servidor e até ler o localStorage */; totalDeItens: number };
+export type AcoesDaSacola = {   // identidade estável (useMemo/useCallback)
   adicionar(item: { slug: SlugDoQueijo; formatoId: string; quantidade?: number; presente?: boolean }): void; // mostra o aviso
   alterarQuantidade(slug: SlugDoQueijo, formatoId: string, quantidade: number): void;
   remover(slug: SlugDoQueijo, formatoId: string): void;
   definirPresente(presente: boolean): void;
   limpar(): void;
 };
+export function useAcoesDaSacola(): AcoesDaSacola;   // não re-renderiza quando a sacola muda
+export function useEstadoDaSacola(): EstadoDaSacola; // re-renderiza a cada mudança da sacola
+export function useSacola(): EstadoDaSacola & AcoesDaSacola; // compatibilidade; evitar em código novo
+// Regra: quem só dispara ações usa useAcoesDaSacola; quem só lê usa useEstadoDaSacola; useSacola só se precisar dos dois.
 /** Substitui BotaoDaSacola. <button type="button"> com as variantes visuais do Button. */
 export function BotaoAdicionar(props: { slug: SlugDoQueijo; formatoId: string; quantidade?: number;
   presente?: boolean; children: ReactNode } & /* variante, tamanho, aria-label, style */): JSX.Element;
-/** Link do cabeçalho: "Sacola" + contador; aria-label "Sacola, N itens" (1 → "item"). */
+/** Link do cabeçalho: "Sacola" + contador. Sem aria-label (WCAG 2.5.3): nome por conteúdo, "Sacola N itens"
+ *  (1 → "item"), com "itens" só para leitores de tela. */
 export function LinkDaSacola(): JSX.Element;
 ```
 
@@ -871,11 +879,11 @@ export function LinkDaSacola(): JSX.Element;
 | Mostrando | `adicionar()` → o texto **Adicionado à sacola. Boa escolha.** aparece e fica visível por 4 s (P26). O foco **não** sai do botão |
 | Nova adição durante a exibição | Reinicia o tempo; o texto é limpo e reinserido no quadro seguinte para o leitor de tela anunciar de novo |
 | Limite atingido (10 unidades) | Texto de limite (P25) em vez do de sucesso; a quantidade não muda. Vale também quando o pedido é cortado pelo limite (linha em 3 + 10 → fica em 10) e quando a linha já está em 10 e só a marca de presente muda (linha em 10 + presente: marca o pedido e mostra o aviso do limite) |
-| Saindo | Some sem animação com `prefers-reduced-motion`; com movimento, transição curta de opacidade |
+| Saindo | Com movimento, opacidade vai a 0 em 150 ms e só então o texto é removido da região (que continua montada); com `prefers-reduced-motion`, sem animação (o texto some após os mesmos 150 ms) |
 | Posição | Não cobre o FAB nem a barra fixa: no celular da página de produto, fica acima da barra (`body:has([data-barra-compra])`, como o FAB); nos demais casos, P26 |
 | Mudança de rota | Continua até o tempo acabar (o provider fica no layout) |
 
-O contador do cabeçalho muda junto, e o `aria-label` "Sacola, N itens" é a confirmação permanente. Por isso o aviso temporário atende à WCAG 2.2.1 e 4.1.3.
+O contador do cabeçalho muda junto, e o nome acessível do link "Sacola N itens" é a confirmação permanente. Por isso o aviso temporário atende à WCAG 2.2.1 e 4.1.3.
 
 ### Fronteiras Server/Client da etapa 4
 
@@ -1024,7 +1032,7 @@ Cada tarefa termina com `lint`, `typecheck`, `format:check`, `test`, `build` e `
 
 6. **[frontend-nextjs] `LinkDaSacola` e `AvisoDaSacola`** (~200)
    - `LinkDaSacola` no lugar do link estático do `Header` (desktop e celular, medidas da §4.3 e §7.6 já existentes). Aviso conforme a tabela de estados e o visual do P26.
-   - **Pronto quando:** teste: após `adicionar`, o `aria-label` vira "Sacola, 1 item" e depois "Sacola, 3 itens"; a região `role="status"` existe antes da primeira adição e recebe o texto exato **Adicionado à sacola. Boa escolha.**; com timers falsos, some em 4 s; duas adições seguidas reiniciam o tempo.
+   - **Pronto quando:** teste: após `adicionar`, o nome acessível do link vira "Sacola 1 item" e depois "Sacola 3 itens"; a região `role="status"` existe antes da primeira adição e recebe o texto exato **Adicionado à sacola. Boa escolha.**; com timers falsos, some em 4 s; duas adições seguidas reiniciam o tempo.
 
 7. **[frontend-nextjs] `BotaoAdicionar` nos quatro lugares + Embalar para presente** (~250)
    - `ProductCard` (formato do P24, quantidade 1), `Quiz` (mesma regra), `PainelDeCompra` e barra fixa (formato e quantidade escolhidos), **Embalar para presente** (P31: adiciona o formato e a quantidade escolhidos com `presente: true`). Esgotado continua com **Avise-me** sem ação. `QuantityStepper` vai para `components/` com `maximo={10}`. `formatoDeVitrine` (P24) fica em `lib/catalogo.ts` e alimenta `ProductCard` e `Quiz`. **Embalar para presente** não usa `aria-pressed` (adiciona a cada clique, não alterna): o contêiner ganha `data-presente` e aparece o texto visível **Pedido marcado como presente**. Apagar `BotaoDaSacola.tsx` e o aviso "Sacola disponível em breve".

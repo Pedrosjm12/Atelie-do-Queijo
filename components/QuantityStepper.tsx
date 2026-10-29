@@ -1,3 +1,4 @@
+import { useId } from 'react';
 import { QUANTIDADE_MAXIMA_POR_ITEM } from '@/lib/sacola';
 import estilos from './QuantityStepper.module.css';
 
@@ -17,8 +18,10 @@ export function QuantityStepper({
   minimo = 1,
   maximo = QUANTIDADE_MAXIMA_POR_ITEM,
 }: QuantityStepperProps) {
+  const idDoLimite = useId();
+  const noLimite = valor >= maximo;
   return (
-    <div className={estilos.quantidade}>
+    <div className={estilos.quantidade} role="group" aria-label="Quantidade">
       <button
         type="button"
         className={estilos.passo}
@@ -30,20 +33,24 @@ export function QuantityStepper({
       >
         −
       </button>
-      <output className={estilos.valor} aria-label="Quantidade">
-        {valor}
-      </output>
+      <output className={estilos.valor}>{valor}</output>
       <button
         type="button"
         className={estilos.passo}
         aria-label="Aumentar quantidade"
-        aria-disabled={valor >= maximo ? 'true' : undefined}
+        aria-disabled={noLimite ? 'true' : undefined}
+        aria-describedby={noLimite ? idDoLimite : undefined}
         onClick={() => {
           if (valor < maximo) onChange(valor + 1);
         }}
       >
         +
       </button>
+      {noLimite ? (
+        <span id={idDoLimite} className="sr-only">
+          Máximo de {maximo} por item
+        </span>
+      ) : null}
     </div>
   );
 }

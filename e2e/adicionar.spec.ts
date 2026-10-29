@@ -39,24 +39,24 @@ test.describe('Adicionar à sacola', () => {
   test('cartão do catálogo: contador, aviso, soma e persistência', async ({ page }) => {
     const problemas = vigiarConsole(page);
     await page.goto('/queijos');
-    await expect(page.getByRole('link', { name: 'Sacola, 0 itens' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Sacola 0 itens' })).toBeVisible();
     await expect(aviso(page)).toBeEmpty();
 
     const botao = page.getByRole('button', { name: 'Adicionar Canastra curado à sacola' });
     await botao.click();
-    await expect(page.getByRole('link', { name: 'Sacola, 1 item' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Sacola 1 item' })).toBeVisible();
     await expect(aviso(page)).toHaveText(AVISO);
     await expect(botao).toBeFocused();
 
     await botao.click();
-    await expect(page.getByRole('link', { name: 'Sacola, 2 itens' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Sacola 2 itens' })).toBeVisible();
     // P24: o formato do menor preço (Fração), uma linha com quantidade 2.
     expect((await sacolaSalva(page)).itens).toEqual([
       { slug: 'canastra-curado', formatoId: 'fracao', quantidade: 2 },
     ]);
 
     await page.reload();
-    await expect(page.getByRole('link', { name: 'Sacola, 2 itens' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Sacola 2 itens' })).toBeVisible();
     await semRolagemHorizontal(page);
     expect(problemas).toEqual([]);
   });
@@ -76,7 +76,7 @@ test.describe('Adicionar à sacola', () => {
       .getByRole('button', { name: /^Adicionar / })
       .first()
       .click();
-    await expect(page.getByRole('link', { name: 'Sacola, 1 item' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Sacola 1 item' })).toBeVisible();
 
     const quiz = page.locator('#quiz');
     await quiz.getByRole('button', { name: 'Suaves e amanteigados' }).click();
@@ -97,11 +97,11 @@ test.describe('Adicionar à sacola', () => {
     await page.goto('/queijos');
     const botao = page.getByRole('button', { name: 'Adicionar Canastra curado à sacola' });
     for (let i = 0; i < 10; i++) await botao.click();
-    await expect(page.getByRole('link', { name: 'Sacola, 10 itens' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Sacola 10 itens' })).toBeVisible();
     await expect(aviso(page)).toHaveText(AVISO);
     await botao.click();
     await expect(aviso(page)).toHaveText(LIMITE);
-    await expect(page.getByRole('link', { name: 'Sacola, 10 itens' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Sacola 10 itens' })).toBeVisible();
     expect((await sacolaSalva(page)).itens[0]?.quantidade).toBe(10);
   });
 
@@ -115,14 +115,16 @@ test.describe('Adicionar à sacola', () => {
       .click();
     await page.getByRole('button', { name: 'Aumentar quantidade' }).click();
     await page.getByRole('button', { name: 'Adicionar à sacola' }).first().click();
-    await expect(page.getByRole('link', { name: 'Sacola, 2 itens' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Sacola 2 itens' })).toBeVisible();
     expect((await sacolaSalva(page)).itens).toEqual([
       { slug: 'canastra-curado', formatoId: 'meia', quantidade: 2 },
     ]);
 
     const mais = page.getByRole('button', { name: 'Aumentar quantidade' });
     for (let i = 0; i < 8; i++) await mais.click();
-    await expect(page.getByRole('status', { name: 'Quantidade' })).toHaveText('10');
+    await expect(page.getByRole('group', { name: 'Quantidade' }).getByRole('status')).toHaveText(
+      '10',
+    );
     await expect(mais).toHaveAttribute('aria-disabled', 'true');
     expect(problemas).toEqual([]);
   });
@@ -136,13 +138,13 @@ test.describe('Adicionar à sacola', () => {
     await presente.click();
     await expect(nota).toBeVisible();
     await expect(aviso(page)).toHaveText(AVISO);
-    await expect(page.getByRole('link', { name: 'Sacola, 1 item' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Sacola 1 item' })).toBeVisible();
     const salva = await sacolaSalva(page);
     expect(salva.presente).toBe(true);
     expect(salva.itens).toHaveLength(1);
 
     await page.reload();
-    await expect(page.getByRole('link', { name: 'Sacola, 1 item' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Sacola 1 item' })).toBeVisible();
     await expect(page.getByText('Pedido marcado como presente')).toBeVisible();
   });
 
@@ -155,7 +157,7 @@ test.describe('Adicionar à sacola', () => {
     const barra = page.locator('[data-barra-compra]');
     await barra.getByRole('button', { name: 'Adicionar à sacola' }).click();
     await expect(aviso(page)).toHaveText(AVISO);
-    await expect(page.getByRole('link', { name: 'Sacola, 1 item' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Sacola 1 item' })).toBeVisible();
 
     const caixaDoAviso = await caixa(aviso(page));
     const caixaDaBarra = await caixa(barra);

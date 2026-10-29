@@ -4,7 +4,13 @@ import userEvent from '@testing-library/user-event';
 import { hydrateRoot } from 'react-dom/client';
 import { renderToString } from 'react-dom/server';
 import { CHAVE_DA_SACOLA } from '@/lib/sacola';
-import { SacolaProvider, useSacola } from './SacolaProvider';
+import {
+  SacolaProvider,
+  useAcoesDaSacola,
+  useEstadoDaSacola,
+  useSacola,
+  type AcoesDaSacola,
+} from './SacolaProvider';
 
 const SALVA = JSON.stringify({
   v: 1,
@@ -198,5 +204,73 @@ describe('SacolaProvider', () => {
 
   it('useSacola fora do provider lança erro claro', () => {
     expect(() => render(<Painel />)).toThrow(/SacolaProvider/);
+  });
+
+  describe('contextos separados', () => {
+    it('as ações têm identidade estável após adicionar e alterar', async () => {
+      const usuario = userEvent.setup();
+      window.localStorage.setItem(CHAVE_DA_SACOLA, SALVA);
+      const vistas: AcoesDaSacola[] = [];
+      function Espiao() {
+        vistas.push(useAcoesDaSacola());
+        return null;
+      }
+      render(
+        <SacolaProvider>
+          <Espiao />
+          <Painel />
+        </SacolaProvider>,
+      );
+      await usuario.click(screen.getByRole('button', { name: 'adicionar' }));
+      await usuario.click(screen.getByRole('button', { name: 'alterar' }));
+      expect(estado()).toBe('pronta:true total:6 linhas:2');
+      expect(vistas.length).toBeGreaterThan(0);
+      expect(new Set(vistas).size).toBe(1);
+    });
+
+    it('consumidor só de ações não re-renderiza quando a sacola muda', async () => {
+      const usuario = userEvent.setup();
+      const rendersDasAcoes = vi.fn();
+      const rendersDoEstado = vi.fn();
+      function SoAcoes() {
+        rendersDasAcoes();
+        const { adicionar } = useAcoesDaSacola();
+        return (
+          <button onClick={() => adicionar({ slug: 'manchego', formatoId: '250g' })}>
+            so-acoes
+          </button>
+        );
+      }
+      function SoEstado() {
+        rendersDoEstado();
+        return <p>{useEstadoDaSacola().totalDeItens}</p>;
+      }
+      render(
+        <SacolaProvider>
+          <SoAcoes />
+          <SoEstado />
+        </SacolaProvider>,
+      );
+      await act(async () => {});
+      const antesDasAcoes = rendersDasAcoes.mock.calls.length;
+      const antesDoEstado = rendersDoEstado.mock.calls.length;
+      await usuario.click(screen.getByRole('button', { name: 'so-acoes' }));
+      await usuario.click(screen.getByRole('button', { name: 'so-acoes' }));
+      expect(rendersDoEstado.mock.calls.length).toBeGreaterThan(antesDoEstado);
+      expect(rendersDasAcoes.mock.calls.length).toBe(antesDasAcoes);
+    });
+
+    it('useAcoesDaSacola e useEstadoDaSacola fora do provider lançam erro claro', () => {
+      function Acoes() {
+        useAcoesDaSacola();
+        return null;
+      }
+      function Estado() {
+        useEstadoDaSacola();
+        return null;
+      }
+      expect(() => render(<Acoes />)).toThrow(/useAcoesDaSacola.*SacolaProvider/);
+      expect(() => render(<Estado />)).toThrow(/useEstadoDaSacola.*SacolaProvider/);
+    });
   });
 });

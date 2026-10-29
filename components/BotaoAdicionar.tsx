@@ -3,7 +3,7 @@
 import type { CSSProperties, ReactNode } from 'react';
 import type { SlugDoQueijo } from '@/data/cheeses';
 import { Button } from './Button';
-import { useSacola } from './SacolaProvider';
+import { useAcoesDaSacola } from './SacolaProvider';
 
 type BotaoAdicionarProps = {
   slug: SlugDoQueijo;
@@ -26,6 +26,6 @@ export function BotaoAdicionar({
   presente,
   ...resto
 }: BotaoAdicionarProps) {
-  const { adicionar } = useSacola();
+  const { adicionar } = useAcoesDaSacola();
   return <Button {...resto} onClick={() => adicionar({ slug, formatoId, quantidade, presente })} />;
 }

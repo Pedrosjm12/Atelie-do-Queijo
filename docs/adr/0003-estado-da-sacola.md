@@ -26,5 +26,6 @@ A spec §2 pede o estado da sacola em "contexto React (ou Zustand) persistido em
 
 - Nenhuma dependência nova.
 - Qualquer mudança no contexto re-renderiza todos os consumidores; aceitável com poucos consumidores. Se virar problema, separar o contexto de leitura do de ações ou reavaliar o Zustand.
+- **Atualização (etapa 4, bloco B):** a separação foi feita (`useEstadoDaSacola` e `useAcoesDaSacola`, `useSacola` mantido por compatibilidade), porque os botões "Adicionar" são muitos e só disparam ações; com ações de identidade estável eles não re-renderizam quando a sacola muda. Zustand continua descartado.
 - A sacola é por navegador: não acompanha o usuário entre dispositivos até existir conta e integração real.
 - Mudanças no formato salvo exigem incrementar a versão da chave e migrar ou descartar o conteúdo antigo.

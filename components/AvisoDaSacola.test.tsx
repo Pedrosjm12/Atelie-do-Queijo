@@ -45,16 +45,16 @@ afterEach(() => {
 describe('LinkDaSacola', () => {
   it('antes de adicionar mostra 0 itens e aponta para /sacola', () => {
     montar();
-    const link = screen.getByRole('link', { name: 'Sacola, 0 itens' });
+    const link = screen.getByRole('link', { name: 'Sacola 0 itens' });
     expect(link).toHaveAttribute('href', '/sacola');
   });
 
   it('o rótulo acompanha a soma: 1 item, depois 3 itens', async () => {
     montar();
     await clicar('Adicionar');
-    expect(screen.getByRole('link', { name: 'Sacola, 1 item' })).toHaveTextContent('Sacola1');
+    expect(screen.getByRole('link', { name: 'Sacola 1 item' })).toHaveTextContent('Sacola 1');
     await clicar('Adicionar dois');
-    expect(screen.getByRole('link', { name: 'Sacola, 3 itens' })).toHaveTextContent('Sacola3');
+    expect(screen.getByRole('link', { name: 'Sacola 3 itens' })).toHaveTextContent('Sacola 3');
   });
 });
 
@@ -77,6 +77,9 @@ describe('AvisoDaSacola', () => {
     await avancar(3900);
     expect(screen.getByRole('status')).toHaveTextContent(TEXTO);
     await avancar(200);
+    // Passou de 4 s: o texto fica só durante a saída (150 ms) e então é removido.
+    expect(screen.getByRole('status').className).toContain('saindo');
+    await avancar(150);
     expect(screen.getByRole('status')).toBeEmptyDOMElement();
   });
 
@@ -93,7 +96,52 @@ describe('AvisoDaSacola', () => {
     await avancar(3000);
     expect(screen.getByRole('status')).toHaveTextContent(TEXTO);
     await avancar(1100);
+    await avancar(150);
     expect(screen.getByRole('status')).toBeEmptyDOMElement();
+  });
+
+  it('nova adição durante a saída cancela a saída e mostra o aviso de novo, sem esvaziar depois', async () => {
+    montar();
+    await clicar('Adicionar');
+    await avancar(20);
+    await avancar(3980 + 50); // expirou: está na saída (150 ms)
+    expect(screen.getByRole('status').className).toContain('saindo');
+    await clicar('Adicionar');
+    await avancar(20);
+    const regiao = screen.getByRole('status');
+    expect(regiao).toHaveTextContent(TEXTO);
+    expect(regiao.className).not.toContain('saindo');
+    // O timer de saída antigo (restavam ~100 ms) não pode esvaziar o novo aviso.
+    await avancar(300);
+    expect(screen.getByRole('status')).toHaveTextContent(TEXTO);
+    await avancar(3700);
+    await avancar(200);
+    expect(screen.getByRole('status')).toBeEmptyDOMElement();
+  });
+
+  it('desmontar durante a exibição não deixa timers nem aviso de setState', async () => {
+    const erro = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const { unmount } = montar();
+    await clicar('Adicionar');
+    await avancar(20);
+    expect(screen.getByRole('status')).toHaveTextContent(TEXTO);
+    unmount();
+    expect(vi.getTimerCount()).toBe(0);
+    await avancar(5000);
+    expect(erro).not.toHaveBeenCalled();
+  });
+
+  it('desmontar durante a saída não deixa timers nem aviso de setState', async () => {
+    const erro = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const { unmount } = montar();
+    await clicar('Adicionar');
+    await avancar(20);
+    await avancar(3980 + 50);
+    expect(screen.getByRole('status').className).toContain('saindo');
+    unmount();
+    expect(vi.getTimerCount()).toBe(0);
+    await avancar(5000);
+    expect(erro).not.toHaveBeenCalled();
   });
 
   it('no limite de 10 mostra a mensagem do P25 e não muda a quantidade', async () => {
@@ -101,13 +149,13 @@ describe('AvisoDaSacola', () => {
     for (let i = 0; i < 5; i++) await clicar('Adicionar dois'); // 2 × 5 = 10
     await avancar(20);
     expect(screen.getByRole('status')).toHaveTextContent(TEXTO);
-    expect(screen.getByRole('link', { name: 'Sacola, 10 itens' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Sacola 10 itens' })).toBeInTheDocument();
     await clicar('Adicionar dois');
     await avancar(20);
     expect(screen.getByRole('status')).toHaveTextContent(
       'Você já tem 10 unidades deste queijo na sacola.',
     );
-    expect(screen.getByRole('link', { name: 'Sacola, 10 itens' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Sacola 10 itens' })).toBeInTheDocument();
   });
 
   it('formato inexistente não anuncia nada', async () => {

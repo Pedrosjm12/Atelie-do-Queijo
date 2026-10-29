@@ -67,7 +67,7 @@ test.describe('componentes globais', () => {
     await page.goto('/');
     await expect(page.getByRole('navigation', { name: 'Principal' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Menu' })).toBeHidden();
-    await expect(page.getByRole('link', { name: 'Sacola, 0 itens' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Sacola 0 itens' })).toBeVisible();
   });
 
   test('cabeçalho só tem borda inferior fora da Home', async ({ page }) => {

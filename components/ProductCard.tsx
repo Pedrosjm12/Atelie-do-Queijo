@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import type { Cheese } from '@/data/cheeses';
-import { dadosDoCartao, ehSlugDoQueijo, formatoDeVitrine } from '@/lib/catalogo';
+import { dadosDoCartao, formatoDeVitrine } from '@/lib/catalogo';
 import { formatarPreco } from '@/lib/format';
 import { BotaoAdicionar } from './BotaoAdicionar';
 import { CheeseIllustration } from './CheeseIllustration';
@@ -41,17 +41,15 @@ export function ProductCard({ queijo, contexto }: ProductCardProps) {
           <span className={estilos.linhaPequena}>{linhaPequena}</span>
           <span className={estilos.preco}>{formatarPreco(preco)}</span>
         </div>
-        {ehSlugDoQueijo(queijo.slug) && (
-          <BotaoAdicionar
-            slug={queijo.slug}
-            formatoId={formatoDeVitrine(queijo).id}
-            variante="contorno"
-            tamanho="compacto"
-            aria-label={`Adicionar ${queijo.nome} à sacola`}
-          >
-            Adicionar
-          </BotaoAdicionar>
-        )}
+        <BotaoAdicionar
+          slug={queijo.slug}
+          formatoId={formatoDeVitrine(queijo).id}
+          variante="contorno"
+          tamanho="compacto"
+          aria-label={`Adicionar ${queijo.nome} à sacola`}
+        >
+          Adicionar
+        </BotaoAdicionar>
       </div>
     </article>
   );

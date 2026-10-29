@@ -44,6 +44,19 @@ export interface DetalheDoQueijo {
   fichaTecnica: string;
 }
 
+/** Slugs do catálogo (a ordem não importa). `QUEIJOS` é checado contra este tipo. */
+export type SlugDoQueijo =
+  | 'canastra-curado'
+  | 'canastra-meia-cura-premiado'
+  | 'creme-do-marajo'
+  | 'penadinho-de-bufala'
+  | 'cabra-com-cinzas'
+  | 'gorgonzola-dolce'
+  | 'tipo-gruyere'
+  | 'brie-frances'
+  | 'parmigiano-reggiano'
+  | 'manchego';
+
 /** Sem dado de estoque na spec: todos começam como 'disponivel'. `restam: null` mostra "[n]". */
 export type Estoque =
   | { situacao: 'disponivel' }
@@ -51,7 +64,7 @@ export type Estoque =
   | { situacao: 'esgotado' };
 
 export interface Cheese {
-  slug: string;
+  slug: SlugDoQueijo;
   nome: string;
   origem: Origem;
   /** Sobretítulo do cartão, MAIÚSCULAS. */
@@ -255,4 +268,11 @@ export const QUEIJOS = [
   },
 ] as const satisfies readonly Cheese[];
 
-export type SlugDoQueijo = (typeof QUEIJOS)[number]['slug'];
+/**
+ * Paridade entre a união `SlugDoQueijo` e os slugs de `QUEIJOS`: o `tsc` falha se divergirem
+ * (slug a mais ou a menos de um lado). Só tipos, sem custo no pacote. Se quebrar aqui, ajuste a
+ * união ou o catálogo.
+ */
+type Igual<A, B> = [A] extends [B] ? ([B] extends [A] ? true : false) : false;
+type Afirmar<T extends true> = T;
+export type ParidadeDosSlugs = Afirmar<Igual<(typeof QUEIJOS)[number]['slug'], SlugDoQueijo>>;

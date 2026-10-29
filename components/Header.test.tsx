@@ -43,7 +43,7 @@ describe('Header', () => {
         <Header />
       </SacolaProvider>,
     );
-    const sacola = screen.getByRole('link', { name: 'Sacola, 0 itens' });
+    const sacola = screen.getByRole('link', { name: 'Sacola 0 itens' });
     expect(sacola).toHaveAttribute('href', '/sacola');
   });
 

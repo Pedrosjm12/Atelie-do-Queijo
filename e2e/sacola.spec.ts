@@ -23,7 +23,7 @@ test.describe('sacola salva', () => {
     await page.goto('/');
     await page.reload();
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Sacola, 2 itens' }).first()).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Sacola 2 itens' }).first()).toBeVisible();
     expect(await page.evaluate((c) => localStorage.getItem(c), CHAVE)).toBe(salva);
     expect(problemas).toEqual([]);
   });
@@ -48,7 +48,7 @@ test.describe('sacola salva', () => {
       );
       await page.goto('/');
       await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
-      await expect(page.getByRole('link', { name: 'Sacola, 0 itens' }).first()).toBeVisible();
+      await expect(page.getByRole('link', { name: 'Sacola 0 itens' }).first()).toBeVisible();
       expect(problemas).toEqual([]);
     });
   }
@@ -58,9 +58,9 @@ test.describe('sacola salva', () => {
     const b = await context.newPage();
     await a.goto('/queijos');
     await b.goto('/queijos');
-    await expect(b.getByRole('link', { name: 'Sacola, 0 itens' }).first()).toBeVisible();
+    await expect(b.getByRole('link', { name: 'Sacola 0 itens' }).first()).toBeVisible();
     await a.getByRole('button', { name: 'Adicionar Canastra curado à sacola' }).click();
-    await expect(a.getByRole('link', { name: 'Sacola, 1 item' }).first()).toBeVisible();
-    await expect(b.getByRole('link', { name: 'Sacola, 1 item' }).first()).toBeVisible();
+    await expect(a.getByRole('link', { name: 'Sacola 1 item' }).first()).toBeVisible();
+    await expect(b.getByRole('link', { name: 'Sacola 1 item' }).first()).toBeVisible();
   });
 });

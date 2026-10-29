@@ -1,4 +1,4 @@
-import { ehSlugDoQueijo, formatoDeVitrine, listarQueijos } from '@/lib/catalogo';
+import { formatoDeVitrine, listarQueijos } from '@/lib/catalogo';
 import { maiorFormatoEmGramas } from '@/lib/quiz';
 import { BrasilEMundo } from './_home/BrasilEMundo';
 import { Escola } from './_home/Escola';
@@ -11,19 +11,13 @@ import { Quiz, type ResumoDoQueijo } from './_home/Quiz';
 
 /** Home (spec §5): as nove seções na ordem. Só o Quiz e a Newsletter rodam no navegador. */
 export default function Home() {
-  const resumos: readonly ResumoDoQueijo[] = listarQueijos().flatMap((q) =>
-    ehSlugDoQueijo(q.slug)
-      ? [
-          {
-            slug: q.slug,
-            nome: q.nome,
-            formatoIdDeVitrine: formatoDeVitrine(q).id,
-            ilustracao: q.ilustracao,
-            maiorFormatoEmGramas: maiorFormatoEmGramas(q.formatos),
-          },
-        ]
-      : [],
-  );
+  const resumos: readonly ResumoDoQueijo[] = listarQueijos().map((q) => ({
+    slug: q.slug,
+    nome: q.nome,
+    formatoIdDeVitrine: formatoDeVitrine(q).id,
+    ilustracao: q.ilustracao,
+    maiorFormatoEmGramas: maiorFormatoEmGramas(q.formatos),
+  }));
 
   return (
     <>
