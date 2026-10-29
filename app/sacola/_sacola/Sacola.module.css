@@ -1,0 +1,212 @@
+.pagina {
+  padding-block: 64px 112px;
+}
+
+/* O foco chega aqui por programa (depois de remover a última linha), não por Tab. */
+.titulo:focus {
+  outline: none;
+}
+
+.reserva {
+  min-height: 320px;
+  margin-top: 40px;
+}
+
+.corpo {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 380px;
+  gap: 48px;
+  align-items: start;
+  margin-top: 40px;
+}
+
+.lista {
+  border-top: var(--borda-padrao);
+}
+
+.linha {
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr) auto;
+  gap: 20px;
+  align-items: center;
+  padding: 24px 0;
+  border-bottom: var(--borda-padrao);
+}
+
+.miniatura {
+  padding: 8px;
+  border: var(--borda-padrao);
+  border-radius: var(--raio-miniatura);
+  background: var(--cave-funda);
+}
+
+.nome {
+  /* Área de toque de 44 px (spec §13); a margem negativa devolve a altura da linha de texto. */
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--alvo-toque);
+  margin-block: calc((1.2em - var(--alvo-toque)) / 2);
+  font-family: var(--fonte-titulo), 'Cormorant Garamond', serif;
+  font-size: 26px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.nome:hover {
+  color: var(--ouro);
+}
+
+.formato {
+  margin-top: 4px;
+  font-size: 14px;
+  color: var(--palha);
+}
+
+.preco {
+  margin-top: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ouro);
+}
+
+.controles {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.remover,
+.tirar {
+  min-height: var(--alvo-toque);
+  min-width: var(--alvo-toque);
+  padding: 0 4px;
+  border: 0;
+  background: none;
+  color: var(--palha);
+  font-size: 14px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.remover:hover,
+.tirar:hover {
+  color: var(--ouro);
+}
+
+.resumo {
+  position: sticky;
+  top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 28px;
+  border: var(--borda-padrao);
+  border-radius: var(--raio-cartao);
+  background: var(--carvao);
+}
+
+.subtotal {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+  font-size: 16px;
+}
+
+.valor {
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--ouro);
+}
+
+.frete {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.textoFrete {
+  font-size: 14px;
+  color: var(--palha);
+}
+
+.trilha {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--pedra);
+  overflow: hidden;
+}
+
+.preenchimento {
+  height: 100%;
+  border-radius: 3px;
+  background: var(--ouro);
+}
+
+.presente {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  font-size: 14px;
+}
+
+.finalizar {
+  width: 100%;
+}
+
+.vazia {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 24px;
+  margin-top: 24px;
+}
+
+.textoVazio {
+  font-size: 18px;
+  color: var(--palha);
+}
+
+@media (max-width: 900px) {
+  .corpo {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 32px;
+  }
+
+  .resumo {
+    position: static;
+  }
+}
+
+@media (max-width: 600px) {
+  .pagina {
+    padding-block: 40px 80px;
+  }
+
+  .linha {
+    grid-template-columns: 80px minmax(0, 1fr);
+    gap: 12px 16px;
+    align-items: start;
+  }
+
+  .miniatura {
+    padding: 6px;
+  }
+
+  .nome {
+    font-size: 22px;
+  }
+
+  .controles {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .resumo {
+    padding: 24px 20px;
+  }
+}

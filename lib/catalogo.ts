@@ -1,6 +1,7 @@
 import { QUEIJOS } from '@/data/cheeses';
 import type { Cheese, Formato, Origem, SlugDoQueijo } from '@/data/cheeses';
 import type { Centavos } from './dinheiro';
+import type { ResumoParaSacola } from './sacola';
 
 const CATALOGO: readonly Cheese[] = QUEIJOS;
 
@@ -81,4 +82,19 @@ export function dadosDoCartao(
     linhaPequena: vitrine?.linhaPequena ?? base.linhaPequena,
     preco: base.preco,
   };
+}
+
+/**
+ * Dados mínimos que /sacola (e depois /checkout) recebem do servidor como props, para o cliente
+ * não importar `data/cheeses`: nome, formatos (id, nome, peso, preço), ilustração e estoque.
+ * Função pura sobre o catálogo estático.
+ */
+export function resumoParaSacola(): readonly ResumoParaSacola[] {
+  return CATALOGO.map((q) => ({
+    slug: q.slug,
+    nome: q.nome,
+    esgotado: q.estoque.situacao === 'esgotado',
+    ilustracao: { shape: q.ilustracao.shape, side: q.ilustracao.side, top: q.ilustracao.top },
+    formatos: q.formatos.map(({ id, nome, peso, preco }) => ({ id, nome, peso, preco })),
+  }));
 }

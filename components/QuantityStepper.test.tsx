@@ -30,4 +30,9 @@ describe('QuantityStepper', () => {
     expect(within(grupo).getByRole('status')).toHaveTextContent('4');
     expect(within(grupo).getByRole('status')).not.toHaveAttribute('aria-label');
   });
+
+  it('aceita um rótulo próprio para o grupo (a sacola inclui o nome do item)', () => {
+    render(<QuantityStepper valor={1} onChange={vi.fn()} rotulo="Quantidade de Brie francês" />);
+    expect(screen.getByRole('group', { name: 'Quantidade de Brie francês' })).toBeInTheDocument();
+  });
 });

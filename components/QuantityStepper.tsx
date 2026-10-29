@@ -9,6 +9,8 @@ type QuantityStepperProps = {
   minimo?: number;
   /** P35: 10 unidades por linha. O + fica `aria-disabled` (opacidade 0,5, P19) ao chegar nele. */
   maximo?: number;
+  /** Nome do grupo para leitores de tela; na sacola inclui o item. Padrão: "Quantidade". */
+  rotulo?: string;
 };
 
 /** Seletor de quantidade (spec §7.2, item 8): − número +. */
@@ -17,11 +19,12 @@ export function QuantityStepper({
   onChange,
   minimo = 1,
   maximo = QUANTIDADE_MAXIMA_POR_ITEM,
+  rotulo = 'Quantidade',
 }: QuantityStepperProps) {
   const idDoLimite = useId();
   const noLimite = valor >= maximo;
   return (
-    <div className={estilos.quantidade} role="group" aria-label="Quantidade">
+    <div className={estilos.quantidade} role="group" aria-label={rotulo}>
       <button
         type="button"
         className={estilos.passo}

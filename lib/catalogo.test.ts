@@ -12,6 +12,7 @@ import {
   listarQueijos,
   obterQueijo,
   precoDeVitrine,
+  resumoParaSacola,
 } from './catalogo';
 
 function queijo(slug: string) {
@@ -226,5 +227,42 @@ describe('formatoDeVitrine (P24)', () => {
     expect(formatoDeVitrine(queijo('creme-do-marajo')).id).toBe(
       queijo('creme-do-marajo').formatos[0].id,
     );
+  });
+});
+
+describe('resumoParaSacola', () => {
+  const resumo = resumoParaSacola();
+
+  it('traz um item por queijo, na ordem do catálogo', () => {
+    expect(resumo.map((r) => r.slug)).toEqual(QUEIJOS.map((q) => q.slug));
+  });
+
+  it('copia nome, ilustração, estoque e formatos com o preço em centavos', () => {
+    const canastra = resumo.find((r) => r.slug === 'canastra-curado');
+    expect(canastra).toEqual({
+      slug: 'canastra-curado',
+      nome: 'Canastra curado',
+      esgotado: false,
+      ilustracao: queijo('canastra-curado').ilustracao,
+      formatos: [
+        { id: 'inteira', nome: 'Peça inteira', peso: '~1 kg', preco: 13600 },
+        { id: 'meia', nome: 'Meia peça', peso: '~500 g', preco: 7800 },
+        { id: 'fracao', nome: 'Fração', peso: '~250 g', preco: 4900 },
+      ],
+    });
+  });
+
+  it('só leva o necessário: nada de textos de detalhe', () => {
+    for (const r of resumo) {
+      expect(Object.keys(r).sort()).toEqual(['esgotado', 'formatos', 'ilustracao', 'nome', 'slug']);
+      for (const f of r.formatos) {
+        expect(Object.keys(f).sort()).toEqual(['id', 'nome', 'peso', 'preco']);
+        expect(Number.isInteger(f.preco)).toBe(true);
+      }
+    }
+  });
+
+  it('é serializável (vai como props para o cliente)', () => {
+    expect(JSON.parse(JSON.stringify(resumo))).toEqual(resumo);
   });
 });
