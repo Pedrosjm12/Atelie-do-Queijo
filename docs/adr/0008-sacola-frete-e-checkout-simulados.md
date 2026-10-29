@@ -78,3 +78,14 @@ Ambiente: Next.js 16.4.3 e React 19.3.0. Na documentação instalada (`guides/se
 - Um teste de paridade a mais (índice × catálogo).
 - O `auditor-de-seguranca` revisa a sanitização do `localStorage`, os dois Server Actions e o tratamento dos dados pessoais antes dos commits do frete e do checkout.
 - Nenhuma dependência nova além do Zod (ADR-0007).
+
+## Atualização ao fim da etapa 4 (tarefa 17)
+
+Registra o que a implementação acrescentou, sem mudar nenhuma decisão acima.
+
+- **`lerSacolaSalva`** devolve `{ sacola, corrigida }` (a flag `corrigida` indica que é preciso regravar) e usa um *type guard* à mão no lugar do Zod, por causa do orçamento de pacote do [ADR-0007](0007-validacao-com-zod-mini.md). O Zod ficou só em `lib/pedido.ts` (rota `/checkout` e `confirmarPedido`).
+- **`confirmarPedido`** ganhou o motivo `'indisponivel'` (falha interna, sem repetir a mensagem do erro), além de `'dados-invalidos'`, `'pagamento-recusado'`, `'fora-de-area'` e `'sacola-invalida'`. A interface mostra o mesmo texto de erro aprovado para os motivos de pagamento e só `dados-invalidos` e `fora-de-area` voltam à etapa 1.
+- **`serverActions.bodySizeLimit: '32kb'`** (em `experimental` no `next.config.ts`) foi antecipado para a tarefa 9 (frete) e vale para todas as Server Actions; há e2e que recusa um corpo de ~40 KB.
+- **`SacolaVazia`** mora em `components/`, porque `/sacola` e `/checkout` compartilham o estado vazio. O `QuantityStepper` também foi movido para `components/`.
+- **Máscara de CEP:** a regra de texto fica em `mascararCep` (`lib/commerce.ts`) e os auxiliares de cursor em `lib/mascara.ts`. Os textos e a lógica de tela do frete, comuns ao produto e ao checkout, ficam em `lib/freteNaTela.ts`. Nenhum dos dois usa Zod nem servidor.
+- **Gatilho de teste do pagamento recusado:** `recusa@exemplo.com`, só na implementação simulada de `criarPedido` (`lib/pedido.server.ts`), marcado com `// SIMULAÇÃO: remover com o gateway`. Deve ser removido quando o gateway real entrar.

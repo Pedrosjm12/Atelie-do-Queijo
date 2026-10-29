@@ -66,8 +66,16 @@ Preenchido em 2026-10-27 pelo `engenheiro-de-ecommerce`.
 | `npm audit --omit=dev` | `found 0 vulnerabilities` |
 | *First Load JS* compartilhado antes da etapa 4 (linha de base) | **180,05 kB gzip** (184.371 bytes): 8 arquivos `.js` comuns a todas as páginas pré-renderizadas, medidos depois de `npm run build` e **antes** de qualquer outra mudança. Método abaixo |
 | *First Load JS* compartilhado depois do bloco B (limite: +8 kB gzip) | **182,27 kB gzip** (186.647 bytes; +2,3 kB sobre a linha de base, dentro do limite de 188,05 kB). Com o `SacolaProvider` e `lib/sacola.ts` usando `zod/mini` no layout, a medição intermediária foi de 202.358 bytes (+17,56 kB, acima do teto). A validação de `lerSacolaSalva` passou a ser um *type guard* escrito à mão (o plano B abaixo), mesmo comportamento e mesmos testes; o Zod ficou só em `lib/pedido.ts` e nas Server Actions |
-| Medição final da etapa 4 (tarefa 17) | `[A REGISTRAR]` |
+| Medição final da etapa 4 (tarefa 17, depois do bloco E, commit `b06c604`) | **182,74 kB gzip** compartilhado (187.126 bytes; +2,69 kB sobre a linha de base de 180,05 kB, dentro do teto de 188,05 kB: **o limite de +8 kB foi respeitado**, com folga de 5,31 kB). A rota `/checkout` ficou em **≈ 207,84 kB**, porque só ela carrega o *chunk* do `zod/mini` (≈ 25 kB a mais que o pacote compartilhado, contando também o código do próprio checkout). Mesmo método da medição anterior |
 
 **Método da medição.** O Next 16.4.3 (Turbopack) não imprime a tabela *First Load JS* no `npm run build`. Por isso a medição é feita nos arquivos gerados: depois do `build`, lê-se cada HTML pré-renderizado em `.next/server/app` (exceto `_not-found` e `_global-error`), extraem-se os `<script src="/_next/static/…js">`, comprime-se cada arquivo com gzip (padrão do Node) e soma-se **a interseção** dos arquivos presentes em todas as páginas. Repetir exatamente o mesmo método nas medições seguintes (o script usado na linha de base ficou fora do repositório; se a equipe quiser, vale versioná-lo em `scripts/`). A rota `/queijos` é dinâmica e não tem HTML pré-renderizado; ela entra pelos mesmos arquivos do layout. Na linha de base as páginas individuais ficaram entre 184,27 kB (Home) e 185,19 kB (produto).
 
 **Nota.** Ao fim da tarefa 3, `zod/mini` já é importado por `lib/sacola.ts` e `lib/pedido.ts`, mas nenhum componente importa esses módulos ainda; por isso o pacote compartilhado continuou em 180,05 kB. O custo real aparece quando o `SacolaProvider` (tarefa 5) importar `lib/sacola.ts` no layout.
+
+## Atualização ao fim da etapa 4 (tarefa 17)
+
+Registra o que foi feito, sem mudar a decisão.
+
+- O plano B do orçamento foi **adotado no bloco B**: `lerSacolaSalva` (em `lib/sacola.ts`) ficou **sem Zod**, com um *type guard* escrito à mão e os mesmos testes. O mesmo vale para as regras de CEP em `lib/commerce.ts`, importadas no cliente pelo layout.
+- O Zod (`zod/mini`) ficou **só em `lib/pedido.ts`**, importado pela rota `/checkout` (`dados.ts`, `EtapaDeEntrega`, `EtapaDePagamento`) e pela Server Action `confirmarPedido`. Ele não entra no pacote compartilhado de todas as páginas, e a página de produto também não o carrega. A lista "no layout, `/checkout`, `/queijos/[slug]` e Server Actions" da seção **Decisão** vale, portanto, só para `/checkout` e Server Actions.
+- Medição final: ver a tabela do Registro da instalação (compartilhado 182,74 kB, `/checkout` ≈ 207,84 kB).

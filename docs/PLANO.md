@@ -1,27 +1,18 @@
 # Plano de implementação — Ateliê do Queijo
 
 > Fonte da verdade: `ATELIE-DO-QUEIJO-SPEC.md`. Decisões técnicas: `docs/adr/`.
-> Última atualização: 2026-10-27. Etapas 1, 2 e 3 concluídas. Etapa 4 (sacola, frete e checkout simulado) **detalhada e decidida**: P24 a P38 e ADR-0007 decididos pelo dono em 2026-10-27; requisitos de segurança do `auditor-de-seguranca` incorporados.
+> Última atualização: 2026-10-29. Etapas 1, 2, 3 e 4 **concluídas**. A etapa 4 (sacola, frete e checkout simulados) está implementada e publicada; o fechamento documental (tarefa 17) está nesta atualização.
 >
-> **RETOMADA (2026-10-29, atualizada):** etapa 4, blocos A e B publicados (`48e6ebe`, `b7f7e73`, `a358fce`). **Blocos C (frete: tarefas 9 e 10) e D (`/sacola`: tarefas 11 e 12) implementados e verificados, mas SEM COMMIT.** Falta o commit e o push; o **próximo é o bloco E** (checkout, tarefas 13 a 17). Textos novos dos blocos C e D aguardam confirmação do dono (ver [Textos novos dos blocos C e D](#textos-novos-dos-blocos-c-e-d-a-confirmar-pelo-dono)). O `bodySizeLimit: '32kb'` da tarefa 13 foi antecipado para a tarefa 9. Abaixo, a nota anterior (bloco B), mantida como histórico.
+> **RETOMADA (2026-10-29): próximo passo é a etapa 5, visualizador 3D com fallback SVG.**
 >
-> - **Estado da árvore de trabalho:** arquivos alterados/novos do bloco B (tarefas 5, 6 e 7: `SacolaProvider`, `LinkDaSacola`, `AvisoDaSacola`, `BotaoAdicionar`, `QuantityStepper` em `components/`, `lib/catalogo.ts` com `formatoDeVitrine`, `e2e/_apoio/console.ts`, `e2e/sacola.spec.ts`, `e2e/adicionar.spec.ts`).
-> - **Verificação do bloco B feita (tarefa 8):** as correções foram aplicadas: aviso de sucesso só quando toda a quantidade entra (senão o do limite); `storageArea` conferido no evento `storage`; **Embalar para presente** sem `aria-pressed` (decisão do dono), com o texto visível **Pedido marcado como presente** e `data-presente` no contêiner; `lerSacolaSalva` com *type guard* à mão no lugar do Zod (orçamento do pacote, ver ADR-0007); e2e com `vigiarConsole` compartilhado e caso de duas abas.
-> - **Pendências opcionais do bloco B (feitas depois do commit `b7f7e73`, ainda sem commit):** saída de opacidade de 150 ms no aviso (`DURACAO_DA_SAIDA_MS`; o texto só é removido depois dela); `QuantityStepper` com `role="group" aria-label="Quantidade"`, `<output>` sem rótulo próprio e `aria-describedby` com "Máximo de 10 por item" no limite; `SacolaProvider` em dois contextos (`useAcoesDaSacola` estável, `useEstadoDaSacola`, e `useSacola` mantido por compatibilidade), com `BotaoAdicionar` só nas ações; `Cheese.slug` agora é `SlugDoQueijo` (união explícita em `data/cheeses.ts`) e as guardas `ehSlugDoQueijo` saíram de `ProductCard`, Home e produto. **Rodada final (a11y em navegador):** `LinkDaSacola` sem `aria-label` (nome por conteúdo "Sacola N itens", "itens" só para leitores de tela; "Sacola" no celular fica oculto visualmente, não `display:none`) para passar 2.5.3 do axe; `.passo[aria-disabled]` esmaece a cor do texto (equivale a opacity .5) em vez do botão inteiro, deixando o foco pleno (1.4.11); a nota "Pedido marcado como presente" fica numa região `role="status"` sempre montada (4.1.3); paridade `SlugDoQueijo` × `QUEIJOS` fechada pelo `tsc`.
-> - **Pontos que ficam para depois:** pausar o prazo do aviso em hover/foco não foi feito (o aviso tem `pointer-events: none` e nenhum conteúdo focável, então não há como receber hover ou foco; duração mantida em 4 s). Esgotado: a spec (§7.5) só define o estado na página de produto (já implementado: texto e botão **Avise-me** sem ação, P15); para o botão **Adicionar** do cartão de um queijo esgotado a spec não define nada, e hoje `ESGOTADOS` está vazio. Quando houver estoque real, o dono decide o cartão (o reducer já ignora a adição de formato esgotado, sem aviso). `resumoParaSacola()` entra no bloco D (tarefa 11). O filtro de 404 de prefetch (`_rsc=`) em `e2e/_apoio/console.ts` cobre `/sacola|checkout|presentes|aprenda|produtores`; tirar `sacola` na tarefa 11 (bloco D) e `checkout` no bloco E, e as demais quando as rotas existirem.
-> - **Depois do bloco B (ordem do plano):** C (frete: Server Action `consultarFrete` + `ShippingCalculator`, tarefas 9 a 10) e D (página `/sacola`, tarefas 11 a 12) podem ir em paralelo; depois E (checkout: Server Action `confirmarPedido`, etapas Entrega, Pagamento e Confirmação, tarefas 13 a 16; é a primeira prova real do `import 'server-only'` no Next) e o fechamento pelo `documentador-tecnico` (tarefa 17). Textos de erro novos (nove campos) aguardam conferência do dono antes da tarefa 14.
-> - **Como retomar:** abra o Claude Code na pasta do projeto, peça "continue de onde paramos" e ele lerá esta nota. Rode `git status` (devem aparecer os 32 arquivos do bloco B) e `npm run lint && npm run typecheck && npm test && npm run build && npm run test:e2e` para confirmar o estado antes de seguir.
+> - **Estado:** etapa 4 concluída (blocos A a E publicados, ver [Commits da etapa 4](#commits-da-etapa-4)). Lint, typecheck, format:check, testes, build e e2e passavam no commit `b06c604`. A loja segue **simulada**: nenhum pagamento real, nenhum e-mail enviado, frete e pedido simulados.
+> - **Quem começa a etapa 5:** o `arquiteto-de-software`, que detalha a etapa neste plano (tarefas, contratos, ADR da dependência `@google/model-viewer`, fronteiras Server/Client). Depois entra o `especialista-3d-webgl`, que implementa o `CheeseViewer` com `model-viewer` e mantém o fallback SVG do Apêndice A (a interface pública `<CheeseViewer queijo={q} />` não muda). Escopo previsto na [tabela da etapa 3](#escopo-o-que-entra-e-o-que-fica-para-depois): rotação, zoom, tela cheia, "Preparando a peça…", mensagem sem WebGL, giro no hover do `ProductCard` e GLB no hero da Home.
+> - **Pendências do dono que tocam a etapa 5:** **Ver na mesa** (realidade aumentada) só entra com GLB real (P11); os arquivos GLB em `public/models/` precisam ser fornecidos ou aprovados; a dependência `@google/model-viewer` exige ADR antes de instalar.
+> - **Tudo o que aguarda o dono** (textos novos, contrastes, comportamentos, LGPD) está numa lista única em [Decisões e textos que aguardam o dono (fim da etapa 4)](#decisões-e-textos-que-aguardam-o-dono-fim-da-etapa-4). Nada ali bloqueia a etapa 5.
+> - **Como retomar:** abra o Claude Code na pasta do projeto, peça "continue de onde paramos" e ele lerá esta nota. Rode `git status` e `npm run lint && npm run typecheck && npm run format:check && npm test && npm run build && npm run test:e2e` para confirmar o estado antes de seguir.
+> - **Guia de conteúdo e variáveis de ambiente:** `docs/conteudo.md` e `docs/ambiente.md` ainda não existem; ficam para a etapa 9 (o `.env.example` não ganhou variável nenhuma na etapa 4). O `CHANGELOG.md` já registra a etapa 4.
 >
-> **Onde paramos (2026-10-27):** etapa 3 concluída, com os cinco blocos (dados, Home, Catálogo, Produto e painel de atendimento). **Etapa 4 detalhada** em [Etapa 4](#etapa-4--sacola-frete-simulado-e-checkout-simulado), com decisões no [ADR-0007](adr/0007-validacao-com-zod-mini.md) (Zod via `zod/mini`) e no [ADR-0008](adr/0008-sacola-frete-e-checkout-simulados.md) (persistência, Server Actions, rotas, dados pessoais). P24 a P38 decididos pelo dono em 2026-10-27 ([lista](#decisões-do-dono-para-a-etapa-4)); ADR-0007 aceito. **Próximo passo:** o bloco A pelo `engenheiro-de-ecommerce`, seguindo os [requisitos de segurança por tarefa](#requisitos-de-segurança-por-tarefa). Os controles sem ação seguem `aria-disabled` até ganharem ação (ver [Controles ao fim da etapa 4](#controles-ao-fim-da-etapa-4)).
->
-> **Pendências abertas para o dono:**
->
-> - **Etapa 4:** nenhuma decisão pendente para começar (P24 a P38 decididos em 2026-10-27). Continua em aberto o destinatário do presente (dados do presenteado, LGPD), sem bloquear a etapa.
-> - **Contraste de `--placeholder`** (`#8c8070`, 4,47:1 sobre `--carvao`): aceito como provisório; rever antes da publicação (a spec fixa o token).
-> - **Etapa 5 (P11):** **Ver na mesa** só entra com GLB real.
-> - Demais itens em [Pendências e decisões em aberto](#pendências-e-decisões-em-aberto) e nas decisões do dono P1 a P23.
->
-> Fluxo usado em cada bloco: `frontend-nextjs` (ou o especialista da tarefa) implementa → `guardiao-do-design` (porta 3000, build), `especialista-em-acessibilidade` (`next dev -p 3001`, sem build) e `revisor-de-codigo` conferem em paralelo, sem editar → correções pelo implementador → lint, typecheck, format:check, test, build e test:e2e → commit e push. Na etapa 4, o `auditor-de-seguranca` entra nos blocos B, C e E. Reaproveitar `BotaoEmBreve` para controles sem ação (o `BotaoDaSacola` some na etapa 4, tarefa 7) e o token `--largura-conteiner` nos contêineres.
+> Fluxo usado em cada bloco: `frontend-nextjs` (ou o especialista da tarefa) implementa → `guardiao-do-design` (porta 3000, build), `especialista-em-acessibilidade` (`next dev -p 3001`, sem build) e `revisor-de-codigo` conferem em paralelo, sem editar → correções pelo implementador → lint, typecheck, format:check, test, build e test:e2e → commit e push. Na etapa 4, o `auditor-de-seguranca` entrou nos blocos B, C e E. Reaproveitar `BotaoEmBreve` para controles sem ação (Avise-me, WhatsApp, 3D) e o token `--largura-conteiner` nos contêineres.
 
 Convenções deste plano:
 
@@ -38,12 +29,12 @@ Convenções deste plano:
 | 1 | Base do projeto e ferramentas | `devops-e-deploy`, `arquiteto-de-software` | Concluída |
 | 2 | Tokens de design e componentes globais | `frontend-nextjs`, `guardiao-do-design` | Concluída |
 | 3 | Home → Catálogo → Produto (com `ProductCard`, `data/cheeses.ts` e ilustrações do Apêndice A) → interface do painel de Atendimento (§8). Sem sacola real, frete, 3D real nem roteiro do assistente | `frontend-nextjs`, `especialista-3d-webgl`, `engenheiro-de-ecommerce`, `guardiao-do-design` | Concluída ([detalhe](#etapa-3--home--catálogo--produto--painel-de-atendimento)) |
-| 4 | Sacola (contexto + `localStorage`), frete simulado e checkout simulado em `lib/commerce.ts` | `engenheiro-de-ecommerce`, `frontend-nextjs`, `auditor-de-seguranca` | Detalhada ([detalhe](#etapa-4--sacola-frete-simulado-e-checkout-simulado)); P24 a P38 decididos em 2026-10-27; pronta para o bloco A |
-| 5 | Visualizador 3D (`CheeseViewer` com `@google/model-viewer`) e fallback SVG do Apêndice A | `especialista-3d-webgl` | A detalhar |
+| 4 | Sacola (contexto + `localStorage`), frete simulado e checkout simulado em `lib/commerce.ts` | `engenheiro-de-ecommerce`, `frontend-nextjs`, `auditor-de-seguranca` | **Concluída** ([detalhe](#etapa-4--sacola-frete-simulado-e-checkout-simulado)); P24 a P38 decididos em 2026-10-27 e implementados; commits `48e6ebe` a `b06c604` |
+| 5 | Visualizador 3D (`CheeseViewer` com `@google/model-viewer`) e fallback SVG do Apêndice A | `especialista-3d-webgl` | **Próxima.** A detalhar (começa pelo `arquiteto-de-software`) |
 | 6 | Assistente com roteiro determinístico, horários e links do WhatsApp no painel de atendimento | `especialista-em-ia-conversacional` | A detalhar |
 | 7 | Páginas restantes: Presentes, Aprenda, Produtores, 404 (textos da §12) | `frontend-nextjs` | A detalhar |
-| 8 | Rodada de qualidade: testes, acessibilidade, performance e SEO, segurança | `testes-e-qualidade`, `especialista-em-acessibilidade`, `performance-e-seo`, `auditor-de-seguranca` | A detalhar; herda itens de segurança da etapa 4 ([lista](#fica-para-depois-segurança-e-lgpd)) |
-| 9 | CI completo, ambientes e checklist de aceite da §14 | `devops-e-deploy`, `documentador-tecnico` | A detalhar; herda itens de segurança da etapa 4 ([lista](#fica-para-depois-segurança-e-lgpd)) |
+| 8 | Rodada de qualidade: testes, acessibilidade, performance e SEO, segurança | `testes-e-qualidade`, `especialista-em-acessibilidade`, `performance-e-seo`, `auditor-de-seguranca` | A detalhar; herda itens da etapa 4 ([seção](#etapa-8--rodada-de-qualidade-herança-da-etapa-4) e [lista](#fica-para-depois-segurança-e-lgpd)) |
+| 9 | CI completo, ambientes e checklist de aceite da §14 | `devops-e-deploy`, `documentador-tecnico` | A detalhar; herda itens da etapa 4 ([seção](#etapa-9--ci-completo-ambientes-e-aceite-herança-da-etapa-4) e [lista](#fica-para-depois-segurança-e-lgpd)) |
 
 As etapas 5 a 9 serão detalhadas pelo `arquiteto-de-software` no início de cada uma.
 
@@ -656,6 +647,8 @@ Todas as recomendações abaixo foram **aceitas pelo dono em 2026-10-26** (P1, P
 
 **Objetivo:** fazer a compra funcionar de ponta a ponta **em simulação**. Os botões Adicionar alimentam uma sacola persistida no navegador, o contador do cabeçalho reflete a soma das quantidades, a calculadora de frete responde por CEP, a página `/sacola` mostra subtotal e frete grátis, e o `/checkout` percorre Entrega → Pagamento → Confirmação (spec §7.2, itens 8 a 10; §7.5; §10.1; §10.2; §14, item "Sacola"). Nenhuma cobrança, nenhum gateway, nada publicado.
 
+**Situação: CONCLUÍDA (2026-10-29).** Blocos A a E publicados (`48e6ebe` a `b06c604`, ver [Commits da etapa 4](#commits-da-etapa-4)). A loja é **simulada**: nenhum pagamento real, nenhum e-mail enviado, frete e pedido simulados. O que ficou aberto está em [Decisões e textos que aguardam o dono (fim da etapa 4)](#decisões-e-textos-que-aguardam-o-dono-fim-da-etapa-4).
+
 **Pré-requisito:** etapa 3 concluída (`0664bf7`) e as decisões P24 a P38 respondidas. **Atendido:** decididas pelo dono em 2026-10-27.
 
 **Decisões:** [ADR-0003](adr/0003-estado-da-sacola.md) (contexto + `useReducer` + `localStorage`, preços derivados), [ADR-0007](adr/0007-validacao-com-zod-mini.md) (Zod via `zod/mini`, orçamento de pacote; **aprovado pelo dono em 2026-10-27**), [ADR-0008](adr/0008-sacola-frete-e-checkout-simulados.md) (formato salvo e tolerância a falhas, índice do catálogo, Server Actions, rotas, dados pessoais).
@@ -1096,20 +1089,24 @@ Cada tarefa termina com `lint`, `typecheck`, `format:check`, `test`, `build` e `
 
 17. **[documentador-tecnico] Fechamento da etapa 4**
     - README (rotas `/sacola` e `/checkout`, a simulação e o e-mail de recusa para testes), este plano (situação, pendências respondidas), nota no ADR-0007 com a medição final do pacote.
-    - **Pronto quando:** commit `docs: fecha a etapa 4` publicado (ou incluído no commit 5).
+    - **Feito em 2026-10-29** (README, este plano, ADR-0007, ADR-0008 e CHANGELOG). **Pronto quando:** commit `docs: fecha a etapa 4` publicado (ou incluído no commit 5); o commit fica a cargo da sessão principal.
     - **Requisitos de segurança:** ver a [lista](#requisitos-de-segurança-por-tarefa) (tarefa 17: loja rotulada como simulada; `recusa@exemplo.com` registrado como gatilho de teste a remover com o gateway). Copiar a tabela [Fica para depois](#fica-para-depois-segurança-e-lgpd) para as etapas 8 e 9 quando forem detalhadas.
 
 ### Commits da etapa 4
 
-| # | Conteúdo | Mensagem | Situação |
+| Bloco | Conteúdo | Mensagem | Situação |
 | --- | --- | --- | --- |
-| 1 | Tarefas 1 a 4 | `feat(sacola): adiciona regras da sacola, do frete e do pedido simulados` | A fazer |
-| 2 | Tarefas 5 a 8 | `feat(sacola): liga os botões Adicionar e o contador do cabeçalho` | A fazer |
-| 3 | Tarefas 9 e 10 | `feat(frete): adiciona a calculadora de frete simulada` | A fazer |
-| 4 | Tarefas 11 e 12 | `feat(sacola): adiciona a página da sacola` | A fazer |
-| 5 | Tarefas 13 a 17 | `feat(checkout): adiciona o checkout simulado` | A fazer |
+| A | Tarefas 1 a 4 | `feat(sacola): adiciona regras da sacola, do frete e do pedido simulados` | ✅ Publicado (`48e6ebe`) |
+| B | Tarefas 5 a 8 | `feat(sacola): liga os botões Adicionar e o contador do cabeçalho` | ✅ Publicado (`b7f7e73`, mais o fechamento das pendências de acessibilidade e de contexto em `a358fce`) |
+| C | Tarefas 9 e 10 | `feat(frete): adiciona a calculadora de frete simulada` | ✅ Publicado (`43e7d7d`) |
+| D | Tarefas 11 e 12 | `feat(sacola): adiciona a página da sacola` | ✅ Publicado (`9d4e0b3`) |
+| E | Tarefas 13 a 16 | `feat(checkout): adiciona o checkout simulado` | ✅ Publicado (`b06c604`) |
+| Docs | Registro dos blocos C e D | `docs: registra os blocos C e D da etapa 4` | ✅ Publicado (`7df3d03`) |
+| Docs | Tarefa 17: fechamento da etapa 4 | `docs: fecha a etapa 4` | Pendente de commit (feito pela sessão principal) |
 
-Ordem: A → B → (C e D podem correr em paralelo) → E. O E depende de C (reusa `consultarFrete`) e de D (estado vazio, `QuantityStepper` em `components/`).
+Antes e entre os blocos, dois commits só de documentação: `85de43d` (detalhamento da etapa) e `07e4586` (ponto de retomada).
+
+Ordem seguida: A → B → C → D → E. O E depende de C (reusa `consultarFrete`) e de D (estado vazio, `QuantityStepper` em `components/`).
 
 ### Controles ao fim da etapa 4
 
@@ -1182,6 +1179,81 @@ Todas as perguntas abaixo foram **decididas pelo dono em 2026-10-27**. P24 e P27
 | P37 | Os dados digitados no checkout devem sobreviver a um recarregamento da página? | **Não.** Ficam só em memória (ADR-0008); recarregar limpa o formulário. Nada de dado pessoal no navegador. |
 | P38 | Visual da "barra de frete grátis" (§10.1). | Texto + barra de progresso decorativa (`aria-hidden`) de 6 px, raio 3, `--ouro` sobre `--pedra` (o mesmo desenho das barras do perfil sensorial), cheia ao atingir R$ 180. |
 
+#### Situação das decisões P24 a P38 ao fim da etapa 4
+
+Todas foram decididas em 2026-10-27 e **implementadas**. A tabela diz onde e o que ainda aguarda o dono.
+
+| #       | Implementada em                                                                                              | Resta ao dono                                                                                                                  |
+| ------- | ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------ |
+| P24     | Tarefa 7 (`formatoDeVitrine` em `lib/catalogo.ts`)                                                           | Nada                                                                                                                           |
+| P25     | Tarefas 6, 9, 11, 14 e 15                                                                                    | Confirmar os textos novos que o P25 não cobria ([lista única](#decisões-e-textos-que-aguardam-o-dono-fim-da-etapa-4))         |
+| P26     | Tarefa 6 (`AvisoDaSacola`)                                                                                   | Nada                                                                                                                           |
+| P27     | Tarefas 3, 9 e 15 (lacunas `[N]` e `R$ [PREÇO]` visíveis; total em lacuna abaixo de R$ 180)                  | Fornecer a tabela de frete e o prazo                                                                                           |
+| P28     | Tarefa 3 (`calcularFrete`, faixa 00000-000 a 00999-999)                                                      | Nada (a regra real vem com a transportadora)                                                                                   |
+| P29, P30 | Tarefa 3 (`commerce.ts`: frete grátis em ≥ R$ 180 sobre o subtotal antes do Pix; Pix só sobre o subtotal) | Nada                                                                                                                           |
+| P31     | Tarefas 7 e 11 (Embalar para presente; linha "Embalagem para presente" com **Tirar**)                       | Nada                                                                                                                           |
+| P32     | Tarefa 14 (campos do checkout, sem CPF)                                                                      | Nada                                                                                                                           |
+| P33     | Tarefa 15 (rádios Pix e Cartão, sem campo de cartão; `[n]` continua lacuna)                                  | Informar o `[n]` das parcelas                                                                                                  |
+| P34     | Tarefa 14 (data de amanhã até 60 dias, fuso de São Paulo)                                                    | Nada                                                                                                                           |
+| P35     | Tarefas 2, 7 e 11 (máximo de 10 por linha)                                                                   | Nada                                                                                                                           |
+| P36     | Tarefa 15 (a confirmação **não** mostra o número do pedido)                                                  | Decidir se mostra **Pedido nº AQ-…**                                                                                           |
+| P37     | Tarefas 14 e 15 (dados só em memória)                                                                        | Nada                                                                                                                           |
+| P38     | Tarefa 11 (barra de frete grátis de 6 px)                                                                    | Nada                                                                                                                           |
+
+O [ADR-0007](adr/0007-validacao-com-zod-mini.md) (Zod via `zod/mini`) foi aceito em 2026-10-27 e o orçamento de pacote foi respeitado (medição final no próprio ADR).
+
+---
+
+## Etapa 8 — Rodada de qualidade (herança da etapa 4)
+
+> A etapa 8 ainda será detalhada pelo `arquiteto-de-software`. Esta seção reúne o que a etapa 4 deixou para ela, copiado de [Fica para depois (segurança e LGPD)](#fica-para-depois-segurança-e-lgpd), de [Fica para depois (blocos C e D)](#fica-para-depois-blocos-c-e-d) e de [Fica para depois (bloco E)](#fica-para-depois-bloco-e). As tabelas originais continuam onde estão.
+
+**Segurança**
+
+| Item                                                                                                                                                                                                                                                                                                                                                             | Responsável                                                           |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| ADR de CSP (nonce exige renderização dinâmica; avaliar o custo com o `performance-e-seo`)                                                                                                                                                                                                                                                                        | `arquiteto-de-software`, `auditor-de-seguranca`, `performance-e-seo`  |
+| Cabeçalhos estáticos em `next.config` `headers()`: HSTS sem `preload`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy` com `camera`, `microphone`, `geolocation` e `payment` vazios, `frame-ancestors 'none'`, `poweredByHeader: false`; teste de cabeçalhos no e2e                                       | `devops-e-deploy`, `testes-e-qualidade`                               |
+| `/sacola` e `/checkout` fora do sitemap e **sem** `Disallow` no `robots` (o `noindex` precisa ser lido)                                                                                                                                                                                                                                                          | `performance-e-seo`                                                   |
+| Limite de taxa nas duas Server Actions (`consultarFrete` e `confirmarPedido`); obrigatório antes de e-mail transacional ou de API paga, então vem antes se esses serviços chegarem primeiro                                                                                                                                                                      | `engenheiro-de-ecommerce`, `auditor-de-seguranca`                     |
+
+**Desempenho, interface e acessibilidade**
+
+| Item                                                                                                                                                                                                  | Responsável                                                  |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| Colar "CEP 01310-100" no campo de CEP: o `maxLength=9` corta o texto antes da máscara (por exemplo, `onPaste` que normaliza)                                                                          | `frontend-nextjs`                                            |
+| Reserva de 320 px da `/sacola` (`.reserva`): medir o CLS real antes de a sacola ser lida do `localStorage` e ajustar                                                                                  | `performance-e-seo`                                          |
+| Contrastes que dependem de decisão do dono (borda dos campos 1,86:1; opacidade do botão desabilitado e pendente, com foco a 2,84:1; `--placeholder` 4,47:1): reconferir depois da decisão             | `especialista-em-acessibilidade`, `guardiao-do-design`       |
+| Indicador de etapas a 360 px ("3. Confirmação" quebra de linha) e quebras "01310-/100" e "e-/mail": aplicar o que o dono decidir                                                                      | `frontend-nextjs`                                            |
+| Medidas de tipografia do checkout fora da §3.2 (h2 de etapa 28 px, resumo de erros 18 px, **Resumo do pedido** 22 px, legenda 12 px com `0,14em`): registrar no checklist da §14 ou ajustar            | `guardiao-do-design`                                         |
+| JSON-LD `Product` e sitemap (sacola e checkout fora do sitemap)                                                                                                                                       | `performance-e-seo`                                          |
+
+## Etapa 9 — CI completo, ambientes e aceite (herança da etapa 4)
+
+> A etapa 9 ainda será detalhada pelo `arquiteto-de-software`. Esta seção reúne o que a etapa 4 deixou para ela. As tabelas originais continuam em [Fica para depois (segurança e LGPD)](#fica-para-depois-segurança-e-lgpd) e [Fica para depois (bloco E)](#fica-para-depois-bloco-e).
+
+**Segurança e hospedagem**
+
+| Item                                                                                                                                                                                                                                                                       | Responsável                                         |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
+| Dependabot ou Renovate; `npm ci`, `npm audit` e `npm audit signatures` no CI                                                                                                                                                                                               | `devops-e-deploy`                                   |
+| Conferir `Host`/`X-Forwarded-Host` na hospedagem (CSRF das Server Actions: definir a causa e os hosts permitidos antes de publicar), `serverActions.allowedOrigins` exatos e `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` estável entre instâncias                                   | `devops-e-deploy`, `auditor-de-seguranca`           |
+| Logs da hospedagem sem corpo de POST                                                                                                                                                                                                                                       | `devops-e-deploy`                                   |
+
+**LGPD (antes da publicação, com o dono; validar com profissional de direito)**
+
+Aviso de privacidade com link antes de **Confirmar pedido**; base legal (art. 7º, V, e obrigação fiscal); justificar o telefone ou torná-lo opcional; prazo de retenção; canal do titular; `localStorage` declarado como estritamente necessário; dados do presenteado quando existirem (depende da pendência do dono sobre o destinatário do presente).
+
+**ADR do gateway (quando o dono escolher o gateway)**
+
+Tokenização (nenhum dado de cartão no nosso servidor); webhooks com assinatura, proteção contra *replay* e idempotência; segredos só em módulos `server-only`; identificador do pedido opaco de 128 bits com prova de posse; unicidade do número `AQ-` garantida no banco ou com 8 dígitos; recalcular e recusar total divergente; codificar a mensagem do presente conforme o contexto de saída; **remover o gatilho `recusa@exemplo.com` de `lib/pedido.server.ts`** (marcado com `// SIMULAÇÃO: remover com o gateway`; o teste de `lib/pedido.server.test.ts` confere os marcadores).
+
+**Documentação (`documentador-tecnico`)**
+
+- Criar `docs/conteudo.md` (guia do dono da loja) e `docs/ambiente.md` (variáveis de ambiente). Nenhum dos dois existe hoje, e o `.env.example` ainda só tem `NEXT_PUBLIC_SITE_URL` e `NEXT_PUBLIC_WHATSAPP_NUMBER`.
+- Atualizar o `CHANGELOG.md` e o README com hospedagem, gateway e ambientes.
+- Checklist de aceite da §14 da spec, com os desvios aprovados (P21 e os textos novos da [lista do dono](#decisões-e-textos-que-aguardam-o-dono-fim-da-etapa-4)).
+
 ---
 
 ## Pendências e decisões em aberto
@@ -1190,7 +1262,7 @@ Todas as perguntas abaixo foram **decididas pelo dono em 2026-10-27**. P24 e P27
 | --- | --- | --- |
 | Hospedagem (ex.: Vercel ou outra) | **Não decidida.** Nada de publicar em produção sem aprovação. Será tratada na etapa 9 com ADR próprio. | Dono do projeto |
 | Gateway de pagamento (Shopify Storefront, Mercado Pago ou Pagar.me, com Pix) | **Não decidido.** Até lá, só funções simuladas em `lib/commerce.ts` (spec §2), atrás dos Server Actions da etapa 4 (ADR-0008). A integração real exige ADR, chaves em variável de ambiente e aprovação do dono. | Dono do projeto |
-| Pendências P24 a P38 da etapa 4 | **Decididas pelo dono em 2026-10-27** (ver [Decisões do dono para a etapa 4](#decisões-do-dono-para-a-etapa-4)). ADR-0007 aceito na mesma data. | Dono do projeto |
+| Pendências P24 a P38 da etapa 4 | **Decididas pelo dono em 2026-10-27 e implementadas** (ver [Decisões do dono para a etapa 4](#decisões-do-dono-para-a-etapa-4) e a [situação](#situação-das-decisões-p24-a-p38-ao-fim-da-etapa-4)). ADR-0007 aceito na mesma data. | Dono do projeto |
 | Aviso de privacidade (LGPD) e termos de compra | O checkout simulado coleta dados pessoais só em memória. Antes da publicação (etapa 9), é preciso ter um texto de privacidade e definir a base legal, junto com o P9 (newsletter). Itens detalhados pelo `auditor-de-seguranca` em [Fica para depois](#fica-para-depois-segurança-e-lgpd). | Dono do projeto + `auditor-de-seguranca` |
 | Destinatário do presente (nome e endereço do presenteado) | **Em aberto.** Hoje o checkout tem um endereço só. Se o presenteado tiver dados próprios, entram na LGPD (ver [Fica para depois](#fica-para-depois-segurança-e-lgpd)). Não bloqueia a etapa 4. | Dono do projeto |
 | Segurança herdada da etapa 4 (CSP, cabeçalhos, limite de taxa, CI, hospedagem, ADR do gateway) | Registrada em [Fica para depois](#fica-para-depois-segurança-e-lgpd); copiar para as etapas 8 e 9 e para o ADR do gateway. | `arquiteto-de-software` + `auditor-de-seguranca` |
@@ -1199,13 +1271,81 @@ Todas as perguntas abaixo foram **decididas pelo dono em 2026-10-27**. P24 e P27
 | Provedor de IA para o assistente | Etapa 6 começa com roteiro determinístico; integração com IA real exigirá ADR. | Dono do projeto + `especialista-em-ia-conversacional` |
 | Destino de "Entregas refrigeradas", "Trocas e devoluções" e "Perguntas frequentes" (rodapé) | A spec não define rotas. Ficam como texto não interativo até existir página. | Dono do projeto |
 | Contraste de `--placeholder` sobre `--carvao` (4,47:1, abaixo de 4,5:1) | **Aceito como provisório** pelo dono (2026-10-26): só aparece nos textos `[FOTO: …]`. Rever antes da publicação se ainda houver placeholders. | Dono do projeto |
-| Teste e2e do foco após navegar pelo menu mobile (`test.fixme` em `e2e/layout-global.spec.ts`) | Depende de `/queijos` existir; **ativar na etapa 3** (tarefa 12). | `testes-e-qualidade` |
+| Teste e2e do foco após navegar pelo menu mobile (`test.fixme` em `e2e/layout-global.spec.ts`) | **Resolvido na etapa 3** (tarefa 12): não há mais `test.fixme` em `e2e/`. | `testes-e-qualidade` |
 | Pendências P1 a P16 da etapa 3 | Ver [Decisões do dono para a etapa 3](#decisões-do-dono-para-a-etapa-3). Cada uma tem um padrão provisório. | Dono do projeto |
 | Controles sem ação (Buscar, Minha conta, "Fale conosco", botão flutuante) | "Fale conosco" e o botão flutuante são ligados ao painel no fim da etapa 3; Buscar e Minha conta precisam de destino antes da publicação. | `frontend-nextjs` + dono do projeto |
 | Painel de atendimento: rolar a conversa até a última mensagem | **Resolvido:** ao abrir, só o log rola até o fim (suave; instantâneo com `prefers-reduced-motion`). Testes unitário e e2e. | Dono do projeto |
 | Painel de atendimento: fechar ao mudar de rota | **Resolvido:** `Atendimento.tsx` fecha o painel (sem devolver o foco) quando o `usePathname()` muda; mudança só de searchParams não fecha. Testes unitário e e2e (`goBack`). | Dono do projeto |
 | Etapa 8 (`performance-e-seo`): enxugar o pacote global do painel | **Resolvido:** o cartão do chat usa `lib/cartaoDoChat.ts` (módulo estático, conferido por teste contra `dadosDoCartao`); o painel não importa mais `lib/catalogo` nem `data/cheeses`. | `performance-e-seo` |
 | Busca e conta no celular | O cabeçalho compacto (§7.6) não tem Buscar nem Minha conta. Definir outro caminho quando essas funções existirem. | Dono do projeto |
+
+### Decisões e textos que aguardam o dono (fim da etapa 4)
+
+Lista única das pendências abertas ao fechar a etapa 4. **Nada aqui foi alterado no código**: textos, cores, medidas e preços seguem a spec e as decisões já aprovadas. As tabelas de origem continuam mais abaixo: [blocos C e D](#textos-novos-dos-blocos-c-e-d-a-confirmar-pelo-dono), [tarefa 14](#textos-novos-da-tarefa-14-a-confirmar-pelo-dono), [tarefa 15](#textos-novos-da-tarefa-15-a-confirmar-pelo-dono), [tarefa 14/15](#textos-novos-da-tarefa-1415-a-confirmar-pelo-dono) e [bloco E](#fica-para-depois-bloco-e).
+
+#### A. Textos novos das tarefas 9 a 15 (lista única, sem repetição)
+
+Textos que a spec e o P25 não definem. Seguem o padrão do projeto e aguardam confirmação.
+
+| Texto | Onde | Visível? | Tarefa |
+| --- | --- | --- | --- |
+| **Entrega** (h2 da etapa 1) e **Pagamento** (h2 da etapa 2) | Títulos das etapas do checkout | Sim | 14, 15 |
+| **Seus dados** e **Endereço de entrega** | Legendas dos grupos de campos | Sim | 14 |
+| **Nome completo**, **E-mail**, **Telefone**, **CEP**, **Rua ou avenida**, **Número**, **Complemento (opcional)**, **Bairro**, **Cidade**, **Estado** | Rótulos dos campos (também nomes no resumo de erros) | Sim | 14 |
+| **Selecione** | Primeira opção da lista de estados | Sim | 14 |
+| **(11) 91234-5678** | Placeholder do telefone | Sim | 14 |
+| **Revise os campos abaixo** | Título do resumo de erros (`h3` que recebe o foco ao enviar com falha) | Sim | 14 |
+| **Nota fiscal sem valor visível ao presenteado.** | Nota do bloco do presente (a spec traz só o fragmento; foi capitalizado e recebeu ponto final) | Sim | 14 |
+| **Forma de pagamento** | Legenda do grupo de rádios | Sim | 15 |
+| **Resumo do pedido** | Título (h3) do resumo da etapa 2 e `aria-label` da região do resumo da `/sacola` | Sim (etapa 2); leitor de tela (`/sacola`) | 11, 15 |
+| **{n} × {nome}, {formato}** | Linha de cada item no resumo da etapa 2 | Sim | 15 |
+| **Voltar para a sacola** | Link ao lado do erro quando a sacola não vale mais | Sim | 15 |
+| **dd/mm/aaaa** | Formato da data de entrega no resumo | Sim | 15 |
+| **−R$ x,xx** (sinal de menos U+2212) | Desconto do Pix no resumo | Sim | 15 |
+| **Tirar** | Botão da linha "Embalagem para presente" no resumo da `/sacola` | Sim | 11 |
+| **Tirar a embalagem para presente** | `aria-label` do botão acima | Leitor de tela | 11 |
+| **Itens da sacola** | `aria-label` da lista de linhas da `/sacola` | Leitor de tela | 11 |
+| **Quantidade de {nome}, {formato}** | Rótulo do seletor de quantidade de cada linha | Leitor de tela | 11 |
+| **Máximo de 10 por item** | Descrição do seletor de quantidade no limite | Leitor de tela | 7, 11 |
+| **Calculando…** | Região viva da consulta de frete (produto e checkout) | Leitor de tela | 9, 14 |
+| **Etapas do pedido** | `aria-label` do indicador de etapas | Leitor de tela | 14 |
+| **(etapa atual)** | Dentro do item atual do indicador de etapas | Leitor de tela | 14 |
+| **Até 200 caracteres e 6 linhas.** | Dica do cartão do presente (`aria-describedby`) | Leitor de tela | 14 |
+| **160 caracteres ou mais, de 200.**, **190 caracteres ou mais, de 200.** e **Limite excedido: no máximo 200 caracteres e 6 linhas.** | Região viva do contador (só nos marcos 160, 190 e ao exceder) | Leitor de tela | 14 |
+| **Confirmando o pedido…** | Região viva enquanto **Confirmar pedido** está pendente | Leitor de tela | 15 |
+| **Pix escolhido. Desconto de R$ x,xx. Total R$ y,yy.** e **Cartão escolhido. Sem desconto. Total R$ y,yy.** | Região viva ao trocar Pix e cartão (com frete em lacuna, o total anunciado é **R$ [PREÇO]**) | Leitor de tela | 15 |
+
+Decisões técnicas a confirmar junto com os textos:
+
+1. O telefone usa `autocomplete="tel-national"` (e não `tel`), porque o esquema aceita só DDD + número, sem `+55`.
+2. O erro de pagamento mostra o **mesmo** texto aprovado para qualquer motivo (recusa, indisponível, sacola inválida, falha de rede). Só `dados-invalidos` e `fora-de-area` voltam à etapa 1.
+3. A linha **Desconto no Pix** só existe com Pix escolhido; sem escolha, o resumo mostra o valor sem desconto.
+4. A confirmação não repete o aviso de envio e não mostra o número do pedido (ver P36, abaixo).
+
+#### B. Decisões de cor, medida e comportamento
+
+| Assunto | Situação hoje | Sugestão registrada | Quem decide |
+| --- | --- | --- | --- |
+| Borda dos campos | `--pedra-clara` dá 1,86:1 sobre `--cave` (WCAG 1.4.11 pede 3:1). É cor da spec e vale para todos os campos; desvio aceito no P18 | Cor próxima de `#7A6E60` (≥ 3:1) | Dono |
+| Opacidade do botão desabilitado e pendente | `opacity: .5` (P19) é herdada pelo contorno de foco, que fica em 2,84:1 | `.65` ou mais, ou desenhar o contorno fora da opacidade | Dono |
+| Indicador de etapas a 360 px | "3. Confirmação" quebra de linha | `gap` de 16 px abaixo de 400 px | Dono |
+| Medidas de tipografia fora da §3.2 | h2 de etapa 28 px, resumo de erros 18 px, **Resumo do pedido** 22 px, legenda 12 px com `0,14em` (o sobretítulo usa `0,18em`) | Aprovar os valores ou indicar os da spec | Dono |
+| Nota fiscal do presente | Capitalizada e com ponto final (ver lista A) | Aprovar o texto | Dono |
+| Quebra de "01310-/100" e "e-/mail" em telas estreitas | Pode ocorrer nas mensagens do frete | Hífen e espaço sem quebra nesses trechos (mexe em texto aprovado, por isso não aplicado) | Dono |
+| Lacunas `[PREÇO]`, `[N]` e `[n]` | Visíveis de propósito: frete abaixo de R$ 180 (e o total junto), prazo de entrega e parcelas do cartão | Fornecer a tabela de frete, o prazo e o número de parcelas | Dono |
+| Contraste de `--placeholder` | 4,47:1 sobre `--carvao`; aceito como provisório; só aparece nos `[FOTO: …]` | Rever antes da publicação | Dono |
+| **Adicionar** do cartão de queijo esgotado | A spec (§7.5) só define o estado na página de produto. Hoje `ESGOTADOS` está vazio; o reducer já ignora a adição de formato esgotado, sem aviso | Definir o cartão quando houver estoque real | Dono |
+| Item esgotado fora do resumo, mas dentro do envio | O servidor responde `sacola-invalida` e a tela mostra **Voltar para a sacola** | Manter ou mudar o comportamento | Dono |
+| Número do pedido na confirmação (P36) | Não aparece, para seguir o texto literal da §10.2 | **Pedido nº AQ-123456** acima do título | Dono |
+| Destinatário do presente | O checkout tem um endereço só; se o presenteado tiver dados próprios, entram na LGPD | Decidir se haverá endereço e nome do presenteado | Dono |
+| Destino de **Buscar** e **Minha conta** | Controles sem ação; o cabeçalho do celular (§7.6) nem os tem | Definir as funções e o caminho no celular antes da publicação | Dono |
+| Seletor de quantidade no celular (P12) | A página de produto esconde a quantidade no celular; a barra fixa adiciona 1 unidade. O seletor continua na `/sacola` | Manter ou mostrar o seletor na página de produto | Dono |
+
+#### C. Pontos técnicos pequenos, sem decisão do dono
+
+- Pausar o prazo do aviso em hover ou foco não foi feito: o aviso tem `pointer-events: none` e nenhum conteúdo focável, então não recebe hover nem foco (duração mantida em 4 s).
+- O filtro de 404 de prefetch (`_rsc=`) em `e2e/_apoio/console.ts` cobre hoje só `presentes`, `aprenda` e `produtores`; tirar cada uma quando a rota existir (etapa 7).
+- Colar "CEP 01310-100" e a reserva de 320 px da `/sacola`: ver [Etapa 8](#etapa-8--rodada-de-qualidade-herança-da-etapa-4).
 
 ### Textos novos dos blocos C e D (a confirmar pelo dono)
 
@@ -1223,11 +1363,75 @@ Textos que a spec e o P25 não definem e que entraram nos blocos C e D. Seguem o
 
 Sugestão ao dono (não aplicada, porque mexe em texto aprovado): em telas estreitas, "01310-100" e "e-mail" podem quebrar de linha em "01310-/100" e "e-/mail" nas mensagens do frete; um espaço sem quebra e um hífen sem quebra evitariam isso.
 
+### Textos novos da tarefa 14 (a confirmar pelo dono)
+
+Textos do `/checkout` (etapa 1) que a spec §10.2 e o P25 não definem. Seguem o padrão do projeto e aguardam confirmação. Os literais da spec (indicador de etapas, aviso de envio), os de P25 (**Finalizar compra**, **Continuar para o pagamento**, **Voltar para a entrega**, **Mensagem do cartão**, **Data de entrega**, **Embalar para presente**, contador **N de 200 caracteres**) e os `MENSAGENS_DE_ERRO` aprovados foram usados como estão.
+
+| Texto | Onde | Visível? |
+| --- | --- | --- |
+| **Entrega** | Título (h2) da etapa 1; **Pagamento** no esqueleto da etapa 2 | Sim |
+| **Etapas do pedido** | `aria-label` do indicador `<ol>` | Só leitor de tela |
+| **Seus dados** | Legenda do grupo nome, e-mail e telefone | Sim |
+| **Endereço de entrega** | Legenda do grupo do endereço | Sim |
+| **Nome completo**, **E-mail**, **Telefone**, **CEP**, **Rua ou avenida**, **Número**, **Complemento (opcional)**, **Bairro**, **Cidade**, **Estado** | Rótulos dos campos (também nomes no resumo de erros) | Sim |
+| **Selecione** | Primeira opção da lista de estados | Sim |
+| **(11) 91234-5678** | Placeholder do telefone (mesmo exemplo do erro aprovado) | Sim |
+| **Revise os campos abaixo** | Título do resumo de erros (foca ao enviar com falha); cada item é "Rótulo: mensagem aprovada" | Sim |
+| **Nota fiscal sem valor visível ao presenteado.** | Nota do bloco do presente. A spec traz só o fragmento "nota fiscal sem valor visível ao presenteado"; foi capitalizado e recebeu ponto final | Sim |
+| **Calculando…** | Região viva do CEP durante a consulta de frete (mesmo texto da calculadora do produto) | Só leitor de tela |
+
+Decisão técnica a confirmar: o telefone usa `autocomplete="tel-national"` (e não `tel`), porque o esquema só aceita DDD + número, sem `+55`.
+
+### Textos novos da tarefa 15 (a confirmar pelo dono)
+
+Textos da etapa 2, do erro e da etapa 3 que a spec §10.2 e o P25 não definem. Os literais da spec (**Pix (5% de desconto)**, **Cartão em até [n]x sem juros**, a mensagem de erro, o título e o texto da confirmação) e os de P25 (**Subtotal**, **Frete**, **Desconto no Pix**, **Total**, **Grátis**, **Confirmar pedido**, **Voltar para a entrega**, **Embalar para presente**, **Mensagem do cartão**, **Data de entrega**, **Escolha Pix ou cartão.**) foram usados como estão.
+
+| Texto | Onde | Visível? |
+| --- | --- | --- |
+| **Pagamento** | Título (h2) da etapa 2 | Sim |
+| **Forma de pagamento** | Legenda do grupo de rádios | Sim |
+| **Resumo do pedido** | Título (h3) do resumo da etapa 2 (mesmo texto do `aria-label` da `/sacola`) | Sim |
+| **{n} × {nome}, {formato}** | Linha de cada item no resumo da etapa 2 (ex.: 1 × Brie francês, 500 g) | Sim |
+| **Voltar para a sacola** | Link que acompanha o erro quando a sacola não vale mais (`sacola-invalida`) | Sim |
+| **Explorar a cave** | Botão da confirmação (texto já existente na spec, usado também aqui; leva a `/queijos`) | Sim |
+| **dd/mm/aaaa** | Formato da data de entrega no resumo | Sim |
+| **−R$ x,xx** | O desconto do Pix aparece com o sinal de menos (U+2212) | Sim |
+
+Decisões técnicas a confirmar: (1) o erro mostra o MESMO texto aprovado para qualquer motivo (recusa, indisponível, sacola inválida, falha de rede); só `dados-invalidos` com erros por campo e `fora-de-area` voltam à etapa 1; (2) a linha **Desconto no Pix** só existe com Pix escolhido; sem escolha ainda, o resumo mostra o valor sem desconto; (3) a confirmação não repete o aviso de envio nem mostra o número do pedido (P36).
+
+### Textos novos da tarefa 14/15 (a confirmar pelo dono)
+
+Textos que a rodada final de acessibilidade do checkout acrescentou. Todos só para leitor de tela, exceto o título do resumo de erros, que já era visível e agora recebe o foco como `h3`.
+
+| Texto | Onde | Visível? |
+| --- | --- | --- |
+| **Até 200 caracteres e 6 linhas.** | Dica estável ligada ao cartão do presente por `aria-describedby` | Só leitor de tela |
+| **160 caracteres ou mais, de 200.**, **190 caracteres ou mais, de 200.** e **Limite excedido: no máximo 200 caracteres e 6 linhas.** | Região viva do contador, anunciada só nos marcos 160, 190 e ao exceder (não a cada tecla) | Só leitor de tela |
+| **(etapa atual)** | Dentro do item atual do indicador de etapas | Só leitor de tela |
+| **Confirmando o pedido…** | Região viva enquanto o botão **Confirmar pedido** está pendente | Só leitor de tela |
+| **Pix escolhido. Desconto de R$ x,xx. Total R$ y,yy.** e **Cartão escolhido. Sem desconto. Total R$ y,yy.** | Região viva ao trocar Pix e cartão (com o frete em lacuna, o total anunciado é **R$ [PREÇO]**) | Só leitor de tela |
+| **Revise os campos abaixo** | Já visível; agora é o `h3` que recebe o foco programático (o contorno dourado continua no cartão inteiro) | Sim |
+
 ### Fica para depois (blocos C e D)
 
 - **Colar "CEP 01310-100"** no campo de CEP: o `maxLength=9` corta o texto antes da máscara. Tratar na etapa 8 (por exemplo, `onPaste` que normaliza).
 - **Reserva de 320 px da `/sacola`** (`.reserva`, CLS antes de a sacola ser lida do `localStorage`): medir o CLS real na etapa 8 e ajustar.
 - **Contraste do `--placeholder`** (4,47:1): já aceito como provisório pelo dono (ver Pendências).
+
+### Fica para depois (bloco E)
+
+Pontos que dependem de decisão do dono (nada disto foi alterado):
+
+- **Borda dos campos:** `--pedra-clara` sobre `--cave` dá contraste 1,86:1 (WCAG 1.4.11 pede 3:1). É cor da spec e o problema é sistêmico (todos os campos). Sugestão: ≈ `#7A6E60` (≥ 3:1).
+- **Botão desabilitado e pendente:** `opacity: .5` é herdada pelo contorno de foco (2,84:1). Sugestão: `.65` ou mais, ou desenhar o contorno fora da opacidade.
+- **Indicador de etapas a 360 px:** "3. Confirmação" quebra de linha. Sugestão: `gap` de 16 px abaixo de 400 px.
+- **Tipografia sem correspondência na spec §3.2:** `h2` de etapa 28 px, resumo de erros 18 px, **Resumo do pedido** 22 px e legenda 12 px com `0,14em` (o sobretítulo usa `0,18em`).
+- **Nota fiscal** do presente: capitalizada e com ponto final (a spec traz só o fragmento).
+- **`[PREÇO]` no total** enquanto o frete for lacuna (comportamento intencional, sem inventar valor).
+- **Item esgotado fora do resumo, mas dentro do envio:** o servidor responde `sacola-invalida` e a tela mostra o link **Voltar para a sacola**. Comportamento mantido.
+- **CSRF e `X-Forwarded-Host`** (etapa 9): definir a causa e os hosts permitidos antes de publicar.
+- **LGPD** (etapa 9): aviso de privacidade, base legal, retenção e destinatário do presente. Validar com profissional de direito.
+- **Número do pedido** (`Pedido nº AQ-…`) acima do título da confirmação: sugestão ao dono (P36 hoje proíbe mostrar).
 
 ## Decisões de interpretação da spec (etapa 2)
 
