@@ -3,7 +3,7 @@
 > Fonte da verdade: `ATELIE-DO-QUEIJO-SPEC.md`. Decisões técnicas: `docs/adr/`.
 > Última atualização: 2026-10-27. Etapas 1, 2 e 3 concluídas. Etapa 4 (sacola, frete e checkout simulado) **detalhada e decidida**: P24 a P38 e ADR-0007 decididos pelo dono em 2026-10-27; requisitos de segurança do `auditor-de-seguranca` incorporados.
 >
-> **RETOMADA (2026-10-29):** etapa 4, **bloco A publicado** (`48e6ebe`) e **bloco B implementado e verificado, mas SEM COMMIT**. Falta só o commit `feat(sacola): liga a sacola à interface` e o push.
+> **RETOMADA (2026-10-29, atualizada):** etapa 4, blocos A e B publicados (`48e6ebe`, `b7f7e73`, `a358fce`). **Blocos C (frete: tarefas 9 e 10) e D (`/sacola`: tarefas 11 e 12) implementados e verificados, mas SEM COMMIT.** Falta o commit e o push; o **próximo é o bloco E** (checkout, tarefas 13 a 17). Textos novos dos blocos C e D aguardam confirmação do dono (ver [Textos novos dos blocos C e D](#textos-novos-dos-blocos-c-e-d-a-confirmar-pelo-dono)). O `bodySizeLimit: '32kb'` da tarefa 13 foi antecipado para a tarefa 9. Abaixo, a nota anterior (bloco B), mantida como histórico.
 >
 > - **Estado da árvore de trabalho:** arquivos alterados/novos do bloco B (tarefas 5, 6 e 7: `SacolaProvider`, `LinkDaSacola`, `AvisoDaSacola`, `BotaoAdicionar`, `QuantityStepper` em `components/`, `lib/catalogo.ts` com `formatoDeVitrine`, `e2e/_apoio/console.ts`, `e2e/sacola.spec.ts`, `e2e/adicionar.spec.ts`).
 > - **Verificação do bloco B feita (tarefa 8):** as correções foram aplicadas: aviso de sucesso só quando toda a quantidade entra (senão o do limite); `storageArea` conferido no evento `storage`; **Embalar para presente** sem `aria-pressed` (decisão do dono), com o texto visível **Pedido marcado como presente** e `data-presente` no contêiner; `lerSacolaSalva` com *type guard* à mão no lugar do Zod (orçamento do pacote, ver ADR-0007); e2e com `vigiarConsole` compartilhado e caso de duas abas.
@@ -817,7 +817,11 @@ export function validarEntrega(bruto: unknown):
 'use server';
 /** Confere typeof e tamanho antes de normalizar. Retorno só { ok, resultado | erro }, sem eco da entrada. */
 export async function consultarFrete(entrada: unknown):
-  Promise<{ ok: true; resultado: ResultadoDoFrete } | { ok: false; erro: 'cep-invalido' }>;
+  Promise<{ ok: true; resultado: ResultadoDoFrete } | { ok: false; erro: 'cep-invalido' | 'indisponivel' }>;
+// `cep-invalido`: entrada fora do formato (a interface mostra a mensagem do P25).
+// `indisponivel`: falha interna (a interface mostra a mensagem genérica do P25 e permite tentar de novo).
+// Nota: o frete usa a chave `erro`; `confirmarPedido` usa `motivo` (ADR-0008 §3). Os dois nomes
+// são deliberados: `erro` é só o que a interface mostra; `motivo` carrega a união de casos do pedido.
 
 // app/_acoes/pedido.ts — 'use server'; exporta SÓ confirmarPedido
 'use server';
@@ -967,7 +971,7 @@ Resultado da auditoria do `auditor-de-seguranca` (2026-10-27) sobre este plano e
 - Chaves de `erros` só da lista fixa de `CampoDoCheckout`, com valores de `MENSAGENS_DE_ERRO` (nada de mensagem ou `path` do Zod).
 - O servidor recusa quantidade fora de 1–10 ou não inteira, soma linhas repetidas e recusa se a soma passar de 10, e confere esgotado em `data/cheeses`.
 - Testes: `NaN`/`Infinity`, quantidade 11, duas linhas de 6, `itens` com 31 e com 10.000 linhas, entrada `Map` e `null`; `presente: false` com mensagem → a mensagem é descartada.
-- `next.config.ts` com `serverActions.bodySizeLimit: '32kb'`.
+- `next.config.ts` com `serverActions.bodySizeLimit: '32kb'` (**antecipado para a tarefa 9**: chave `experimental.serverActions.bodySizeLimit`, conferida em `node_modules/next/dist/docs/.../serverActions.md`; e2e em `e2e/frete.spec.ts` recusa um corpo de ~40 KB).
 
 **Tarefas 14 e 15 (checkout)**
 
@@ -1202,6 +1206,28 @@ Todas as perguntas abaixo foram **decididas pelo dono em 2026-10-27**. P24 e P27
 | Painel de atendimento: fechar ao mudar de rota | **Resolvido:** `Atendimento.tsx` fecha o painel (sem devolver o foco) quando o `usePathname()` muda; mudança só de searchParams não fecha. Testes unitário e e2e (`goBack`). | Dono do projeto |
 | Etapa 8 (`performance-e-seo`): enxugar o pacote global do painel | **Resolvido:** o cartão do chat usa `lib/cartaoDoChat.ts` (módulo estático, conferido por teste contra `dadosDoCartao`); o painel não importa mais `lib/catalogo` nem `data/cheeses`. | `performance-e-seo` |
 | Busca e conta no celular | O cabeçalho compacto (§7.6) não tem Buscar nem Minha conta. Definir outro caminho quando essas funções existirem. | Dono do projeto |
+
+### Textos novos dos blocos C e D (a confirmar pelo dono)
+
+Textos que a spec e o P25 não definem e que entraram nos blocos C e D. Seguem o padrão do projeto e aguardam confirmação.
+
+| Texto | Onde | Visível? |
+| --- | --- | --- |
+| **Tirar** | Botão da linha "Embalagem para presente" no resumo da `/sacola` | Sim |
+| **Tirar a embalagem para presente** | `aria-label` do botão acima | Só leitor de tela |
+| **Itens da sacola** | `aria-label` da lista de linhas | Só leitor de tela |
+| **Resumo do pedido** | `aria-label` da região do resumo | Só leitor de tela |
+| **Quantidade de {nome}, {formato}** | Rótulo do seletor de quantidade de cada linha | Só leitor de tela |
+| **Calculando…** | Região viva da calculadora de frete durante a consulta (WCAG 4.1.3) | Só leitor de tela |
+| **Máximo de 10 por item** | Descrição do seletor de quantidade no limite | Só leitor de tela |
+
+Sugestão ao dono (não aplicada, porque mexe em texto aprovado): em telas estreitas, "01310-100" e "e-mail" podem quebrar de linha em "01310-/100" e "e-/mail" nas mensagens do frete; um espaço sem quebra e um hífen sem quebra evitariam isso.
+
+### Fica para depois (blocos C e D)
+
+- **Colar "CEP 01310-100"** no campo de CEP: o `maxLength=9` corta o texto antes da máscara. Tratar na etapa 8 (por exemplo, `onPaste` que normaliza).
+- **Reserva de 320 px da `/sacola`** (`.reserva`, CLS antes de a sacola ser lida do `localStorage`): medir o CLS real na etapa 8 e ajustar.
+- **Contraste do `--placeholder`** (4,47:1): já aceito como provisório pelo dono (ver Pendências).
 
 ## Decisões de interpretação da spec (etapa 2)
 

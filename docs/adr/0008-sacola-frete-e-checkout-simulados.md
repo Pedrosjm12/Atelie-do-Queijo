@@ -46,6 +46,7 @@ Ambiente: Next.js 16.4.3 e React 19.3.0. Na documentação instalada (`guides/se
   - valida a entrada com os esquemas compartilhados (ADR-0007);
   - **recalcula tudo no servidor** a partir de `data/cheeses` (preços, esgotados, frete grátis, desconto do Pix e o próprio frete pelo CEP), sem aceitar preço nem total vindo do cliente;
   - devolve só o que a interface mostra: uniões discriminadas `{ ok: true, … } | { ok: false, motivo }`, sem pilha de erro nem detalhe interno;
+  - `consultarFrete` usa a chave `erro` (`'cep-invalido' | 'indisponivel'`; falha interna vira `indisponivel`) e `confirmarPedido` usa `motivo`; o corpo de qualquer Server Action é limitado a 32 KB (`experimental.serverActions.bodySizeLimit`);
   - não registra em log nem guarda dado pessoal.
 - Funções puras e baratas, como `precoNoPix`, `faltaParaFreteGratis` e `mascararCep`, continuam importáveis no cliente.
 - Quando houver gateway real, a implementação de rede sai para um módulo exclusivo do servidor, com segredos em variável de ambiente e ADR próprio. Os Server Actions e os componentes não mudam.
