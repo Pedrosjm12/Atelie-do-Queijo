@@ -38,6 +38,12 @@ export function faltaParaFreteGratis(subtotal: Centavos): Centavos {
 /** CEP só com os 8 dígitos. Marca nominal: só nasce de `normalizarCep`. */
 export type Cep = string & { readonly __marca: 'Cep' };
 
+/**
+ * Mensagem de CEP inválido (P25). Fonte única: vive aqui, sem Zod, para o navegador (calculadora
+ * de frete) e `MENSAGENS_DE_ERRO.cep` (lib/pedido.ts) usarem o mesmo texto.
+ */
+export const MENSAGEM_DE_CEP_INVALIDO = 'Informe um CEP com 8 números, por exemplo 01310-100.';
+
 /** Tamanho máximo de um CEP digitado: "01310-100". */
 const TAMANHO_MAXIMO_DO_CEP_DIGITADO = 9;
 

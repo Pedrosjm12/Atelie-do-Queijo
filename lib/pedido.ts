@@ -1,5 +1,5 @@
 import * as z from 'zod/mini';
-import { normalizarCep } from './commerce';
+import { MENSAGEM_DE_CEP_INVALIDO, normalizarCep } from './commerce';
 import type { Cep } from './commerce';
 import { TAMANHO_MAXIMO_DO_ID } from './formatosDaSacola';
 import { MAXIMO_DE_LINHAS, QUANTIDADE_MAXIMA_POR_ITEM } from './sacola';
@@ -67,7 +67,7 @@ export const MENSAGENS_DE_ERRO: Readonly<Record<CampoDoCheckout, string>> = Obje
   nome: 'Informe seu nome.',
   email: 'Informe um e-mail válido, por exemplo voce@email.com.',
   telefone: 'Informe um telefone com DDD, por exemplo (11) 91234-5678.',
-  cep: 'Informe um CEP com 8 números, por exemplo 01310-100.',
+  cep: MENSAGEM_DE_CEP_INVALIDO,
   logradouro: 'Informe a rua ou avenida, por exemplo Avenida Paulista.',
   numero: 'Informe o número, por exemplo 1578.',
   complemento: 'Use até 60 caracteres no complemento, por exemplo apto 42.',

@@ -155,6 +155,29 @@
   color: var(--placeholder);
 }
 
+.campoDeCep[aria-invalid='true'] {
+  border-color: var(--casca-texto);
+}
+
+/* Resultado (§7.2, item 10): a margem fica no parágrafo, para a região vazia não ocupar espaço. */
+.resultadoDoFrete {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 10px;
+  font-size: 13px;
+  color: var(--mofo-texto);
+}
+
+.resultadoDoFrete > svg {
+  flex: none;
+  margin-top: 1px;
+}
+
+.erroDoFrete {
+  color: var(--casca-texto);
+}
+
 .calcular {
   height: 46px;
   padding: 0 20px;

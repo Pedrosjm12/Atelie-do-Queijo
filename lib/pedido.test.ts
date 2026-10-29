@@ -10,6 +10,7 @@ import {
   validarEntrega,
 } from './pedido';
 import type { CampoDoCheckout } from './pedido';
+import { MENSAGEM_DE_CEP_INVALIDO } from './commerce';
 
 // Relógio falso: 2026-10-28 02:30 UTC = 2026-10-27 23:30 em São Paulo (UTC−3).
 const AGORA = new Date('2026-10-28T02:30:00Z');
@@ -47,6 +48,7 @@ describe('MENSAGENS_DE_ERRO', () => {
       'Informe um telefone com DDD, por exemplo (11) 91234-5678.',
     );
     expect(MENSAGENS_DE_ERRO.cep).toBe('Informe um CEP com 8 números, por exemplo 01310-100.');
+    expect(MENSAGENS_DE_ERRO.cep).toBe(MENSAGEM_DE_CEP_INVALIDO); // mesma fonte do navegador
     expect(Object.keys(MENSAGENS_DE_ERRO).sort()).toEqual(
       [
         'nome',
