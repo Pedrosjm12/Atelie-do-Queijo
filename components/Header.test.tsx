@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { Header } from './Header';
+import { SacolaProvider } from './SacolaProvider';
 import { HeaderNav } from './HeaderNav';
 
 const usePathname = vi.fn<() => string>();
@@ -37,14 +38,22 @@ describe('HeaderNav', () => {
 describe('Header', () => {
   it('expõe a sacola com rótulo e destino', () => {
     usePathname.mockReturnValue('/');
-    render(<Header />);
+    render(
+      <SacolaProvider>
+        <Header />
+      </SacolaProvider>,
+    );
     const sacola = screen.getByRole('link', { name: 'Sacola, 0 itens' });
     expect(sacola).toHaveAttribute('href', '/sacola');
   });
 
   it('tem botões de busca e conta com rótulo', () => {
     usePathname.mockReturnValue('/');
-    render(<Header />);
+    render(
+      <SacolaProvider>
+        <Header />
+      </SacolaProvider>,
+    );
     expect(screen.getByRole('button', { name: 'Buscar' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Minha conta' })).toBeInTheDocument();
   });

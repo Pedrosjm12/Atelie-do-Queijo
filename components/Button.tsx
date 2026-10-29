@@ -22,7 +22,7 @@ type PropsLink = Comum &
   };
 
 type PropsBotao = Comum &
-  Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children' | 'className' | 'aria-pressed'> & {
+  Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children' | 'className'> & {
     href?: undefined;
     variante?: VarianteComLink;
     selecionado?: never;
@@ -77,7 +77,7 @@ export function Button(props: ButtonProps) {
       type={type}
       className={opcao && props.selecionado ? `${classes} ${estilos.selecionada}` : classes}
       {...resto}
-      aria-pressed={opcao ? props.selecionado : undefined}
+      {...(opcao ? { 'aria-pressed': props.selecionado } : {})}
     >
       {conteudo}
     </button>

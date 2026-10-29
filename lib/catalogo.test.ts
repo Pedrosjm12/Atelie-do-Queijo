@@ -7,6 +7,7 @@ import {
   ehOrigem,
   ehSlugDoQueijo,
   filtrarPorOrigem,
+  formatoDeVitrine,
   lerOrigem,
   listarQueijos,
   obterQueijo,
@@ -208,5 +209,22 @@ describe('preço de vitrine e dados do cartão', () => {
       ['BRASIL · SERRA DAS ANTAS, MG', 'Macio, levemente adocicado, veios suaves.', '~300 g', 7600],
       ['BRASIL · LEITE DE CABRA', 'Fresco, cítrico, casca aveludada.', 'a partir de', 7400],
     ]);
+  });
+});
+
+describe('formatoDeVitrine (P24)', () => {
+  it('é o formato cujo preço o cartão mostra, em todos os queijos', () => {
+    for (const q of listarQueijos()) {
+      const formato = formatoDeVitrine(q);
+      expect(q.formatos).toContain(formato);
+      expect(formato.preco).toBe(precoDeVitrine(q).preco);
+    }
+  });
+
+  it('no Canastra curado é a Fração; com um só formato é ele', () => {
+    expect(formatoDeVitrine(queijo('canastra-curado')).id).toBe('fracao');
+    expect(formatoDeVitrine(queijo('creme-do-marajo')).id).toBe(
+      queijo('creme-do-marajo').formatos[0].id,
+    );
   });
 });

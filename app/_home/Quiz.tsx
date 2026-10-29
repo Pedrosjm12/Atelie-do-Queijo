@@ -2,7 +2,7 @@
 
 import { useEffect, useId, useRef, useState, type CSSProperties } from 'react';
 import type { Shape, SlugDoQueijo } from '@/data/cheeses';
-import { BotaoDaSacola } from '@/components/BotaoDaSacola';
+import { BotaoAdicionar } from '@/components/BotaoAdicionar';
 import { Button } from '@/components/Button';
 import { CheeseIllustration } from '@/components/CheeseIllustration';
 import { MINIATURAS_DA_CAVE } from '@/components/ilustracoes/MiniaturasDaCave';
@@ -20,6 +20,8 @@ import estilos from './Quiz.module.css';
 export interface ResumoDoQueijo extends QueijoDoQuiz {
   slug: SlugDoQueijo;
   nome: string;
+  /** Formato que o Adicionar põe na sacola: o do menor preço, igual ao cartão (P24). */
+  formatoIdDeVitrine: string;
   ilustracao: { shape: Shape; side: string; top: string };
 }
 
@@ -99,7 +101,13 @@ export function Quiz({ queijos }: QuizProps) {
           </div>
           <p className={estilos.porQue}>{POR_QUE_COMBINA}</p>
           <div className={estilos.acoesDoResultado}>
-            <BotaoDaSacola style={PADDING_DO_BOTAO}>Adicionar à sacola</BotaoDaSacola>
+            <BotaoAdicionar
+              slug={recomendado.slug}
+              formatoId={recomendado.formatoIdDeVitrine}
+              style={PADDING_DO_BOTAO}
+            >
+              Adicionar à sacola
+            </BotaoAdicionar>
             <Button variante="link" onClick={refazer}>
               Refazer o teste
             </Button>

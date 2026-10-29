@@ -3,11 +3,11 @@
 > Fonte da verdade: `ATELIE-DO-QUEIJO-SPEC.md`. Decisões técnicas: `docs/adr/`.
 > Última atualização: 2026-10-27. Etapas 1, 2 e 3 concluídas. Etapa 4 (sacola, frete e checkout simulado) **detalhada e decidida**: P24 a P38 e ADR-0007 decididos pelo dono em 2026-10-27; requisitos de segurança do `auditor-de-seguranca` incorporados.
 >
-> **RETOMADA (2026-10-27, sessão interrompida):** etapa 4, **bloco A publicado** (`48e6ebe`) e **bloco B implementado, mas SEM COMMIT**.
+> **RETOMADA (2026-10-29):** etapa 4, **bloco A publicado** (`48e6ebe`) e **bloco B implementado e verificado, mas SEM COMMIT**. Falta só o commit `feat(sacola): liga a sacola à interface` e o push.
 >
-> - **Estado da árvore de trabalho:** 32 arquivos alterados/novos, ainda não commitados (tarefas 5, 6 e 7: `SacolaProvider`, `LinkDaSacola`, `AvisoDaSacola`, `BotaoAdicionar`, `QuantityStepper` movido para `components/`, `lib/catalogo.ts` com `formatoDeVitrine`, `e2e/sacola.spec.ts` e `e2e/adicionar.spec.ts`). Conferido em 2026-10-27: lint, typecheck, format:check, 415 testes, build e 92 e2e passando.
-> - **Falta para fechar o bloco B (tarefa 8):** rodar em paralelo, sem editar, `guardiao-do-design` (aviso × FAB × barra fixa a 390 px e 1440 px), `especialista-em-acessibilidade` (toast `role=status`, `aria-pressed` do "Embalar para presente", "+" com `aria-disabled` no limite), `revisor-de-codigo` e `auditor-de-seguranca` (e2e com `constructor`/`__proto__` no `localStorage`, evento `storage` sem regravar); medir o First Load JS e comparar com a linha de base de **180,05 kB gzip** (teto: +8 kB; registrar na tabela do ADR-0007); aplicar as correções pelo implementador; só então commitar `feat(sacola): liga a sacola à interface` e dar push.
-> - **Pontos que o implementador deixou para conferência:** (1) o aviso entra com fade mas some sem transição (o plano pede transição curta na saída); (2) "Embalar para presente" usa `aria-pressed` mas adiciona uma unidade a cada clique, sem alternar (a11y deve confirmar ou tirar o `aria-pressed`); (3) com a linha em 10 e o presente ligado, o aviso mostrado é o do limite; (4) `resumoParaSacola()` não foi criado (só entra no bloco D, `/sacola`); (5) o filtro de 404 de prefetch (`_rsc=`) no helper de console dos e2e deve sair quando existirem `/presentes`, `/aprenda`, `/produtores` e `/sacola`.
+> - **Estado da árvore de trabalho:** arquivos alterados/novos do bloco B (tarefas 5, 6 e 7: `SacolaProvider`, `LinkDaSacola`, `AvisoDaSacola`, `BotaoAdicionar`, `QuantityStepper` em `components/`, `lib/catalogo.ts` com `formatoDeVitrine`, `e2e/_apoio/console.ts`, `e2e/sacola.spec.ts`, `e2e/adicionar.spec.ts`).
+> - **Verificação do bloco B feita (tarefa 8):** as correções foram aplicadas: aviso de sucesso só quando toda a quantidade entra (senão o do limite); `storageArea` conferido no evento `storage`; **Embalar para presente** sem `aria-pressed` (decisão do dono), com o texto visível **Pedido marcado como presente** e `data-presente` no contêiner; `lerSacolaSalva` com *type guard* à mão no lugar do Zod (orçamento do pacote, ver ADR-0007); e2e com `vigiarConsole` compartilhado e caso de duas abas.
+> - **Pontos que ficam para depois:** transição de saída do aviso (hoje some sem transição); separar contextos; retipar `Cheese.slug`; tratar esgotado. `resumoParaSacola()` entra no bloco D (tarefa 11). O filtro de 404 de prefetch (`_rsc=`) em `e2e/_apoio/console.ts` cobre `/sacola|checkout|presentes|aprenda|produtores`; tirar `sacola` na tarefa 11 (bloco D) e `checkout` no bloco E, e as demais quando as rotas existirem.
 > - **Depois do bloco B (ordem do plano):** C (frete: Server Action `consultarFrete` + `ShippingCalculator`, tarefas 9 a 10) e D (página `/sacola`, tarefas 11 a 12) podem ir em paralelo; depois E (checkout: Server Action `confirmarPedido`, etapas Entrega, Pagamento e Confirmação, tarefas 13 a 16; é a primeira prova real do `import 'server-only'` no Next) e o fechamento pelo `documentador-tecnico` (tarefa 17). Textos de erro novos (nove campos) aguardam conferência do dono antes da tarefa 14.
 > - **Como retomar:** abra o Claude Code na pasta do projeto, peça "continue de onde paramos" e ele lerá esta nota. Rode `git status` (devem aparecer os 32 arquivos do bloco B) e `npm run lint && npm run typecheck && npm test && npm run build && npm run test:e2e` para confirmar o estado antes de seguir.
 >
@@ -824,7 +824,7 @@ export async function confirmarPedido(entrada: unknown): Promise<
 >;
 ```
 
-#### Sacola no cliente (`components/Sacola.tsx`, client; mesmo padrão de `Atendimento.tsx`)
+#### Sacola no cliente (`components/SacolaProvider.tsx`, `AvisoDaSacola.tsx` e `avisoDaSacola.contexto.ts`, client)
 
 ```ts
 export function SacolaProvider(props: { children: ReactNode }): JSX.Element; // renderiza children + <AvisoDaSacola/>
@@ -842,7 +842,7 @@ export function useSacola(): {
 export function BotaoAdicionar(props: { slug: SlugDoQueijo; formatoId: string; quantidade?: number;
   presente?: boolean; children: ReactNode } & /* variante, tamanho, aria-label, style */): JSX.Element;
 /** Link do cabeçalho: "Sacola" + contador; aria-label "Sacola, N itens" (1 → "item"). */
-export function LinkDaSacola(props: { className?: string }): JSX.Element;
+export function LinkDaSacola(): JSX.Element;
 ```
 
 - `lib/catalogo.ts` ganha `resumoParaSacola(): readonly ResumoParaSacola[]` e `formatoDeVitrine(q: Cheese): Formato`, o formato cujo preço o cartão mostra (P24). O `ResumoDoQueijo` do quiz ganha `formatoIdDeVitrine`.
@@ -870,7 +870,7 @@ export function LinkDaSacola(props: { className?: string }): JSX.Element;
 | Inicial | Uma região `role="status"` (`aria-live="polite"`, `aria-atomic="true"`) já existe vazia no DOM desde a hidratação, montada pelo `SacolaProvider`. Assim o primeiro anúncio não se perde |
 | Mostrando | `adicionar()` → o texto **Adicionado à sacola. Boa escolha.** aparece e fica visível por 4 s (P26). O foco **não** sai do botão |
 | Nova adição durante a exibição | Reinicia o tempo; o texto é limpo e reinserido no quadro seguinte para o leitor de tela anunciar de novo |
-| Limite atingido (10 unidades) | Texto de limite (P25) em vez do de sucesso; a quantidade não muda |
+| Limite atingido (10 unidades) | Texto de limite (P25) em vez do de sucesso; a quantidade não muda. Vale também quando o pedido é cortado pelo limite (linha em 3 + 10 → fica em 10) e quando a linha já está em 10 e só a marca de presente muda (linha em 10 + presente: marca o pedido e mostra o aviso do limite) |
 | Saindo | Some sem animação com `prefers-reduced-motion`; com movimento, transição curta de opacidade |
 | Posição | Não cobre o FAB nem a barra fixa: no celular da página de produto, fica acima da barra (`body:has([data-barra-compra])`, como o FAB); nos demais casos, P26 |
 | Mudança de rota | Continua até o tempo acabar (o provider fica no layout) |
@@ -881,7 +881,7 @@ O contador do cabeçalho muda junto, e o `aria-label` "Sacola, N itens" é a con
 
 | Página / componente | Tipo | Motivo |
 | --- | --- | --- |
-| `SacolaProvider`, `AvisoDaSacola` (em `components/Sacola.tsx`) | Client, no `app/layout.tsx` | Estado, `localStorage`, evento `storage`, aviso. Importa só `lib/sacola.ts` e `lib/formatosDaSacola.ts`, **nunca** `data/cheeses` |
+| `SacolaProvider`, `AvisoDaSacola` (em `components/SacolaProvider.tsx` e `components/AvisoDaSacola.tsx`; o contexto do aviso em `avisoDaSacola.contexto.ts`) | Client, no `app/layout.tsx` | Estado, `localStorage`, evento `storage`, aviso. Importa só `lib/sacola.ts` e `lib/formatosDaSacola.ts`, **nunca** `data/cheeses` |
 | `Header` | Server (continua) | Só o link da sacola vira ilha |
 | `LinkDaSacola` | Client | Lê `totalDeItens` |
 | `ProductCard` | Server (continua) | Calcula `formatoDeVitrine` no servidor e renderiza a ilha `BotaoAdicionar` |
@@ -1017,7 +1017,7 @@ Cada tarefa termina com `lint`, `typecheck`, `format:check`, `test`, `build` e `
 **Bloco B — Sacola no navegador (commit 2)**
 
 5. **[engenheiro-de-ecommerce] `SacolaProvider` e `useSacola`** (~250 com testes)
-   - Montado no `app/layout.tsx`, por dentro do `AtendimentoProvider`, para o assistente poder adicionar à sacola na etapa 6. Persistência conforme a tabela; `useReducer(reduzirSacola)`; `pronta` só depois da leitura; gravação só com `pronta`; evento `storage`; `try/catch` em `getItem`/`setItem`.
+   - Montado no `app/layout.tsx`, por **fora** do `AtendimentoProvider`, porque o assistente (dentro do painel de atendimento) precisa do `useSacola()` para adicionar à sacola na etapa 6. Persistência conforme a tabela; `useState` + `useRef` com `reduzirSacola` em vez de `useReducer`, porque `adicionar` precisa ler a quantidade antes e depois, de forma síncrona, para escolher o texto do aviso; `pronta` só depois da leitura; gravação só com `pronta`; evento `storage`; `try/catch` em `getItem`/`setItem`.
    - Testes (jsdom): JSON corrompido não quebra e mostra 0; `setItem` que lança `QuotaExceededError` mantém a sacola em memória; evento `storage` atualiza; nada é gravado antes da leitura (espião em `setItem`); `adicionar` duas vezes soma.
    - **Pronto quando:** os testes passam e o `build` não acusa erro de hidratação em nenhuma rota (console do e2e limpo).
    - **Requisitos de segurança:** ver a [lista](#requisitos-de-segurança-por-tarefa) (tarefa 5).
@@ -1027,7 +1027,7 @@ Cada tarefa termina com `lint`, `typecheck`, `format:check`, `test`, `build` e `
    - **Pronto quando:** teste: após `adicionar`, o `aria-label` vira "Sacola, 1 item" e depois "Sacola, 3 itens"; a região `role="status"` existe antes da primeira adição e recebe o texto exato **Adicionado à sacola. Boa escolha.**; com timers falsos, some em 4 s; duas adições seguidas reiniciam o tempo.
 
 7. **[frontend-nextjs] `BotaoAdicionar` nos quatro lugares + Embalar para presente** (~250)
-   - `ProductCard` (formato do P24, quantidade 1), `Quiz` (mesma regra), `PainelDeCompra` e barra fixa (formato e quantidade escolhidos), **Embalar para presente** (P31: adiciona o formato e a quantidade escolhidos com `presente: true`). Esgotado continua com **Avise-me** sem ação. `QuantityStepper` vai para `components/` com `maximo={10}`. Apagar `BotaoDaSacola.tsx` e o aviso "Sacola disponível em breve".
+   - `ProductCard` (formato do P24, quantidade 1), `Quiz` (mesma regra), `PainelDeCompra` e barra fixa (formato e quantidade escolhidos), **Embalar para presente** (P31: adiciona o formato e a quantidade escolhidos com `presente: true`). Esgotado continua com **Avise-me** sem ação. `QuantityStepper` vai para `components/` com `maximo={10}`. `formatoDeVitrine` (P24) fica em `lib/catalogo.ts` e alimenta `ProductCard` e `Quiz`. **Embalar para presente** não usa `aria-pressed` (adiciona a cada clique, não alterna): o contêiner ganha `data-presente` e aparece o texto visível **Pedido marcado como presente**. Apagar `BotaoDaSacola.tsx` e o aviso "Sacola disponível em breve".
    - **Pronto quando:** não sobra `aria-disabled` em nenhum Adicionar (busca no código); teste do `PainelDeCompra`: "Meia peça" × 2 → `adicionar({ slug: 'canastra-curado', formatoId: 'meia', quantidade: 2 })`; e2e (tarefa 8).
 
 8. **Verificação do bloco B, em paralelo:**
@@ -1051,6 +1051,7 @@ Cada tarefa termina com `lint`, `typecheck`, `format:check`, `test`, `build` e `
 **Bloco D — Página da sacola (commit 4)**
 
 11. **[frontend-nextjs] `/sacola`** (~350)
+   - Cria `resumoParaSacola()` em `lib/catalogo.ts` (ainda não existe) e tira `sacola` do filtro de 404 de prefetch em `e2e/_apoio/console.ts`.
     - Server: `metadata`, `resumoParaSacola()`, h1 (P25), contêiner `--largura-conteiner`. Client `ConteudoDaSacola`: com `pronta === false`, não mostra nada que dependa da sacola (nem "vazia"); lista com miniatura A.6 (`CheeseIllustration`), nome como link para `/queijos/[slug]`, "formato · peso", preço unitário, `QuantityStepper` (`aria-label` com o nome do item), **Remover** (P25) com `aria-label` completo e foco levado ao próximo item ou ao título depois de remover; subtotal; barra de frete grátis **Faltam R$ [valor] para o frete grátis.** (com o valor formatado) ou **Frete grátis garantido.** (P29, P38); se o pedido é presente, a linha "Embalagem para presente" com opção de tirar (P31); botão principal para `/checkout` (P25). Sacola vazia: **Sua tábua ainda está vazia.** + **Explorar a cave** (→ `/queijos`, §10.5).
     - **Pronto quando:** testes: subtotal 17999 → "Faltam R$ 0,01 para o frete grátis."; 18000 → "Frete grátis garantido."; vazia → texto e link; `pronta: false` não mostra "vazia". E2e: adicionar dois queijos → `/sacola` lista os dois, + e − mudam o subtotal, Remover tira; sem rolagem horizontal de 360 a 1920 px.
 
@@ -1059,6 +1060,7 @@ Cada tarefa termina com `lint`, `typecheck`, `format:check`, `test`, `build` e `
 **Bloco E — Checkout (commit 5)**
 
 13. **[engenheiro-de-ecommerce] `confirmarPedido`** (~200 com testes)
+   - Ao criar `/checkout`, tira `checkout` do filtro de 404 de prefetch em `e2e/_apoio/console.ts`.
     - Contrato acima. Recalcula tudo no servidor. Itens: valida o esquema, confere o índice e o estoque, precifica com `data/cheeses`; um item inválido → `sacola-invalida` (não "conserta" em silêncio no servidor). Fora de área → `fora-de-area`. Sem `console.log` com a entrada.
     - **Pronto quando:** testes chamando a função direto: entrada com `preco: 1` no item → o preço é ignorado e o total vem do catálogo; `slug` inexistente → `sacola-invalida`; e-mail inválido → `dados-invalidos` com `erros.email`; `recusa@exemplo.com` → `pagamento-recusado`; caso feliz → `numero` no formato `AQ-\d{6}` e `totais` iguais a `calcularTotais`.
     - **Requisitos de segurança:** ver a [lista](#requisitos-de-segurança-por-tarefa) (tarefa 13).
@@ -1135,7 +1137,7 @@ Ordem: A → B → (C e D podem correr em paralelo) → E. O E depende de C (reu
 
 - **Sacola salva apagada na montagem** (gravar o estado vazio antes de ler) → `pronta` como trava; teste com espião em `setItem`.
 - **Erro de hidratação no contador ou na `/sacola`** → servidor e 1ª renderização sempre vazios; nada dependente da sacola antes de `pronta`; console do e2e sem avisos.
-- **Pacote global crescendo** (provider, aviso e `zod/mini` no layout) → linha de base na tarefa 1, medição na tarefa 8; plano B do ADR-0007 (*type guard* à mão para a sacola salva).
+- **Pacote global crescendo** (provider, aviso e `zod/mini` no layout) → linha de base na tarefa 1, medição na tarefa 8; plano B do ADR-0007 (*type guard* à mão para a sacola salva), **adotado no bloco B**.
 - **Índice do catálogo desatualizado** → teste de paridade com `QUEIJOS`.
 - **Adulteração de preço ou de quantidade** (pelo `localStorage` ou por POST direto) → preço nunca salvo nem aceito; servidor recalcula; quantidade limitada a 10.
 - **Totais com lacuna** (frete `R$ [PREÇO]` abaixo de R$ 180 deixa o total em `R$ [PREÇO]`) → é a regra das lacunas da spec, confirmada pelo dono no P27 (2026-10-27); some quando houver tabela ou valor fixo. A interface não pode mostrar `R$ 0,00` nem `NaN`, o que um teste garante.

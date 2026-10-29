@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { CheeseViewer } from '@/components/CheeseViewer';
-import { listarQueijos, obterQueijo } from '@/lib/catalogo';
+import { ehSlugDoQueijo, listarQueijos, obterQueijo } from '@/lib/catalogo';
 import { CabecalhoDoProduto } from './_produto/CabecalhoDoProduto';
 import { PainelDeCompra } from './_produto/PainelDeCompra';
 import { ProductTabs } from './_produto/ProductTabs';
@@ -30,7 +30,7 @@ export async function generateMetadata({
 /** Página de produto (spec §7). */
 export default async function PaginaDoProduto({ params }: PageProps<'/queijos/[slug]'>) {
   const queijo = obterQueijo((await params).slug);
-  if (!queijo) notFound();
+  if (!queijo || !ehSlugDoQueijo(queijo.slug)) notFound();
 
   return (
     <>
@@ -43,6 +43,7 @@ export default async function PaginaDoProduto({ params }: PageProps<'/queijos/[s
           <CabecalhoDoProduto queijo={queijo} />
           <PainelDeCompra
             key={queijo.slug}
+            slug={queijo.slug}
             formatos={queijo.formatos}
             estoque={queijo.estoque}
             frete={<ShippingCalculator />}

@@ -1,8 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { render, screen, within } from '@testing-library/react';
+import { render as renderizar, screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import type { ReactElement } from 'react';
 import { destaquesDaSemana, listarQueijos, obterQueijo } from '@/lib/catalogo';
 import { formatarPreco } from '@/lib/format';
+import { LinkDaSacola } from './LinkDaSacola';
 import { ProductCard } from './ProductCard';
+import { SacolaProvider } from './SacolaProvider';
+
+const render = (ui: ReactElement) => renderizar(<SacolaProvider>{ui}</SacolaProvider>);
 
 function queijo(slug: string) {
   const q = obterQueijo(slug);
@@ -55,6 +61,25 @@ describe('ProductCard', () => {
     expect(botoes[0]).toHaveAccessibleName('Adicionar Brie francês à sacola');
     expect(botoes[0]).toHaveTextContent('Adicionar');
     expect(botoes[0]).toHaveAttribute('type', 'button');
+  });
+
+  it('Adicionar põe 1 unidade do formato do menor preço (P24) na sacola, sem aria-disabled', async () => {
+    const usuario = userEvent.setup();
+    window.localStorage.clear();
+    render(
+      <>
+        <LinkDaSacola />
+        <ProductCard queijo={queijo('canastra-curado')} contexto="catalogo" />
+      </>,
+    );
+    const botao = screen.getByRole('button', { name: 'Adicionar Canastra curado à sacola' });
+    expect(botao).not.toHaveAttribute('aria-disabled');
+    await usuario.click(botao);
+    expect(screen.getByRole('link', { name: 'Sacola, 1 item' })).toBeInTheDocument();
+    expect(JSON.parse(window.localStorage.getItem('atelie:sacola:v1') ?? '{}').itens).toEqual([
+      { slug: 'canastra-curado', formatoId: 'fracao', quantidade: 1 },
+    ]);
+    expect(botao).toHaveFocus();
   });
 
   it('expõe a ilustração como imagem com rótulo descritivo (§13)', () => {

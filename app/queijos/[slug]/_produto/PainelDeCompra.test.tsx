@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { render, screen, within } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { LinkDaSacola } from '@/components/LinkDaSacola';
+import { SacolaProvider } from '@/components/SacolaProvider';
 import type { Estoque } from '@/data/cheeses';
 import { obterQueijo } from '@/lib/catalogo';
 import { PainelDeCompra } from './PainelDeCompra';
@@ -13,8 +15,17 @@ const formatos = canastra.formatos;
 const semNbsp = (texto: string | null | undefined) => (texto ?? '').replace(/ /g, ' ');
 
 function renderizar(estoque: Estoque = { situacao: 'disponivel' }) {
+  window.localStorage.clear();
   return render(
-    <PainelDeCompra formatos={formatos} estoque={estoque} frete={<div>Frete fictício</div>} />,
+    <SacolaProvider>
+      <PainelDeCompra
+        slug="canastra-curado"
+        formatos={formatos}
+        estoque={estoque}
+        frete={<div>Frete fictício</div>}
+      />
+      <LinkDaSacola />
+    </SacolaProvider>,
   );
 }
 
@@ -88,17 +99,13 @@ describe('PainelDeCompra', () => {
     expect(menos).toHaveAttribute('aria-disabled', 'true');
   });
 
-  it('os botões sem ação ficam focáveis, com aria-disabled e aviso', () => {
+  it('Adicionar e Embalar ficam focáveis e com ação; só o queijista segue sem ação', () => {
     renderizar();
     const adicionar = screen.getAllByRole('button', { name: 'Adicionar à sacola' });
     expect(adicionar).toHaveLength(2); // inline e barra fixa
-    for (const botao of adicionar) {
-      expect(botao).toHaveAttribute('aria-disabled', 'true');
-      expect(botao).toBeEnabled();
-    }
-    expect(screen.getByRole('button', { name: /Embalar para presente/ })).toHaveAttribute(
+    for (const botao of adicionar) expect(botao).not.toHaveAttribute('aria-disabled');
+    expect(screen.getByRole('button', { name: /Embalar para presente/ })).not.toHaveAttribute(
       'aria-disabled',
-      'true',
     );
     // Duas posições (celular antes do frete, desktop depois), alternadas por CSS.
     const queijistas = screen.getAllByRole('button', { name: 'Fale com um queijista' });
@@ -106,6 +113,74 @@ describe('PainelDeCompra', () => {
     for (const botao of queijistas) expect(botao).toHaveAttribute('aria-disabled', 'true');
     expect(screen.getAllByText('Dúvidas sobre este queijo?')).toHaveLength(2);
     expect(screen.getByText('Frete fictício')).toBeInTheDocument();
+  });
+
+  const aviso = () => document.querySelector<HTMLElement>('[data-aviso-da-sacola]');
+
+  const salva = () =>
+    JSON.parse(window.localStorage.getItem('atelie:sacola:v1') ?? '{"itens":[]}') as {
+      itens: unknown[];
+      presente: boolean;
+    };
+
+  it('"Meia peça" × 2 adiciona canastra-curado, meia, quantidade 2', async () => {
+    const usuario = userEvent.setup();
+    renderizar();
+    await usuario.click(botaoDeFormato(1));
+    await usuario.click(screen.getByRole('button', { name: 'Aumentar quantidade' }));
+    await usuario.click(screen.getAllByRole('button', { name: 'Adicionar à sacola' })[0]!);
+    expect(salva().itens).toEqual([{ slug: 'canastra-curado', formatoId: 'meia', quantidade: 2 }]);
+    expect(screen.getByRole('link', { name: 'Sacola, 2 itens' })).toBeInTheDocument();
+    await waitFor(() => expect(aviso()).toHaveTextContent('Adicionado à sacola. Boa escolha.'));
+  });
+
+  it('a barra fixa adiciona o formato escolhido', async () => {
+    const usuario = userEvent.setup();
+    renderizar();
+    await usuario.click(botaoDeFormato(2));
+    await usuario.click(within(barra()).getByRole('button', { name: 'Adicionar à sacola' }));
+    expect(salva().itens).toEqual([
+      { slug: 'canastra-curado', formatoId: 'fracao', quantidade: 1 },
+    ]);
+  });
+
+  it('o + para em 10 (aria-disabled) e adicionar além do limite mostra o aviso do P25', async () => {
+    const usuario = userEvent.setup();
+    renderizar();
+    const mais = screen.getByRole('button', { name: 'Aumentar quantidade' });
+    for (let i = 0; i < 12; i++) await usuario.click(mais);
+    expect(screen.getByLabelText('Quantidade')).toHaveTextContent('10');
+    expect(mais).toHaveAttribute('aria-disabled', 'true');
+    const adicionar = screen.getAllByRole('button', { name: 'Adicionar à sacola' })[0]!;
+    await usuario.click(adicionar);
+    expect(salva().itens).toEqual([
+      { slug: 'canastra-curado', formatoId: 'inteira', quantidade: 10 },
+    ]);
+    await usuario.click(adicionar);
+    expect(salva().itens).toEqual([
+      { slug: 'canastra-curado', formatoId: 'inteira', quantidade: 10 },
+    ]);
+    await waitFor(() =>
+      expect(aviso()).toHaveTextContent('Você já tem 10 unidades deste queijo na sacola.'),
+    );
+  });
+
+  it('Embalar para presente adiciona o item escolhido e marca o pedido e mostra o texto', async () => {
+    const usuario = userEvent.setup();
+    renderizar();
+    const presente = screen.getByRole('button', { name: /Embalar para presente/ });
+    expect(presente).not.toHaveAttribute('aria-pressed');
+    expect(screen.queryByText('Pedido marcado como presente')).not.toBeInTheDocument();
+    await usuario.click(botaoDeFormato(1));
+    await usuario.click(presente);
+    expect(salva()).toMatchObject({
+      presente: true,
+      itens: [{ slug: 'canastra-curado', formatoId: 'meia', quantidade: 1 }],
+    });
+    expect(presente).not.toHaveAttribute('aria-pressed');
+    expect(screen.getByText('Pedido marcado como presente')).toBeVisible();
+    expect(presente.parentElement).toHaveAttribute('data-presente', 'true');
+    expect(presente).toHaveFocus();
   });
 
   it('disponível: sem aviso de estoque', () => {
@@ -138,6 +213,11 @@ describe('PainelDeCompra', () => {
     const avise = screen.getAllByRole('button', { name: 'Avise-me' });
     expect(avise).toHaveLength(2); // inline e barra fixa
     for (const botao of avise) expect(botao).toHaveAttribute('aria-disabled', 'true');
+    // Nada a adicionar nem a embalar enquanto o lote está esgotado.
+    expect(screen.getByRole('button', { name: /Embalar para presente/ })).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    );
     expect(screen.queryByRole('button', { name: 'Aumentar quantidade' })).not.toBeInTheDocument();
   });
 });

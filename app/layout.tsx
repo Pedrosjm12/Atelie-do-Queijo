@@ -5,6 +5,7 @@ import { AnnouncementBar } from '@/components/AnnouncementBar';
 import { FocoNoConteudo } from '@/components/FocoNoConteudo';
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
+import { SacolaProvider } from '@/components/SacolaProvider';
 import { SupportFab } from '@/components/SupportFab';
 import './globals.css';
 
@@ -32,19 +33,21 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="pt-BR" className={`${cormorant.variable} ${manrope.variable}`}>
       <body>
-        <AtendimentoProvider>
-          <a href="#conteudo" className="pular-conteudo">
-            Pular para o conteúdo
-          </a>
-          <FocoNoConteudo />
-          <AnnouncementBar />
-          <Header />
-          <main id="conteudo" tabIndex={-1}>
-            {children}
-          </main>
-          <Footer />
-          <SupportFab />
-        </AtendimentoProvider>
+        <SacolaProvider>
+          <AtendimentoProvider>
+            <a href="#conteudo" className="pular-conteudo">
+              Pular para o conteúdo
+            </a>
+            <FocoNoConteudo />
+            <AnnouncementBar />
+            <Header />
+            <main id="conteudo" tabIndex={-1}>
+              {children}
+            </main>
+            <Footer />
+            <SupportFab />
+          </AtendimentoProvider>
+        </SacolaProvider>
       </body>
     </html>
   );

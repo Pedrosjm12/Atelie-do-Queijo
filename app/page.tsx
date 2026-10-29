@@ -1,4 +1,4 @@
-import { ehSlugDoQueijo, listarQueijos } from '@/lib/catalogo';
+import { ehSlugDoQueijo, formatoDeVitrine, listarQueijos } from '@/lib/catalogo';
 import { maiorFormatoEmGramas } from '@/lib/quiz';
 import { BrasilEMundo } from './_home/BrasilEMundo';
 import { Escola } from './_home/Escola';
@@ -17,6 +17,7 @@ export default function Home() {
           {
             slug: q.slug,
             nome: q.nome,
+            formatoIdDeVitrine: formatoDeVitrine(q).id,
             ilustracao: q.ilustracao,
             maiorFormatoEmGramas: maiorFormatoEmGramas(q.formatos),
           },

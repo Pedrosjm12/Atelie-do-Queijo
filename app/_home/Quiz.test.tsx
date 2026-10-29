@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { ehSlugDoQueijo, listarQueijos } from '@/lib/catalogo';
+import { LinkDaSacola } from '@/components/LinkDaSacola';
+import { SacolaProvider } from '@/components/SacolaProvider';
+import { ehSlugDoQueijo, formatoDeVitrine, listarQueijos } from '@/lib/catalogo';
 import { maiorFormatoEmGramas } from '@/lib/quiz';
 import { Quiz, type ResumoDoQueijo } from './Quiz';
 
@@ -11,6 +13,7 @@ const RESUMOS: readonly ResumoDoQueijo[] = listarQueijos().flatMap((q) =>
         {
           slug: q.slug,
           nome: q.nome,
+          formatoIdDeVitrine: formatoDeVitrine(q).id,
           ilustracao: q.ilustracao,
           maiorFormatoEmGramas: maiorFormatoEmGramas(q.formatos),
         },
@@ -19,7 +22,16 @@ const RESUMOS: readonly ResumoDoQueijo[] = listarQueijos().flatMap((q) =>
 );
 
 function montar() {
-  return { usuario: userEvent.setup(), ...render(<Quiz queijos={RESUMOS} />) };
+  window.localStorage.clear();
+  return {
+    usuario: userEvent.setup(),
+    ...render(
+      <SacolaProvider>
+        <Quiz queijos={RESUMOS} />
+        <LinkDaSacola />
+      </SacolaProvider>,
+    ),
+  };
 }
 
 const proxima = () => screen.getByRole('button', { name: 'Próxima pergunta' });
@@ -95,8 +107,13 @@ describe('Quiz', () => {
     expect(titulo).toHaveFocus();
     expect(screen.getByText('[POR QUE COMBINA COM VOCÊ]')).toBeInTheDocument();
     const adicionar = screen.getByRole('button', { name: 'Adicionar à sacola' });
-    expect(adicionar).toHaveAttribute('aria-disabled', 'true');
-    expect(adicionar).toHaveAccessibleDescription('Sacola disponível em breve');
+    expect(adicionar).not.toHaveAttribute('aria-disabled');
+    await usuario.click(adicionar);
+    // P24: o formato do menor preço (Fração do Canastra), 1 unidade.
+    expect(screen.getByRole('link', { name: 'Sacola, 1 item' })).toBeInTheDocument();
+    expect(JSON.parse(window.localStorage.getItem('atelie:sacola:v1') ?? '{}').itens).toEqual([
+      { slug: 'canastra-curado', formatoId: 'fracao', quantidade: 1 },
+    ]);
     expect(screen.getByRole('img', { name: /Canastra curado/ })).toBeInTheDocument();
   });
 

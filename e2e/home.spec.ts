@@ -128,7 +128,7 @@ test.describe('home', () => {
       'href',
       '/queijos?origem=mundo',
     );
-    // Na cave: 4 cartões, cada um com o seu "Adicionar" (sem ação nesta etapa).
+    // Na cave: 4 cartões, cada um com o seu "Adicionar" (com ação desde a etapa 4).
     const cave = page.locator('main > section:has(h2:text-is("Na cave esta semana"))');
     await expect(cave.getByRole('article')).toHaveCount(4);
     await expect(cave.getByRole('button', { name: /^Adicionar / })).toHaveCount(4);

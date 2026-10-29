@@ -1,14 +1,22 @@
-import estilos from './Compra.module.css';
+import { QUANTIDADE_MAXIMA_POR_ITEM } from '@/lib/sacola';
+import estilos from './QuantityStepper.module.css';
 
 type QuantityStepperProps = {
   valor: number;
   onChange: (valor: number) => void;
   /** Spec §7.2, item 8: mínimo 1. */
   minimo?: number;
+  /** P35: 10 unidades por linha. O + fica `aria-disabled` (opacidade 0,5, P19) ao chegar nele. */
+  maximo?: number;
 };
 
 /** Seletor de quantidade (spec §7.2, item 8): − número +. */
-export function QuantityStepper({ valor, onChange, minimo = 1 }: QuantityStepperProps) {
+export function QuantityStepper({
+  valor,
+  onChange,
+  minimo = 1,
+  maximo = QUANTIDADE_MAXIMA_POR_ITEM,
+}: QuantityStepperProps) {
   return (
     <div className={estilos.quantidade}>
       <button
@@ -29,7 +37,10 @@ export function QuantityStepper({ valor, onChange, minimo = 1 }: QuantityStepper
         type="button"
         className={estilos.passo}
         aria-label="Aumentar quantidade"
-        onClick={() => onChange(valor + 1)}
+        aria-disabled={valor >= maximo ? 'true' : undefined}
+        onClick={() => {
+          if (valor < maximo) onChange(valor + 1);
+        }}
       >
         +
       </button>

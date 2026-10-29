@@ -1,8 +1,8 @@
 import Link from 'next/link';
 import type { Cheese } from '@/data/cheeses';
-import { dadosDoCartao } from '@/lib/catalogo';
+import { dadosDoCartao, ehSlugDoQueijo, formatoDeVitrine } from '@/lib/catalogo';
 import { formatarPreco } from '@/lib/format';
-import { BotaoDaSacola } from './BotaoDaSacola';
+import { BotaoAdicionar } from './BotaoAdicionar';
 import { CheeseIllustration } from './CheeseIllustration';
 import { MINIATURAS_DA_CAVE } from './ilustracoes/MiniaturasDaCave';
 import { Overline } from './Overline';
@@ -14,7 +14,7 @@ type ProductCardProps = {
   contexto: 'home' | 'catalogo';
 };
 
-/** Cartão de produto (spec 4.6). O botão Adicionar ganha ação na etapa 4. */
+/** Cartão de produto (spec 4.6). O Adicionar põe na sacola o formato que o cartão anuncia (P24). */
 export function ProductCard({ queijo, contexto }: ProductCardProps) {
   const { tag, nota, linhaPequena, preco } = dadosDoCartao(queijo, contexto);
   const catalogo = contexto === 'catalogo';
@@ -41,13 +41,17 @@ export function ProductCard({ queijo, contexto }: ProductCardProps) {
           <span className={estilos.linhaPequena}>{linhaPequena}</span>
           <span className={estilos.preco}>{formatarPreco(preco)}</span>
         </div>
-        <BotaoDaSacola
-          variante="contorno"
-          tamanho="compacto"
-          aria-label={`Adicionar ${queijo.nome} à sacola`}
-        >
-          Adicionar
-        </BotaoDaSacola>
+        {ehSlugDoQueijo(queijo.slug) && (
+          <BotaoAdicionar
+            slug={queijo.slug}
+            formatoId={formatoDeVitrine(queijo).id}
+            variante="contorno"
+            tamanho="compacto"
+            aria-label={`Adicionar ${queijo.nome} à sacola`}
+          >
+            Adicionar
+          </BotaoAdicionar>
+        )}
       </div>
     </article>
   );

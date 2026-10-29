@@ -1,0 +1,48 @@
+/* Aviso temporário (spec §7.5, P26). Vazio, não ocupa nem desenha nada. */
+.aviso {
+  position: fixed;
+  left: 28px;
+  bottom: 28px;
+  z-index: 40;
+  max-width: min(360px, calc(100vw - 32px));
+  pointer-events: none;
+}
+
+.visivel {
+  padding: 12px 16px;
+  border: 1px solid var(--pedra);
+  border-radius: 12px;
+  background: var(--carvao);
+  color: var(--creme);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.5;
+  animation: entrada 0.2s ease-out;
+}
+
+@keyframes entrada {
+  from {
+    opacity: 0;
+  }
+}
+
+/* Celular: deixa livre a coluna do FAB (54 px + 16 + folga) à direita. */
+@media (max-width: 768px) {
+  .aviso {
+    right: 86px;
+    left: 16px;
+    bottom: 16px;
+    max-width: none;
+  }
+
+  /* Página de produto: acima da barra fixa de compra (e do FAB, que também sobe). */
+  :global(body:has([data-barra-compra])) .aviso {
+    bottom: 100px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .visivel {
+    animation: none;
+  }
+}

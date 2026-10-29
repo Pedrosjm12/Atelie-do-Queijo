@@ -1,5 +1,5 @@
 import { QUEIJOS } from '@/data/cheeses';
-import type { Cheese, Origem, SlugDoQueijo } from '@/data/cheeses';
+import type { Cheese, Formato, Origem, SlugDoQueijo } from '@/data/cheeses';
 import type { Centavos } from './dinheiro';
 
 const CATALOGO: readonly Cheese[] = QUEIJOS;
@@ -58,6 +58,14 @@ export function precoDeVitrine(q: Cheese): { linhaPequena: string; preco: Centav
     };
   }
   return { linhaPequena: q.formatos[0].peso, preco: q.formatos[0].preco };
+}
+
+/**
+ * O formato que o cartão e o quiz põem na sacola (P24): aquele cujo preço o cartão mostra, ou
+ * seja, o menor (no empate, o primeiro).
+ */
+export function formatoDeVitrine(q: Cheese): Formato {
+  return q.formatos.reduce((menor, f) => (f.preco < menor.preco ? f : menor));
 }
 
 /** Textos do cartão por contexto. 'home' e 'chat' aplicam `vitrine`; 'catalogo' usa a §9 pura. */

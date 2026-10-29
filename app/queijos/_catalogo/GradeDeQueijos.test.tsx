@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render as renderizar, screen } from '@testing-library/react';
+import type { ReactElement } from 'react';
+import { SacolaProvider } from '@/components/SacolaProvider';
 import { listarQueijos } from '@/lib/catalogo';
 import { GradeDeQueijos } from './GradeDeQueijos';
+
+const render = (ui: ReactElement) => renderizar(<SacolaProvider>{ui}</SacolaProvider>);
 
 describe('GradeDeQueijos', () => {
   it('sem queijos mostra a mensagem literal da §6 e nenhuma lista', () => {

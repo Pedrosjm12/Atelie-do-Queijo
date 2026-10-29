@@ -257,6 +257,6 @@ test.describe('página de produto só com teclado', () => {
       .getByRole('button', { name: 'Adicionar à sacola' });
     await tabAte(page, adicionar, 120);
     expect(await temIndicadorDeFoco(adicionar)).toBe(true);
-    await expect(adicionar).toHaveAttribute('aria-disabled', 'true');
+    await expect(adicionar).not.toHaveAttribute('aria-disabled');
   });
 });

@@ -1,0 +1,30 @@
+.quantidade {
+  display: inline-flex;
+  align-items: center;
+  height: 52px;
+  border: var(--borda-campo);
+  border-radius: var(--raio-pilula);
+}
+
+.passo {
+  width: 48px;
+  height: 52px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--raio-pilula);
+  background: none;
+  color: var(--creme);
+  font-size: 20px;
+  line-height: 1;
+}
+
+.passo[aria-disabled='true'] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.valor {
+  min-width: 24px;
+  text-align: center;
+  font-weight: 600;
+}

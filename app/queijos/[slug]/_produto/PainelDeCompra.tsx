@@ -1,18 +1,20 @@
 'use client';
 
 import { useState, type ReactNode } from 'react';
-import { BotaoDaSacola } from '@/components/BotaoDaSacola';
+import { BotaoAdicionar } from '@/components/BotaoAdicionar';
 import { BotaoEmBreve } from '@/components/BotaoEmBreve';
 import { Icone } from '@/components/icons';
-import type { Estoque, Formato } from '@/data/cheeses';
+import { QuantityStepper } from '@/components/QuantityStepper';
+import { useSacola } from '@/components/SacolaProvider';
+import type { Estoque, Formato, SlugDoQueijo } from '@/data/cheeses';
 import { precoNoPix } from '@/lib/commerce';
 import { formatarPreco } from '@/lib/format';
 import { FormatPicker } from './FormatPicker';
 import { LinkDoQueijista } from './LinkDoQueijista';
-import { QuantityStepper } from './QuantityStepper';
 import estilos from './Compra.module.css';
 
 type PainelDeCompraProps = {
+  slug: SlugDoQueijo;
   formatos: readonly [Formato, ...Formato[]];
   estoque: Estoque;
   /** Calculadora de frete, renderizada no servidor. */
@@ -36,12 +38,14 @@ function avisoDeEstoque(estoque: Estoque): string | null {
  * Painel de compra da página de produto (spec §7.2, itens 6 a 11; §7.5; §7.6). Ilha única: o
  * formato escolhido alimenta o preço, o Pix e a barra fixa do celular.
  *
- * Etapa 3: "Adicionar à sacola", "Avise-me" e "Embalar para presente" não têm ação (a sacola é
- * da etapa 4). No celular (P12) somem a quantidade e o preço inline e a barra fixa assume.
+ * "Adicionar à sacola" e "Embalar para presente" põem o formato e a quantidade escolhidos na
+ * sacola (P31: o segundo também marca o pedido como presente). "Avise-me" segue sem ação (P15).
+ * No celular (P12) somem a quantidade e o preço inline e a barra fixa assume.
  */
-export function PainelDeCompra({ formatos, estoque, frete }: PainelDeCompraProps) {
+export function PainelDeCompra({ slug, formatos, estoque, frete }: PainelDeCompraProps) {
   const [formatoId, setFormatoId] = useState<string>(formatos[0].id);
   const [quantidade, setQuantidade] = useState(1);
+  const { sacola, pronta } = useSacola();
 
   const formato = formatos.find((f) => f.id === formatoId) ?? formatos[0];
   const preco = formatarPreco(formato.preco);
@@ -49,10 +53,19 @@ export function PainelDeCompra({ formatos, estoque, frete }: PainelDeCompraProps
   const esgotado = estoque.situacao === 'esgotado';
   const aviso = avisoDeEstoque(estoque);
 
+  const textoDoPresente = (
+    <>
+      <Icone nome="presente" tamanho={16} espessura={1.5} />
+      Embalar para presente
+    </>
+  );
+
   const botaoPrincipal = esgotado ? (
     <BotaoEmBreve aviso="Aviso de reposição disponível em breve">Avise-me</BotaoEmBreve>
   ) : (
-    <BotaoDaSacola>Adicionar à sacola</BotaoDaSacola>
+    <BotaoAdicionar slug={slug} formatoId={formato.id} quantidade={quantidade}>
+      Adicionar à sacola
+    </BotaoAdicionar>
   );
 
   return (
@@ -75,15 +88,30 @@ export function PainelDeCompra({ formatos, estoque, frete }: PainelDeCompraProps
         <div className={estilos.botaoPrincipal}>{botaoPrincipal}</div>
       </div>
 
-      <div className={estilos.presente}>
-        <BotaoEmBreve
-          variante="secundario"
-          tamanho="compacto"
-          aviso="Embalagem para presente disponível em breve"
-        >
-          <Icone nome="presente" tamanho={16} espessura={1.5} />
-          Embalar para presente
-        </BotaoEmBreve>
+      <div className={estilos.presente} data-presente={pronta && sacola.presente}>
+        {esgotado ? (
+          <BotaoEmBreve
+            variante="secundario"
+            tamanho="compacto"
+            aviso="Embalagem para presente indisponível enquanto o lote está esgotado"
+          >
+            {textoDoPresente}
+          </BotaoEmBreve>
+        ) : (
+          <BotaoAdicionar
+            slug={slug}
+            formatoId={formato.id}
+            quantidade={quantidade}
+            presente
+            variante="secundario"
+            tamanho="compacto"
+          >
+            {textoDoPresente}
+          </BotaoAdicionar>
+        )}
+        {pronta && sacola.presente && (
+          <p className={estilos.notaDoPresente}>Pedido marcado como presente</p>
+        )}
       </div>
 
       {/* Duas posições, só uma visível: a ordem de Tab acompanha a ordem visual em cada largura. */}

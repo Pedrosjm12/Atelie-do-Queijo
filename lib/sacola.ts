@@ -1,4 +1,3 @@
-import * as z from 'zod/mini';
 import type { Shape, SlugDoQueijo } from '@/data/cheeses';
 import { exigirCentavos } from './dinheiro';
 import type { Centavos } from './dinheiro';
@@ -114,18 +113,25 @@ export function serializarSacola(s: Sacola): string {
   });
 }
 
-// Esquemas (zod/mini, ADR-0007). `object` descarta chaves desconhecidas (preço, nome, `__proto__`).
-const esquemaRaiz = z.object({
-  v: z.literal(VERSAO_DA_SACOLA),
-  itens: z.array(z.unknown()),
-  presente: z.optional(z.unknown()),
-});
+// Validação escrita à mão (ADR-0007 §orçamento): o Zod não entra no pacote global. Só lê as chaves
+// `slug`, `formatoId` e `quantidade`; qualquer outra (preço, nome, `__proto__`) é ignorada.
+function ehObjeto(valor: unknown): valor is Record<string, unknown> {
+  return typeof valor === 'object' && valor !== null && !Array.isArray(valor);
+}
 
-const esquemaItemSalvo = z.object({
-  slug: z.string().check(z.maxLength(TAMANHO_MAXIMO_DO_ID)),
-  formatoId: z.string().check(z.maxLength(TAMANHO_MAXIMO_DO_ID)),
-  quantidade: z.int(),
-});
+function ehItemSalvo(
+  valor: unknown,
+): valor is { slug: string; formatoId: string; quantidade: number } {
+  return (
+    ehObjeto(valor) &&
+    typeof valor.slug === 'string' &&
+    valor.slug.length <= TAMANHO_MAXIMO_DO_ID &&
+    typeof valor.formatoId === 'string' &&
+    valor.formatoId.length <= TAMANHO_MAXIMO_DO_ID &&
+    typeof valor.quantidade === 'number' &&
+    Number.isSafeInteger(valor.quantidade)
+  );
+}
 
 /**
  * Nunca lança. Aplica a sanitização do ADR-0008 §1: mais de 8 KB, JSON inválido, outra versão ou
@@ -147,14 +153,12 @@ export function lerSacolaSalva(bruto: string | null): { sacola: Sacola; corrigid
     return vazia;
   }
 
-  const raiz = z.safeParse(esquemaRaiz, json);
-  if (!raiz.success) return vazia;
+  if (!ehObjeto(json) || json.v !== VERSAO_DA_SACOLA || !Array.isArray(json.itens)) return vazia;
 
   const itens: ItemDaSacola[] = [];
-  for (const candidato of raiz.data.itens) {
-    const item = z.safeParse(esquemaItemSalvo, candidato);
-    if (!item.success) continue;
-    const { slug, formatoId, quantidade } = item.data;
+  for (const candidato of json.itens as unknown[]) {
+    if (!ehItemSalvo(candidato)) continue;
+    const { slug, formatoId, quantidade } = candidato;
     if (!ehFormatoValido(slug, formatoId)) continue;
     const existente = itens.findIndex((i) => mesmaLinha(i, slug, formatoId));
     if (existente >= 0) {
@@ -170,7 +174,7 @@ export function lerSacolaSalva(bruto: string | null): { sacola: Sacola; corrigid
   }
 
   const sacola: Sacola =
-    itens.length === 0 ? SACOLA_VAZIA : { itens, presente: raiz.data.presente === true };
+    itens.length === 0 ? SACOLA_VAZIA : { itens, presente: json.presente === true };
   return { sacola, corrigida: serializarSacola(sacola) !== bruto };
 }
 
