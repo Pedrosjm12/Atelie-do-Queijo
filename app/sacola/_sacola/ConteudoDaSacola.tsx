@@ -2,9 +2,9 @@
 
 import Link from 'next/link';
 import { useEffect, useMemo, useRef } from 'react';
-import { Button } from '@/components/Button';
 import { CheeseIllustration } from '@/components/CheeseIllustration';
 import { QuantityStepper } from '@/components/QuantityStepper';
+import { SacolaVazia } from '@/components/SacolaVazia';
 import { useAcoesDaSacola, useEstadoDaSacola } from '@/components/SacolaProvider';
 import { formatarPreco } from '@/lib/format';
 import { precificarSacola, type ResumoParaSacola } from '@/lib/sacola';
@@ -44,14 +44,7 @@ export function ConteudoDaSacola({ queijos }: { queijos: readonly ResumoParaSaco
   if (!pronta) return <div className={estilos.reserva} aria-hidden="true" />;
 
   if (linhas.length === 0) {
-    return (
-      <div className={estilos.vazia}>
-        <p className={estilos.textoVazio}>Sua tábua ainda está vazia.</p>
-        <Button href="/queijos" seta>
-          Explorar a cave
-        </Button>
-      </div>
-    );
+    return <SacolaVazia />;
   }
 
   return (

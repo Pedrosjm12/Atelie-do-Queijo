@@ -6,7 +6,8 @@ import { MENSAGEM_DE_CEP_INVALIDO } from '@/lib/commerce';
 const { consultarFrete } = vi.hoisted(() => ({ consultarFrete: vi.fn() }));
 vi.mock('@/app/_acoes/frete', () => ({ consultarFrete }));
 
-import { MENSAGEM_DE_FRETE_INDISPONIVEL, ShippingCalculator } from './ShippingCalculator';
+import { MENSAGEM_DE_FRETE_INDISPONIVEL } from '@/lib/freteNaTela';
+import { ShippingCalculator } from './ShippingCalculator';
 
 const campo = () => screen.getByLabelText('Calcule o frete e o prazo');
 const calcular = () => screen.getByRole('button', { name: 'Calcular' });

@@ -17,14 +17,16 @@ import {
   normalizarCep,
   type ResultadoDoFrete,
 } from '@/lib/commerce';
+import {
+  MENSAGEM_DE_FRETE_INDISPONIVEL,
+  MENSAGEM_FORA_DE_AREA,
+  textoDoPrazo,
+} from '@/lib/freteNaTela';
+import { digitosAte, posicaoAposDigitos } from '@/lib/mascara';
 import estilos from './Compra.module.css';
 
-// Textos aprovados (spec §7.2 item 10; P25). O de CEP inválido vem de `lib/commerce.ts` (fonte única,
-// sem Zod, que não pode entrar no pacote do navegador).
-export const MENSAGEM_DE_FRETE_INDISPONIVEL =
-  'Não conseguimos calcular agora. Tente de novo em instantes.';
-const MENSAGEM_FORA_DE_AREA =
-  'Ainda não chegamos ao seu CEP com segurança refrigerada. Deixe seu e-mail e avisamos.';
+// Textos aprovados (spec §7.2 item 10; P25) em `lib/freteNaTela.ts`. O de CEP inválido vem de
+// `lib/commerce.ts` (fonte única, sem Zod, que não pode entrar no pacote do navegador).
 
 type Estado =
   | { tipo: 'ocioso' }
@@ -35,27 +37,6 @@ type Estado =
 
 /** Texto + posição do cursor depois da máscara (`null` = não mexer no cursor). */
 type Campo = { texto: string; cursor: number | null };
-
-function textoDoPrazo(prazo: number | null): string {
-  if (prazo === null) return 'Chega refrigerado em até [N] dias úteis.';
-  return `Chega refrigerado em até ${prazo} ${prazo === 1 ? 'dia útil' : 'dias úteis'}.`;
-}
-
-/** Quantos dígitos há antes da posição `ate`. */
-function digitosAte(texto: string, ate: number): number {
-  return texto.slice(0, ate).replace(/\D/g, '').length;
-}
-
-/** Posição logo depois do `n`-ésimo dígito do texto mascarado (o hífen fica para trás do cursor). */
-function posicaoAposDigitos(mascarado: string, n: number): number {
-  if (n <= 0) return 0;
-  let vistos = 0;
-  for (let i = 0; i < mascarado.length; i++) {
-    const c = mascarado.charCodeAt(i);
-    if (c >= 48 && c <= 57 && ++vistos === n) return i + 1;
-  }
-  return mascarado.length;
-}
 
 /**
  * Calculadora de frete (spec §7.2, item 10). `<form method="post">`: se o envio acontecer antes de

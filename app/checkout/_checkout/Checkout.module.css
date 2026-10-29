@@ -1,0 +1,444 @@
+.pagina {
+  padding-block: 64px 112px;
+}
+
+.titulo {
+  margin-bottom: 0;
+}
+
+.reserva {
+  min-height: 320px;
+  margin-top: 40px;
+}
+
+.fluxo {
+  max-width: 760px;
+  margin-top: 32px;
+}
+
+/* Indicador de etapas */
+.etapas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+  font-size: 14px;
+  color: var(--palha);
+}
+
+.etapa {
+  padding-block: 8px;
+  border-bottom: 2px solid transparent;
+}
+
+.etapaAtual {
+  color: var(--creme);
+  font-weight: 600;
+  border-bottom-color: var(--ouro);
+}
+
+.aviso {
+  margin-top: 20px;
+  font-size: 14px;
+  color: var(--palha);
+}
+
+/* Etapa */
+.etapaCorpo {
+  margin-top: 32px;
+}
+
+.tituloDaEtapa {
+  font-size: 28px;
+}
+
+/* O foco chega aqui por programa (ao trocar de etapa), não por Tab. */
+.tituloDaEtapa:focus {
+  outline: none;
+}
+
+.formulario {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  margin-top: 24px;
+}
+
+.grupo {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.legenda {
+  padding: 0;
+  margin-bottom: 16px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--palha);
+}
+
+.grade {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 18px 16px;
+}
+
+.inteira {
+  grid-column: 1 / -1;
+}
+
+.metade {
+  grid-column: span 3;
+}
+
+.larga {
+  grid-column: span 4;
+}
+
+.estreita {
+  grid-column: span 2;
+}
+
+/* Campo (padrão do campo de CEP, spec §7.2 item 10) */
+.campo {
+  min-width: 0;
+}
+
+.rotulo {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.entrada {
+  width: 100%;
+  min-width: 0;
+  height: 46px;
+  padding: 0 14px;
+  border: var(--borda-campo);
+  border-radius: var(--raio-campo);
+  background: var(--cave);
+  color: var(--creme);
+  font-size: 15px;
+}
+
+.entrada::placeholder {
+  color: var(--placeholder);
+}
+
+.entrada[aria-invalid='true'] {
+  border-color: var(--casca-texto);
+}
+
+.cep .entrada {
+  max-width: 220px;
+}
+
+.areaDeTexto {
+  height: auto;
+  min-height: 112px;
+  padding-block: 12px;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+select.entrada {
+  padding-right: 8px;
+}
+
+.erro,
+.info {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 13px;
+}
+
+.erro {
+  color: var(--casca-texto);
+}
+
+.info {
+  color: var(--mofo-texto);
+}
+
+.info > svg {
+  flex: none;
+  margin-top: 1px;
+}
+
+/* Cartão do presente */
+.rodapeDoCartao {
+  margin-top: -10px;
+}
+
+.contador,
+.contadorExcedido {
+  font-size: 13px;
+  color: var(--palha);
+}
+
+.contadorExcedido {
+  color: var(--casca-texto);
+}
+
+.notaFiscal {
+  font-size: 14px;
+  color: var(--palha);
+}
+
+/* Resumo de erros */
+.resumoDeErros {
+  margin-top: 20px;
+  padding: 16px 20px;
+  border: 1px solid var(--casca-texto);
+  border-radius: var(--raio-cartao);
+  background: var(--carvao);
+}
+
+/* O foco programático vai para o título; o contorno continua no cartão inteiro. */
+.resumoDeErros:has(.tituloDoResumo:focus) {
+  outline: 2px solid var(--ouro);
+  outline-offset: 2px;
+}
+
+.tituloDoResumo:focus {
+  outline: none;
+}
+
+.tituloDoResumo {
+  font-size: 18px;
+  color: var(--casca-texto);
+}
+
+.resumoDeErros ul {
+  margin-top: 8px;
+}
+
+.linkDoErro {
+  display: inline-flex;
+  align-items: center;
+  padding-block: 6px;
+  min-height: 44px;
+  font-size: 14px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.linkDoErro:hover {
+  color: var(--ouro);
+}
+
+.acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.continuar[aria-disabled='true'] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Pagamento (opções no padrão dos formatos, spec §7.2 item 6) */
+.opcoesDePagamento {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.opcaoDePagamento {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 56px;
+  padding: 6px 18px;
+  border: 1px solid var(--pedra-clara);
+  border-radius: var(--raio-cartao);
+  background: transparent;
+  color: var(--creme);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.opcaoAtiva {
+  border-color: var(--ouro);
+  background: var(--ouro-vidro);
+}
+
+.opcaoDePagamento:has(input:focus-visible) {
+  outline: 2px solid var(--ouro);
+  outline-offset: 2px;
+}
+
+/* Resumo do pedido */
+.resumoDoPedido {
+  padding: 24px;
+  border: var(--borda-padrao);
+  border-radius: var(--raio-cartao);
+  background: var(--carvao);
+}
+
+.tituloDoResumoDoPedido {
+  font-size: 22px;
+}
+
+.itensDoResumo {
+  margin-top: 12px;
+  border-bottom: var(--borda-padrao);
+}
+
+.itemDoResumo,
+.linhaDeTotal {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+}
+
+.itemDoResumo {
+  padding-block: 8px;
+  font-size: 14px;
+  color: var(--palha);
+}
+
+.itemDoResumo > span:first-child {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.totais {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 16px;
+  font-size: 15px;
+}
+
+.totais dd {
+  margin: 0;
+  text-align: right;
+}
+
+.linhaTotal {
+  padding-top: 12px;
+  border-top: var(--borda-padrao);
+  font-weight: 600;
+}
+
+.linhaTotal dd {
+  font-size: 22px;
+  color: var(--ouro);
+}
+
+.dadosDoPresente {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: var(--borda-padrao);
+  font-size: 14px;
+}
+
+.rotuloDoPresente {
+  font-weight: 600;
+}
+
+.mensagemDoPresente {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.rotuloMiudo {
+  font-size: 12px;
+  color: var(--palha);
+}
+
+/* A mensagem do cartão é texto; as quebras de linha digitadas aparecem como estão. */
+.textoDoCartao {
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+/* Falha de pagamento */
+.falha {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.erroDePagamento {
+  padding: 16px 20px;
+  border: 1px solid var(--casca-texto);
+  border-radius: var(--raio-cartao);
+  background: var(--carvao);
+  color: var(--casca-texto);
+}
+
+.linkDoAtendimento {
+  min-height: 0;
+  /* Área de toque de 44 px de altura; a margem negativa devolve o espaço e o parágrafo não muda. */
+  padding: 10px 0;
+  margin-block: -10px;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.linkDoAtendimento:hover {
+  color: var(--ouro);
+}
+
+/* Confirmação */
+.textoDaConfirmacao {
+  margin-top: 16px;
+  max-width: 560px;
+  font-size: 17px;
+  color: var(--creme-suave);
+}
+
+.email {
+  font-weight: 600;
+  color: var(--creme);
+  overflow-wrap: anywhere;
+}
+
+.totaisDaConfirmacao {
+  max-width: 420px;
+  margin-top: 24px;
+}
+
+.acoes [aria-disabled='true'] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 600px) {
+  .pagina {
+    padding-block: 40px 80px;
+  }
+
+  .metade,
+  .larga,
+  .estreita {
+    grid-column: 1 / -1;
+  }
+
+  .acoes > * {
+    width: 100%;
+  }
+}

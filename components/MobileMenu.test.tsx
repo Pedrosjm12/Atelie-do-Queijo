@@ -53,9 +53,16 @@ describe('MobileMenu', () => {
     render(<MobileMenu />);
     const botao = screen.getByRole('button', { name: 'Menu' });
 
-    await usuario.click(botao);
-    await usuario.click(screen.getByRole('link', { name: 'Presentes' }));
-    expect(botao).toHaveAttribute('aria-expanded', 'false');
+    // O jsdom não navega: sem isto, ele avisa "Not implemented: navigation to another Document".
+    const impedirNavegacao = (evento: Event) => evento.preventDefault();
+    document.addEventListener('click', impedirNavegacao);
+    try {
+      await usuario.click(botao);
+      await usuario.click(screen.getByRole('link', { name: 'Presentes' }));
+      expect(botao).toHaveAttribute('aria-expanded', 'false');
+    } finally {
+      document.removeEventListener('click', impedirNavegacao);
+    }
   });
 
   it('fecha quando a rota muda por outro meio (voltar, logo, sacola)', async () => {
