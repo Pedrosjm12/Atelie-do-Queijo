@@ -1,20 +1,17 @@
 # Plano de implementação — Ateliê do Queijo
 
 > Fonte da verdade: `ATELIE-DO-QUEIJO-SPEC.md`. Decisões técnicas: `docs/adr/`.
-> Última atualização: 2026-11-03 (etapa 5 detalhada). Etapas 1, 2, 3 e 4 **concluídas**. A etapa 4 (sacola, frete e checkout simulados) está implementada e publicada; o fechamento documental (tarefa 17) está nesta atualização.
+> Última atualização: 2026-11-03 (fechamento da etapa 5). Etapas 1, 2, 3, 4 e 5 **concluídas**. A loja segue **simulada**.
 >
-> **ATUALIZAÇÃO (2026-11-03):** o dono decidiu todas as pendências (D1 a D34, ver [Decisões do dono de 2026-11-03](#decisões-do-dono-de-2026-11-03-d1-a-d34)). **AVISO: dados de negócio fictícios** (WhatsApp, CNPJ, endereço, frete, produtor) serão usados por ora e **precisam ser trocados antes da publicação**. Antes da etapa 5, aplicar o bloco de ajustes listado naquela seção.
+> **AVISO: dados de negócio fictícios** (WhatsApp, CNPJ, endereço, frete, parcelas, produtor) estão em `data/ficticio.ts` e **precisam ser trocados antes da publicação**; o build de produção na Vercel falha enquanto a trava existir. Ver [Decisões do dono de 2026-11-03](#decisões-do-dono-de-2026-11-03-d1-a-d34).
 >
-> **ETAPA 5 DETALHADA (2026-11-03):** ver [Etapa 5](#etapa-5--visualizador-3d-com-fallback-svg). O bloco A (controles sobre o SVG, manifesto e validador de GLB) pode começar com o `especialista-3d-webgl`. O dono decidiu em 2026-11-03 as perguntas P39 a P43 e a aprovação do ADR (D22 = A): [ADR-0009](adr/0009-visualizador-3d-com-model-viewer.md) **Aceito**; o bloco B (instalar o `model-viewer`) vem logo depois do A; o bloco C fica para o primeiro GLB. Ver [Perguntas ao dono (etapa 5)](#perguntas-ao-dono-etapa-5).
+> **RETOMADA (2026-11-03): a etapa 5 está concluída; o próximo passo é a etapa 6, assistente com roteiro determinístico, horários e links do WhatsApp** (`especialista-em-ia-conversacional`, detalhada antes pelo `arquiteto-de-software`).
 >
-> **RETOMADA (2026-10-29): próximo passo é a etapa 5, visualizador 3D com fallback SVG.**
->
-> - **Estado:** etapa 4 concluída (blocos A a E publicados, ver [Commits da etapa 4](#commits-da-etapa-4)). Lint, typecheck, format:check, testes, build e e2e passavam no commit `b06c604`. A loja segue **simulada**: nenhum pagamento real, nenhum e-mail enviado, frete e pedido simulados.
-> - **Quem começa a etapa 5:** o `arquiteto-de-software`, que detalha a etapa neste plano (tarefas, contratos, ADR da dependência `@google/model-viewer`, fronteiras Server/Client). Depois entra o `especialista-3d-webgl`, que implementa o `CheeseViewer` com `model-viewer` e mantém o fallback SVG do Apêndice A (a interface pública `<CheeseViewer queijo={q} />` não muda). Escopo previsto na [tabela da etapa 3](#escopo-o-que-entra-e-o-que-fica-para-depois): rotação, zoom, tela cheia, "Preparando a peça…", mensagem sem WebGL, giro no hover do `ProductCard` e GLB no hero da Home.
-> - **Pendências do dono que tocam a etapa 5:** **Ver na mesa** (realidade aumentada) só entra com GLB real (P11); os arquivos GLB em `public/models/` precisam ser fornecidos ou aprovados; a dependência `@google/model-viewer` exige ADR antes de instalar.
-> - **Tudo o que aguarda o dono** (textos novos, contrastes, comportamentos, LGPD) está numa lista única em [Decisões e textos que aguardam o dono (fim da etapa 4)](#decisões-e-textos-que-aguardam-o-dono-fim-da-etapa-4). Nada ali bloqueia a etapa 5.
-> - **Como retomar:** abra o Claude Code na pasta do projeto, peça "continue de onde paramos" e ele lerá esta nota. Rode `git status` e `npm run lint && npm run typecheck && npm run format:check && npm test && npm run build && npm run test:e2e` para confirmar o estado antes de seguir.
-> - **Guia de conteúdo e variáveis de ambiente:** `docs/conteudo.md` e `docs/ambiente.md` ainda não existem; ficam para a etapa 9 (o `.env.example` não ganhou variável nenhuma na etapa 4). O `CHANGELOG.md` já registra a etapa 4.
+> - **Estado:** etapa 5 publicada nos commits `92fb989` (bloco A) e `a990e3a` (bloco B); ver [Commits da etapa 5](#commits-da-etapa-5). **Nenhum queijo tem GLB**: o visitante vê o SVG, com Tela cheia, Aproximar e Girar funcionando sobre ele, e a biblioteca 3D nunca é baixada. O **bloco C** (hero da Home e giro no cartão) está **pendente, só com o 1º GLB** (P40 = B). Detalhes e pendências da etapa em [Etapa 5](#etapa-5--visualizador-3d-com-fallback-svg) e em [O que a etapa 5 deixou para a frente](#o-que-a-etapa-5-deixou-para-a-frente).
+> - **Para a etapa 6:** o número do WhatsApp vem de `numeroDoWhatsApp()` (`data/ficticio.ts`); com `VERCEL_ENV=production` e variável ausente ou inválida, ele devolve `null` e a interface deve esconder os links. Ver [`docs/ambiente.md`](ambiente.md).
+> - **Tudo o que aguarda o dono** (textos novos, contrastes, comportamentos, LGPD) está em [Decisões e textos que aguardam o dono (fim da etapa 4)](#decisões-e-textos-que-aguardam-o-dono-fim-da-etapa-4), com as decisões D1 a D34 já aplicadas por cima. Nada ali bloqueia a etapa 6.
+> - **Como retomar:** abra o Claude Code na pasta do projeto, peça "continue de onde paramos" e ele lerá esta nota. Rode `git status` e `npm run lint && npm run typecheck && npm run format:check && npm test && npm run modelos:validar && npm run build && npm run test:e2e` para confirmar o estado antes de seguir.
+> - **Guias:** [`docs/conteudo.md`](conteudo.md) (cadastro de queijos e "Como entregar um modelo 3D") e [`docs/ambiente.md`](ambiente.md) existem desde o fechamento da etapa 5. Eles serão ampliados (frete, Pix, horário, textos das páginas, gateway) nas etapas 6, 7 e 9. O `CHANGELOG.md` registra as etapas 4 e 5.
 >
 > Fluxo usado em cada bloco: `frontend-nextjs` (ou o especialista da tarefa) implementa → `guardiao-do-design` (porta 3000, build), `especialista-em-acessibilidade` (`next dev -p 3001`, sem build) e `revisor-de-codigo` conferem em paralelo, sem editar → correções pelo implementador → lint, typecheck, format:check, test, build e test:e2e → commit e push. Na etapa 4, o `auditor-de-seguranca` entrou nos blocos B, C e E. Reaproveitar `BotaoEmBreve` para controles sem ação (Avise-me, WhatsApp, 3D) e o token `--largura-conteiner` nos contêineres.
 
@@ -34,8 +31,8 @@ Convenções deste plano:
 | 2 | Tokens de design e componentes globais | `frontend-nextjs`, `guardiao-do-design` | Concluída |
 | 3 | Home → Catálogo → Produto (com `ProductCard`, `data/cheeses.ts` e ilustrações do Apêndice A) → interface do painel de Atendimento (§8). Sem sacola real, frete, 3D real nem roteiro do assistente | `frontend-nextjs`, `especialista-3d-webgl`, `engenheiro-de-ecommerce`, `guardiao-do-design` | Concluída ([detalhe](#etapa-3--home--catálogo--produto--painel-de-atendimento)) |
 | 4 | Sacola (contexto + `localStorage`), frete simulado e checkout simulado em `lib/commerce.ts` | `engenheiro-de-ecommerce`, `frontend-nextjs`, `auditor-de-seguranca` | **Concluída** ([detalhe](#etapa-4--sacola-frete-simulado-e-checkout-simulado)); P24 a P38 decididos em 2026-10-27 e implementados; commits `48e6ebe` a `b06c604` |
-| 5 | Visualizador 3D (`CheeseViewer` com `@google/model-viewer`) e fallback SVG do Apêndice A | `especialista-3d-webgl` | **Próxima. Detalhada em 2026-11-03** ([detalhe](#etapa-5--visualizador-3d-com-fallback-svg)); bloco A pode começar; bloco B aguarda a aprovação do ADR-0009 (Proposto) |
-| 6 | Assistente com roteiro determinístico, horários e links do WhatsApp no painel de atendimento | `especialista-em-ia-conversacional` | A detalhar |
+| 5 | Visualizador 3D (`CheeseViewer` com `@google/model-viewer`) e fallback SVG do Apêndice A | `especialista-3d-webgl` | **Concluída** ([detalhe](#etapa-5--visualizador-3d-com-fallback-svg)); blocos A e B publicados (`92fb989`, `a990e3a`), [ADR-0009](adr/0009-visualizador-3d-com-model-viewer.md) Aceito. **Bloco C pendente, só com o 1º GLB** |
+| 6 | Assistente com roteiro determinístico, horários e links do WhatsApp no painel de atendimento | `especialista-em-ia-conversacional` | **Próxima.** A detalhar |
 | 7 | Páginas restantes: Presentes, Aprenda, Produtores, 404 (textos da §12) | `frontend-nextjs` | A detalhar |
 | 8 | Rodada de qualidade: testes, acessibilidade, performance e SEO, segurança | `testes-e-qualidade`, `especialista-em-acessibilidade`, `performance-e-seo`, `auditor-de-seguranca` | A detalhar; herda itens da etapa 4 ([seção](#etapa-8--rodada-de-qualidade-herança-da-etapa-4) e [lista](#fica-para-depois-segurança-e-lgpd)) |
 | 9 | CI completo, ambientes e checklist de aceite da §14 | `devops-e-deploy`, `documentador-tecnico` | A detalhar; herda itens da etapa 4 ([seção](#etapa-9--ci-completo-ambientes-e-aceite-herança-da-etapa-4) e [lista](#fica-para-depois-segurança-e-lgpd)) |
@@ -1212,7 +1209,7 @@ O [ADR-0007](adr/0007-validacao-com-zod-mini.md) (Zod via `zod/mini`) foi aceito
 
 **Objetivo:** deixar o `CheeseViewer` completo (spec §7.2, §7.5, §7.6, §10.3 e §11): os controles passam a ter efeito, o 3D carrega tarde e sob demanda quando houver GLB, e o SVG do Apêndice A continua sendo o que o visitante vê primeiro e sempre que o 3D não puder ser exibido.
 
-**Situação:** detalhada em 2026-11-03; decisões do dono no mesmo dia. **Bloco A** implementado. **Bloco B** (tarefas 6 a 8) **implementado em 2026-11-03**, verificações da tarefa 8 pendentes: o [ADR-0009](adr/0009-visualizador-3d-com-model-viewer.md) está **Aceito** (D22 = A). **Bloco C** só com o primeiro GLB (P40 = B).
+**Situação: Concluída em 2026-11-03.** Bloco A (`92fb989`) e bloco B (`a990e3a`) publicados; [ADR-0009](adr/0009-visualizador-3d-com-model-viewer.md) **Aceito** (D22 = A). **Bloco C pendente, só com o primeiro GLB** (P40 = B): hero da Home e giro no cartão. Fechamento documental na tarefa 12.
 
 **Pré-requisito:** etapa 4 concluída e o bloco de ajustes D3 a D19 aplicado (`65c6263`); `data/ficticio.ts` criado (`39fd9e0`).
 
@@ -1452,9 +1449,21 @@ Cada tarefa termina com `lint`, `typecheck`, `format:check`, `test`, `build` e `
 
 **Fechamento**
 
-12. **[documentador-tecnico] Fechamento da etapa 5**
-    - `docs/conteudo.md` ganha a seção "Como entregar um modelo 3D" (convenção de nomes, limite, texturas 2K, Draco/KTX2, como rodar `npm run modelos:validar`, como incluir no manifesto); CHANGELOG; situação desta etapa e do ADR-0009 neste plano.
+12. **[documentador-tecnico] Fechamento da etapa 5** — **Concluída (arquivos prontos; commit `docs: fecha a etapa 5` a cargo da sessão principal).**
+    - Criados `docs/conteudo.md` (com "Como entregar um modelo 3D") e `docs/ambiente.md` (cabiam hoje: duas variáveis públicas e a trava `VERCEL_ENV`); README e CHANGELOG atualizados; situação da etapa e do ADR-0009 registrada aqui.
     - **Pronto quando:** commit `docs: fecha a etapa 5` publicado.
+
+### O que a etapa 5 deixou para a frente
+
+Lista curta, só com ponteiros. O detalhe de cada item está na seção indicada.
+
+**Bloco C, pendente só com o 1º GLB (P40 = B):** tarefas 9 a 11 (giro no cartão, 3D no hero, verificação). O hero exige uma variante do A.3 sem o queijo, ativo novo a aprovar pelo dono e pelo `guardiao-do-design`. Junto com o 1º GLB entram: luz de ~3200 K e ambiente HDR próprio (§11), `ar`/**Ver na mesa** (D23), rodar o e2e com GLB (hoje pulado) e, se o GLB for comprimido, os decodificadores em `public/decodificadores/`.
+
+**Para o checklist da §14 (desvios e textos novos):** os desvios e textos dos blocos A e B estão em [Textos decididos e desvios da spec](#textos-decididos-e-desvios-da-spec-checklist-da-14), incluindo a lista de [verificação do bloco B](#textos-decididos-e-desvios-da-spec-checklist-da-14). Somam-se os desvios D2, D4, D5 e D6 e o item "trocar dados fictícios" já em [Tarefas geradas por estas decisões](#tarefas-geradas-por-estas-decisões). Pontos que dependem do dono: "Veja as fotos abaixo" não aponta para fotos no celular; economia de dados sem opção manual de pedir o 3D; +4 px de respiro com GLB.
+
+**Etapa 8:** CSP com `connect-src 'self'` e, com Draco/KTX2, `worker-src blob:`, `'wasm-unsafe-eval'` e `blob:` em `img-src` ([Riscos da etapa 5](#riscos-da-etapa-5)); medir LCP e CLS do produto com GLB real; folga do JavaScript inicial do produto (+3,89 kB de +4 kB, [resultado do bloco B](#textos-decididos-e-desvios-da-spec-checklist-da-14)); o e2e com GLB só roda no CI com GLB real e pode exigir `--enable-unsafe-swiftshader`.
+
+**Etapa 9:** `public/licencas-de-terceiros.txt` (já em [Etapa 9](#etapa-9--ci-completo-ambientes-e-aceite-herança-da-etapa-4)); Dependabot ou Renovate agrupando `@google/model-viewer` e `three`; `docs/conteudo.md` e `docs/ambiente.md` ampliados com gateway e hospedagem; remover `DADOS_FICTICIOS_ATIVOS` e a trava ao trocar os dados.
 
 ### Textos decididos e desvios da spec (checklist da §14)
 
@@ -1495,7 +1504,7 @@ Lista do P42 (aprovada pelo dono em 2026-11-03) (`TRADUCOES_A11Y` em `components
 
 Desvios técnicos em relação ao plano: (0) a camada do 3D (`CamadaDoModelo`, com o anel de foco e o `ModeloDoQueijo`) é um único chunk tardio; (1) o `<model-viewer>` é criado por código em `ModeloDoQueijo` (atributos, não propriedades do React), então os valores da §11 aparecem como atributos do DOM; (2) os decodificadores são definidos em `self.ModelViewerElement` (ver ADR-0009, decisão 6), não na classe; (3) `React.lazy` + `Suspense` no lugar de `next/dynamic` (a documentação do Next 16 aceita os dois; o `next/dynamic` somava ~1,9 kB gzip ao JavaScript inicial do produto e estourava o orçamento) e uma fronteira de erro (`FronteiraDoModelo`) para que falha ao baixar o chunk volte ao SVG em vez de derrubar a página; (4) o zoom e os botões de giro usam a propriedade `cameraOrbit` mantendo theta/phi.
 
-**Resultado do bloco B (medidas em `npm run medir:pacote`, manifesto vazio):** compartilhado 182,69 kB (+0,00); Home 187,03 kB e `/queijos` 182,69 kB (+0,00); produto 193,77 kB (+3,89 sobre a linha de base, limite +4: pouca folga); chunk tardio 293,41 kB gzip (limite 350), ausente do HTML; LCP/CLS sem mudança. Requisitos obrigatórios 1 a 4 atendidos; o e2e com GLB mockado (`page.route`, GLB sintético em `e2e/_apoio/glbSintetico.ts`) está **pulado** com o manifesto vazio e foi rodado e aprovado localmente alterando o manifesto por instantes (revertido). **Pendências:** luz quente de ~3200 K e ambiente HDR próprio (§11) ficam para o primeiro GLB real (hoje vale a luz neutra padrão); `ar`/Ver na mesa segue oculto (D23); verificações da tarefa 8 (segurança, desempenho, acessibilidade, revisor).
+**Resultado do bloco B (medidas em `npm run medir:pacote`, manifesto vazio):** compartilhado 182,69 kB (+0,00); Home 187,03 kB e `/queijos` 182,69 kB (+0,00); produto 193,77 kB (+3,89 sobre a linha de base, limite +4: pouca folga); chunk tardio 293,41 kB gzip (limite 350), ausente do HTML; LCP/CLS sem mudança. Requisitos obrigatórios 1 a 4 atendidos; o e2e com GLB mockado (`page.route`, GLB sintético em `e2e/_apoio/glbSintetico.ts`) está **pulado** com o manifesto vazio e foi rodado e aprovado localmente alterando o manifesto por instantes (revertido). **Pendências:** luz quente de ~3200 K e ambiente HDR próprio (§11) ficam para o primeiro GLB real (hoje vale a luz neutra padrão); `ar`/Ver na mesa segue oculto (D23). **Verificações da tarefa 8 concluídas** (segurança, desempenho, design, acessibilidade e revisor, sem bloqueios; correções aplicadas no commit `a990e3a`).
 
 ### Requisitos obrigatórios do bloco B (critérios de pronto das tarefas 6 a 8)
 
@@ -1511,12 +1520,12 @@ Vindos da verificação do bloco A (acessibilidade, testes e revisor). A tarefa 
 | Bloco | Conteúdo | Mensagem | Situação |
 | --- | --- | --- | --- |
 | Docs | Este detalhamento e o ADR-0009 (Proposto) | `docs: detalha a etapa 5 e propõe o ADR-0009` | Publicado (`cdae7aa`); ADR aceito em 2026-11-03 |
-| A | Tarefas 1 a 5 | `feat(3d): liga tela cheia, zoom e validador de modelos sobre o SVG` | Implementado (tarefas 1 a 4); verificações da tarefa 5 pendentes |
-| B | Tarefas 6 a 8 | `feat(3d): adiciona o model-viewer com carregamento tardio e fallback em SVG` | Implementado (tarefas 6 e 7 e testes da 8); verificações em paralelo (segurança, desempenho, acessibilidade, revisor) pendentes; sem commit |
-| C | Tarefas 9 a 11 | `feat(3d): adiciona o 3D no hero e o giro no cartão` | Só com o 1º GLB (P40 = B) |
-| Docs | Tarefa 12 | `docs: fecha a etapa 5` | A fazer |
+| A | Tarefas 1 a 5 | `feat(3d): liga tela cheia, zoom e validador de modelos sobre o SVG` | Publicado (`92fb989`) |
+| B | Tarefas 6 a 8 | `feat(3d): adiciona o visualizador com model-viewer carregado sob demanda` | Publicado (`a990e3a`) |
+| C | Tarefas 9 a 11 | `feat(3d): adiciona o 3D no hero e o giro no cartão` | **Pendente, só com o 1º GLB** (P40 = B) |
+| Docs | Tarefa 12 | `docs: fecha a etapa 5` | Arquivos prontos; commit a cargo da sessão principal |
 
-Ordem: A → B → (C) → fechamento. B está liberado depois do A; C espera o primeiro GLB (P40 = B).
+Ordem: A → B → fechamento; C espera o primeiro GLB (P40 = B).
 
 ### Verificação (vale para cada bloco)
 
@@ -1612,7 +1621,7 @@ Tokenização (nenhum dado de cartão no nosso servidor); webhooks com assinatur
 
 **Documentação (`documentador-tecnico`)**
 
-- Criar `docs/conteudo.md` (guia do dono da loja) e `docs/ambiente.md` (variáveis de ambiente). Nenhum dos dois existe hoje, e o `.env.example` ainda só tem `NEXT_PUBLIC_SITE_URL` e `NEXT_PUBLIC_WHATSAPP_NUMBER`.
+- Ampliar `docs/conteudo.md` (guia do dono da loja) e `docs/ambiente.md` (variáveis de ambiente), criados no fechamento da etapa 5 com o que existia (queijos, modelos 3D, `NEXT_PUBLIC_SITE_URL`, `NEXT_PUBLIC_WHATSAPP_NUMBER` e a trava `VERCEL_ENV`). Faltam gateway, hospedagem, frete, Pix e horário.
 - Atualizar o `CHANGELOG.md` e o README com hospedagem, gateway e ambientes.
 - Checklist de aceite da §14 da spec, com os desvios aprovados (P21 e os textos novos da [lista do dono](#decisões-e-textos-que-aguardam-o-dono-fim-da-etapa-4)).
 
@@ -1687,7 +1696,7 @@ Continuam como lacuna, por decisão do dono: dados dos 9 queijos sem ficha (`[A 
 | --- | --- | --- |
 | Aplicar D3, D4, D5 (registro), D11, D12, D13, D14, D18, D19 no código, nos testes e nos textos | `frontend-nextjs` (+ `guardiao-do-design`, `especialista-em-acessibilidade`) | Antes da etapa 5 (bloco único, um commit) — **Concluída em 2026-11-03.** Texto final do quiz: "Você prefere sabores {sabor}, vai servir {uso}, e acompanhar com {acompanhamento}. {nome} foi o que mais combinou com as três respostas." (uso: "para você mesmo, com calma"; sem artigo antes do nome, aprovado pelo dono). D14 feito com `white-space: nowrap` (`SemQuebra`), não com U+2011. |
 | Criar `data/ficticio.ts` e aplicar D26 a D29 (WhatsApp, CNPJ, endereço, frete, prazo, parcelas, produtor, ano); trocar as lacunas visíveis por esses valores | `engenheiro-de-ecommerce` + `frontend-nextjs` | Antes da etapa 6 (o WhatsApp é necessário nela) — **Concluída em 2026-11-03.** |
-| ADR do `@google/model-viewer` | `arquiteto-de-software` | Início da etapa 5 — **Escrito em 2026-11-03** ([ADR-0009](adr/0009-visualizador-3d-com-model-viewer.md), Proposto; aguarda o dono) |
+| ADR do `@google/model-viewer` | `arquiteto-de-software` | Início da etapa 5 — **Escrito e aceito em 2026-11-03** ([ADR-0009](adr/0009-visualizador-3d-com-model-viewer.md), Aceito) |
 | ADR da hospedagem (Vercel) e ADR do gateway (Mercado Pago) | `arquiteto-de-software`, `auditor-de-seguranca` | Etapa 9 |
 | Rascunho do aviso de privacidade | `auditor-de-seguranca` + `documentador-tecnico` | Etapa 9 |
 | Checklist da §14 com os desvios D2, D4, D5, D6 e o item "trocar dados fictícios": remover `DADOS_FICTICIOS_ATIVOS` e a trava do `next.config.ts` ao trocar os dados, e atualizar junto os testes unitários e e2e que citam os valores fictícios (CNPJ, endereço, frete, parcelas, produtor, ano) | `documentador-tecnico` | Etapa 9 |

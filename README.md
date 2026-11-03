@@ -33,6 +33,8 @@ Variáveis de ambiente: copie `.env.example` para `.env.local` e preencha. A lis
 | `npm test` | Roda os testes unitários (Vitest) uma vez |
 | `npm run test:watch` | Roda o Vitest em modo contínuo |
 | `npm run test:e2e` | Roda os testes de ponta a ponta (Playwright); precisa do Chromium instalado (`npx playwright install chromium`) |
+| `npm run modelos:validar` | Confere os GLB de `public/models/` contra `data/modelos3d.ts` (nome, tamanho até 3 MiB, texturas até 2048 px, decodificadores locais). Roda no CI antes do build. Com o manifesto vazio, passa |
+| `npm run medir:pacote` | Mede o JavaScript inicial (gzip) de cada rota e o chunk tardio do 3D, e compara com o orçamento. Rode depois de `npm run build`. Com `-- --web-vitals`, mede também LCP e CLS do produto |
 
 Antes de abrir um PR (ou de commitar), rode nesta ordem: `npm run lint`, `npm run typecheck`, `npm run format:check`, `npm test`, `npm run build` e `npm run test:e2e`.
 
@@ -65,11 +67,23 @@ A etapa 4 faz a compra funcionar de ponta a ponta **em simulação**. Decisões 
 
 O e-mail **`recusa@exemplo.com`** faz o pedido simulado ser recusado, para testar a mensagem de erro do pagamento. Ele existe só na implementação simulada, em `lib/pedido.server.ts`, marcado com o comentário `// SIMULAÇÃO: remover com o gateway`. **Deve ser removido quando o gateway real entrar** (ver a etapa 9 do [`docs/PLANO.md`](docs/PLANO.md#etapa-9--ci-completo-ambientes-e-aceite-herança-da-etapa-4)).
 
+## Visualizador 3D
+
+A etapa 5 entregou o visualizador, decidido no [ADR-0009](docs/adr/0009-visualizador-3d-com-model-viewer.md). **Nenhum queijo tem GLB ainda**, então o visitante vê a ilustração SVG do Apêndice A, com Girar, Aproximar, Tela cheia, duplo clique para aproximar e o alternador de corte funcionando sobre ela.
+
+- **Dependências:** `@google/model-viewer` 4.4.0 e `three` 0.183.2, em versão exata (sem `^`). O `three` precisa ficar na faixa 0.183.x exigida pelo `model-viewer`: atualize as duas juntas.
+- **Carregamento tardio:** a biblioteca só é baixada quando o queijo tem GLB, o palco está visível e o navegador está ocioso. Sem GLB, nenhum byte dela é baixado. Decodificadores Draco e KTX2 ficam em `public/decodificadores/` (nada de CDN).
+- **Manifesto:** `data/modelos3d.ts` lista os queijos com GLB. Os arquivos seguem `public/models/<slug>-(inteiro|cortado).glb`, com até 3 MiB.
+- **Orçamento de pacote** (gzip, conferido por `npm run medir:pacote`): compartilhado +0,5 kB, produto +4 kB, Home e `/queijos` +0 kB sobre a linha de base da etapa 4; chunk tardio do 3D até 350 kB, nunca citado no HTML. Medidas e registro em [ADR-0009](docs/adr/0009-visualizador-3d-com-model-viewer.md).
+- **Ver na mesa** (realidade aumentada) fica oculto até haver GLB real. Hero da Home e giro no cartão também esperam o primeiro GLB.
+
+Como entregar um modelo: [`docs/conteudo.md`](docs/conteudo.md#como-entregar-um-modelo-3d).
+
 ## Componentes principais
 
 | Componente | Função |
 | --- | --- |
-| `CheeseViewer` | Palco do produto. Nesta etapa mostra só ilustração SVG, com alternador de corte (peça inteira ou por dentro). O 3D real chega na etapa 5 |
+| `CheeseViewer` | Palco do produto: ilustração SVG com alternador de corte, Girar, Aproximar e Tela cheia; carrega `ModeloDoQueijo` (`model-viewer`) sob demanda quando há GLB e volta ao SVG se o 3D falhar ou não houver WebGL |
 | `PainelDeCompra` (em `app/queijos/[slug]/_produto/`) | Formato, preço, preço no Pix, quantidade e barra fixa do celular, com um estado só |
 | `ProductTabs` e `useAbas` | Abas do produto. O hook `components/useAbas.ts` cuida do teclado (setas, Home, End) e também serve ao painel de atendimento |
 | `SacolaProvider`, `LinkDaSacola`, `BotaoAdicionar`, `QuantityStepper`, `AvisoDaSacola` | Sacola no layout: estado e `localStorage`, contador do cabeçalho, botão Adicionar, seletor de quantidade e aviso **Adicionado à sacola. Boa escolha.** `SacolaVazia` é o estado vazio de `/sacola` e `/checkout` |
@@ -77,7 +91,7 @@ O e-mail **`recusa@exemplo.com`** faz o pedido simulado ser recusado, para testa
 | `AtendimentoProvider` e `SupportPanel` | Painel de atendimento em `<dialog>` modal, aberto pelo botão flutuante, por "Fale conosco" (rodapé) e por "Pedir ajuda" (catálogo). A conversa é um roteiro fixo de `lib/assistant.ts` até a etapa 6 |
 | `ProductCard`, `CheeseIllustration`, `components/ilustracoes/` | Cartão de queijo e ilustrações do Apêndice A da spec |
 
-Controles que ainda não têm função (Avise-me, Girar, Aproximar, Tela cheia, Falar com um queijista, envio de mensagem no painel, Buscar e Minha conta) seguem o padrão `aria-disabled="true"`: continuam focáveis e visíveis, mas não fazem nada. Ganham ação nas etapas 5 e 6. A lista completa está em [`docs/PLANO.md`](docs/PLANO.md#controles-ao-fim-da-etapa-4).
+Controles que ainda não têm função (Avise-me, Falar com um queijista e envio de mensagem no painel) seguem o padrão `aria-disabled="true"`: continuam focáveis e visíveis, mas não fazem nada. Ganham ação na etapa 6. Girar, Aproximar e Tela cheia funcionam desde a etapa 5 (Girar sem GLB fica `aria-disabled`, pois o SVG não gira). Buscar e Minha conta foram removidos do cabeçalho até existirem as funções (D19). A lista completa está em [`docs/PLANO.md`](docs/PLANO.md#controles-ao-fim-da-etapa-4).
 
 ## Estrutura de pastas
 
@@ -86,7 +100,8 @@ app/            rotas e layout (Next.js App Router)
 components/     componentes de interface
 data/           dados do catálogo (ex.: cheeses.ts)
 lib/            funções utilitárias e regras (ex.: format.ts, sacola.ts, commerce.ts; pedido.server.ts só roda no servidor)
-public/models/  modelos 3D (GLB)
+public/models/  modelos 3D (GLB), vazia por enquanto
+scripts/        validar-modelos.mjs e medir-pacote.mjs
 e2e/            testes de ponta a ponta
 docs/           plano, ADRs e guias
 ```
@@ -103,7 +118,7 @@ Os arquivos corrigidos voltam ao stage sozinhos.
 
 **CI** (`.github/workflows/ci.yml`, em push e pull request para `main`):
 
-1. job `verificar`: `npm ci`, lint, typecheck, `format:check`, testes e build;
+1. job `verificar`: `npm ci`, lint, typecheck, `format:check`, testes, `modelos:validar` e build;
 2. job `e2e` (roda só se `verificar` passar): instala o Chromium e executa o Playwright.
 
 ## Convenções
@@ -118,5 +133,9 @@ Os arquivos corrigidos voltam ao stage sozinhos.
 - [`CLAUDE.md`](CLAUDE.md): instruções de trabalho do repositório.
 - [`docs/PLANO.md`](docs/PLANO.md): plano da etapa atual.
 - [`docs/adr/`](docs/adr/README.md): decisões técnicas.
+- [`docs/conteudo.md`](docs/conteudo.md): guia do dono da loja (cadastro de queijos e entrega de modelos 3D).
+- [`docs/ambiente.md`](docs/ambiente.md): variáveis de ambiente e a trava de dados fictícios.
 
-Hospedagem e gateway de pagamento ainda não foram decididos. O guia de conteúdo (`docs/conteudo.md`) e o das variáveis de ambiente (`docs/ambiente.md`) ainda não existem e ficam para a etapa 9; por ora, as variáveis estão no `.env.example`. As mudanças por etapa estão no [`CHANGELOG.md`](CHANGELOG.md).
+> **Dados fictícios.** WhatsApp, CNPJ, endereço, frete, prazo, parcelas e produtor do Canastra são **fictícios** e ficam em `data/ficticio.ts`. O build de produção na Vercel (`VERCEL_ENV=production`) falha enquanto `DADOS_FICTICIOS_ATIVOS` for `true`. Troque os dados antes de publicar.
+
+Hospedagem (Vercel) e gateway (Mercado Pago) estão decididos, mas os ADRs e a configuração ficam para a etapa 9. As mudanças por etapa estão no [`CHANGELOG.md`](CHANGELOG.md).
