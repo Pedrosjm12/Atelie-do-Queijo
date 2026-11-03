@@ -13,6 +13,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
+    "modelos:validar": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/validar-modelos.mjs",
+    "medir:pacote": "node scripts/medir-pacote.mjs",
     "prepare": "lefthook install"
   },
   "dependencies": {

@@ -5,7 +5,7 @@
 >
 > **ATUALIZAÇÃO (2026-11-03):** o dono decidiu todas as pendências (D1 a D34, ver [Decisões do dono de 2026-11-03](#decisões-do-dono-de-2026-11-03-d1-a-d34)). **AVISO: dados de negócio fictícios** (WhatsApp, CNPJ, endereço, frete, produtor) serão usados por ora e **precisam ser trocados antes da publicação**. Antes da etapa 5, aplicar o bloco de ajustes listado naquela seção.
 >
-> **ETAPA 5 DETALHADA (2026-11-03):** ver [Etapa 5](#etapa-5--visualizador-3d-com-fallback-svg). O bloco A (controles sobre o SVG, manifesto e validador de GLB) pode começar com o `especialista-3d-webgl`. O bloco B (instalar o `model-viewer`) só começa depois de o dono aprovar o [ADR-0009](adr/0009-visualizador-3d-com-model-viewer.md). Perguntas ao dono: P39 a P43 e a aprovação do ADR (D22), em [Perguntas ao dono (etapa 5)](#perguntas-ao-dono-etapa-5).
+> **ETAPA 5 DETALHADA (2026-11-03):** ver [Etapa 5](#etapa-5--visualizador-3d-com-fallback-svg). O bloco A (controles sobre o SVG, manifesto e validador de GLB) pode começar com o `especialista-3d-webgl`. O dono decidiu em 2026-11-03 as perguntas P39 a P43 e a aprovação do ADR (D22 = A): [ADR-0009](adr/0009-visualizador-3d-com-model-viewer.md) **Aceito**; o bloco B (instalar o `model-viewer`) vem logo depois do A; o bloco C fica para o primeiro GLB. Ver [Perguntas ao dono (etapa 5)](#perguntas-ao-dono-etapa-5).
 >
 > **RETOMADA (2026-10-29): próximo passo é a etapa 5, visualizador 3D com fallback SVG.**
 >
@@ -1212,11 +1212,11 @@ O [ADR-0007](adr/0007-validacao-com-zod-mini.md) (Zod via `zod/mini`) foi aceito
 
 **Objetivo:** deixar o `CheeseViewer` completo (spec §7.2, §7.5, §7.6, §10.3 e §11): os controles passam a ter efeito, o 3D carrega tarde e sob demanda quando houver GLB, e o SVG do Apêndice A continua sendo o que o visitante vê primeiro e sempre que o 3D não puder ser exibido.
 
-**Situação:** detalhada em 2026-11-03. **Bloco A pode começar já** (não usa dependência nova). O **bloco B só começa depois de o dono aprovar o [ADR-0009](adr/0009-visualizador-3d-com-model-viewer.md)** (D22). O bloco C depende da resposta ao P40.
+**Situação:** detalhada em 2026-11-03; decisões do dono no mesmo dia. **Bloco A** em implementação (não usa dependência nova). **Bloco B** liberado: o [ADR-0009](adr/0009-visualizador-3d-com-model-viewer.md) está **Aceito** (D22 = A). **Bloco C** só com o primeiro GLB (P40 = B).
 
 **Pré-requisito:** etapa 4 concluída e o bloco de ajustes D3 a D19 aplicado (`65c6263`); `data/ficticio.ts` criado (`39fd9e0`).
 
-**Decisões:** [ADR-0009](adr/0009-visualizador-3d-com-model-viewer.md) (**Proposto**: `@google/model-viewer` 4.4.0 + `three` 0.183.2, carregamento tardio, decodificadores sem CDN, manifesto de modelos). D21 (etapa só com SVG, pronta para GLB futuros), D22 (ADR antes de instalar), D23 / P11 (**Ver na mesa** oculto até haver GLB real), P21 (rótulo fixo **Ver por dentro** com `aria-pressed`), P23 (ativo de Girar e Aproximar).
+**Decisões:** [ADR-0009](adr/0009-visualizador-3d-com-model-viewer.md) (**Aceito** em 2026-11-03, aprovado pelo dono: `@google/model-viewer` 4.4.0 + `three` 0.183.2, carregamento tardio, decodificadores sem CDN, manifesto de modelos). D21 (etapa só com SVG, pronta para GLB futuros), D22 (ADR antes de instalar), D23 / P11 (**Ver na mesa** oculto até haver GLB real), P21 (rótulo fixo **Ver por dentro** com `aria-pressed`), P23 (ativo de Girar e Aproximar).
 
 **Fato que molda a etapa (D21):** `public/models/` só tem `.gitkeep`. **Nenhum queijo tem GLB.** Com o manifesto vazio, o visitante recebe exatamente o que recebe hoje (SVG), mais os controles que passam a funcionar sobre o SVG; o `model-viewer` nunca é baixado. O caminho do GLB fica implementado, testado com *stub* e ativado sozinho quando o primeiro arquivo entrar no manifesto.
 
@@ -1434,7 +1434,7 @@ Cada tarefa termina com `lint`, `typecheck`, `format:check`, `test`, `build` e `
 
 7. **[especialista-3d-webgl] `ModeloDoQueijo` e a máquina de estados no `CheeseViewer`** (~400 com testes; se passar, dividir em 7a carregamento/estados e 7b controles ligados ao modelo)
    - Contrato acima; ordem de carregamento; legenda e mensagem da §7.5 (estilo do P41); `alt`; tradução do `a11y` (P42, se aprovado); corte troca o `src`; zoom muda o `camera-orbit`; primeiro toque no modelo desliga o giro e esconde a dica; tempo-limite de 20 s; mesma proporção do SVG (CLS 0).
-   - **Pronto quando:** os testes de unidade da seção de testes passam; `npm run medir:pacote` confirma o orçamento (o *chunk* tardio não aparece em nenhum HTML); verificação manual com GLB de teste descrita no PR; e2e "sem GLB, zero custo" passando; e2e do caminho com GLB escrito e pulado.
+   - **Pronto quando:** os [requisitos obrigatórios do bloco B](#requisitos-obrigatórios-do-bloco-b-critérios-de-pronto-das-tarefas-6-a-8) (WCAG 2.2.2 e 2.5.7, testes de ciclo de vida, e2e com GLB mockado) estão atendidos; os testes de unidade da seção de testes passam; `npm run medir:pacote` confirma o orçamento (o *chunk* tardio não aparece em nenhum HTML); verificação manual com GLB de teste descrita no PR; e2e "sem GLB, zero custo" passando; e2e do caminho com GLB escrito e pulado.
 
 8. **Verificação do bloco B, em paralelo:** `auditor-de-seguranca` (**obrigatório**: dependência nova, procedência, nenhuma requisição a CDN, `src` só do manifesto, requisitos de CSP anotados para a etapa 8), `performance-e-seo` (orçamento, LCP/CLS), `especialista-em-acessibilidade`, `testes-e-qualidade` → `revisor-de-codigo` → commit `feat(3d): adiciona o model-viewer com carregamento tardio e fallback em SVG`.
 
@@ -1456,17 +1456,39 @@ Cada tarefa termina com `lint`, `typecheck`, `format:check`, `test`, `build` e `
     - `docs/conteudo.md` ganha a seção "Como entregar um modelo 3D" (convenção de nomes, limite, texturas 2K, Draco/KTX2, como rodar `npm run modelos:validar`, como incluir no manifesto); CHANGELOG; situação desta etapa e do ADR-0009 neste plano.
     - **Pronto quando:** commit `docs: fecha a etapa 5` publicado.
 
+### Textos decididos e desvios da spec (checklist da §14)
+
+Decididos pelo dono em 2026-11-03 e aplicados no bloco A:
+
+| Onde | Texto | Observação |
+| --- | --- | --- |
+| Girar sem GLB (P39 = C) | **Giro disponível com o modelo 3D** | Só leitor de tela (`aria-describedby` em `<span hidden>`) |
+| Tela cheia sem a Fullscreen API | **Tela cheia indisponível neste navegador** | Só leitor de tela; substitui "Tela cheia disponível em breve" |
+| Dica do palco sem GLB | **Toque duas vezes para aproximar** | **Desvio da §7.2**: a spec pede "Arraste para girar · Toque duas vezes para aproximar". "Arraste para girar" só aparece quando o queijo tem GLB (`giroDisponivel`), porque o SVG não gira. A dica fica visível no celular sem GLB (antes só aparecia "Arraste para girar") |
+| Estilo da legenda do 3D (P41 = A) | 13 px, `--palha`, centralizada abaixo da ilustração | Valem para o bloco B |
+
+Registrar no checklist da §14 (aceite): os três desvios acima (Girar desabilitado sem GLB, descrição da Tela cheia, dica sem "Arraste para girar") e o rótulo fixo do P21.
+
+### Requisitos obrigatórios do bloco B (critérios de pronto das tarefas 6 a 8)
+
+Vindos da verificação do bloco A (acessibilidade, testes e revisor). A tarefa 7 só fecha com todos; a 8 confere.
+
+1. **WCAG 2.2.2 (pausar, parar, ocultar):** o giro automático com GLB precisa poder ser pausado também no celular, hoje o **Girar** é `soDesktop` (§7.6). **Recomendação: A)** mostrar o Girar no celular apenas quando o queijo tem GLB (desvio pequeno da §7.6, a aprovar pelo dono) **e** parar o giro na primeira interação (já previsto). Por quê: parar no primeiro toque só ajuda quem toca no modelo; quem lê com leitor de tela ou outro dispositivo de entrada, ou tem distração por movimento, precisa de um controle explícito, e a volta de 10 s passa de 5 s. Alternativas: **B)** autorrotate só no desktop (perde o efeito no celular, que é o maior público); **C)** só parar na 1ª interação (não atende 2.2.2 sozinha).
+2. **WCAG 2.5.7 (movimentos de arrastar) e 2.1.1:** alternativa sem arrasto para girar: botões "girar para a esquerda" e "girar para a direita" (passo de 30°) na barra, ou o `model-viewer` focável com setas. Rótulos novos **a aprovar pelo dono** (proposta: "Girar à esquerda" e "Girar à direita"). O `model-viewer` precisa ser focável com `alt`/`aria-label` descritivo (P42: `a11y` traduzido).
+3. **Testes de ciclo de vida do componente** (unidade): tempo-limite de 20 s com *fake timers* (`vi.useFakeTimers`), `IntersectionObserver` simulado (visível → preparando), `requestIdleCallback` simulado, `load`, `error`, `camera-change` e desmontagem (sem ouvintes nem *timers* soltos).
+4. **E2E com GLB mockado:** `page.route('**/models/*.glb', …)` entregando um GLB sintético mínimo (montado no teste, sem arquivo binário no repositório) para exercitar carga, troca inteiro/cortado, tempo-limite e erro sem depender de um GLB real.
+
 ### Commits da etapa 5
 
 | Bloco | Conteúdo | Mensagem | Situação |
 | --- | --- | --- | --- |
-| Docs | Este detalhamento e o ADR-0009 (Proposto) | `docs: detalha a etapa 5 e propõe o ADR-0009` | Pendente (sessão principal) |
-| A | Tarefas 1 a 5 | `feat(3d): liga tela cheia, zoom e validador de modelos sobre o SVG` | A fazer |
-| B | Tarefas 6 a 8 | `feat(3d): adiciona o model-viewer com carregamento tardio e fallback em SVG` | Aguarda o ADR-0009 |
-| C | Tarefas 9 a 11 | `feat(3d): adiciona o 3D no hero e o giro no cartão` | Aguarda o P40 |
+| Docs | Este detalhamento e o ADR-0009 (Proposto) | `docs: detalha a etapa 5 e propõe o ADR-0009` | Publicado (`cdae7aa`); ADR aceito em 2026-11-03 |
+| A | Tarefas 1 a 5 | `feat(3d): liga tela cheia, zoom e validador de modelos sobre o SVG` | Implementado (tarefas 1 a 4); verificações da tarefa 5 pendentes |
+| B | Tarefas 6 a 8 | `feat(3d): adiciona o model-viewer com carregamento tardio e fallback em SVG` | Liberado (ADR-0009 Aceito) |
+| C | Tarefas 9 a 11 | `feat(3d): adiciona o 3D no hero e o giro no cartão` | Só com o 1º GLB (P40 = B) |
 | Docs | Tarefa 12 | `docs: fecha a etapa 5` | A fazer |
 
-Ordem: A → B → (C) → fechamento. A não espera o dono; B espera o ADR-0009; C espera o P40.
+Ordem: A → B → (C) → fechamento. B está liberado depois do A; C espera o primeiro GLB (P40 = B).
 
 ### Verificação (vale para cada bloco)
 
@@ -1501,14 +1523,14 @@ Ordem: A → B → (C) → fechamento. A não espera o dono; B espera o ADR-0009
 
 ### Perguntas ao dono (etapa 5)
 
-| # | Pergunta | Opções | Recomendação |
-| --- | --- | --- | --- |
-| P39 | Sem GLB, o que fazer com **Girar** e com a dica "Arraste para girar", que prometem um giro que o SVG não tem? | **A)** Como no protótipo: Girar visível e com `aria-pressed="true"`, sem efeito. **B)** Sem GLB, esconder o Girar e mostrar só "Toque duas vezes para aproximar" na dica (desvio de texto e de layout). **C)** Manter o visual do protótipo, mas o Girar fica `aria-pressed="false"` e `aria-disabled="true"`, com o texto só para leitor de tela "Giro disponível com o modelo 3D" (mesmo padrão já usado na Tela cheia) | **C** agora (fidelidade visual e estado honesto para o leitor de tela), revendo antes da publicação se ainda não houver GLB |
-| P40 | Hero e giro do cartão sem GLB | **A)** Implementar agora as ilhas, ativadas pelo manifesto (~450 linhas sem efeito visível e sem e2e real). **B)** Implementar quando chegar o primeiro GLB; os contratos já ficam neste plano. **C)** Efeito em CSS sobre o SVG agora (mudança de design fora da spec) | **B.** O hero precisa de uma variante do A.3 sem o queijo (ativo novo a aprovar) e o giro do cartão baixa até ~3 MB por cartão; nada disso pode ser calibrado sem o GLB |
-| P41 | Visual da legenda **Preparando a peça…** e da mensagem sem WebGL (a spec só dá o texto) | **A)** Mesmo estilo da dica (13 px, `--palha`), centralizada logo abaixo da ilustração, acima da barra. **B)** No lugar da dica, no canto superior esquerdo. **C)** Dentro de uma pílula como a do hero (`--vidro-escuro`, borda `--pedra`) | **A**, sem cor nem medida nova. Observação: no celular as miniaturas ficam ocultas, então "Veja as fotos abaixo" não tem fotos para onde apontar; recomendamos manter o texto literal até haver fotos |
-| P42 | O `model-viewer` tem textos próprios para leitor de tela, em inglês (por exemplo, "Use mouse, touch or arrow keys to move"). Traduzir pelo atributo `a11y`? | **A)** Traduzir; o `especialista-3d-webgl` levanta a lista na tarefa 7 e o dono aprova (como no D8). **B)** Deixar em inglês | **A** (só vale quando houver GLB) |
-| P43 | Limite do GLB: a §11 diz "até ~3 MB" | **A)** Erro acima de 3 MiB (3.145.728 bytes). **B)** Aviso acima de 3 MB e erro acima de 4 MB | **A**, simples e fiel ao número da spec; o dono afrouxa se um modelo bom não couber |
-| D22 | Aprovar o [ADR-0009](adr/0009-visualizador-3d-com-model-viewer.md) (instalar `@google/model-viewer` 4.4.0 e `three` 0.183.2)? | **A)** Aprovar agora (bloco B segue logo após o A). **B)** Aprovar, mas instalar só com o primeiro GLB (a etapa fecha só com o bloco A). **C)** Rejeitar e ficar só no SVG | **A**, porque o D21 pede o carregamento pronto; o custo para o visitante sem GLB é zero |
+| # | Pergunta | Opções | Recomendação | Decisão do dono |
+| --- | --- | --- | --- | --- |
+| P39 | Sem GLB, o que fazer com **Girar** e com a dica "Arraste para girar", que prometem um giro que o SVG não tem? | **A)** Como no protótipo: Girar visível e com `aria-pressed="true"`, sem efeito. **B)** Sem GLB, esconder o Girar e mostrar só "Toque duas vezes para aproximar" na dica (desvio de texto e de layout). **C)** Manter o visual do protótipo, mas o Girar fica `aria-pressed="false"` e `aria-disabled="true"`, com o texto só para leitor de tela "Giro disponível com o modelo 3D" (mesmo padrão já usado na Tela cheia) | **C** agora (fidelidade visual e estado honesto para o leitor de tela), revendo antes da publicação se ainda não houver GLB | **C** (2026-11-03). Texto novo aprovado: "Giro disponível com o modelo 3D" |
+| P40 | Hero e giro do cartão sem GLB | **A)** Implementar agora as ilhas, ativadas pelo manifesto (~450 linhas sem efeito visível e sem e2e real). **B)** Implementar quando chegar o primeiro GLB; os contratos já ficam neste plano. **C)** Efeito em CSS sobre o SVG agora (mudança de design fora da spec) | **B.** O hero precisa de uma variante do A.3 sem o queijo (ativo novo a aprovar) e o giro do cartão baixa até ~3 MB por cartão; nada disso pode ser calibrado sem o GLB | **B** (2026-11-03): hero e giro do cartão só com o primeiro GLB (bloco C adiado) |
+| P41 | Visual da legenda **Preparando a peça…** e da mensagem sem WebGL (a spec só dá o texto) | **A)** Mesmo estilo da dica (13 px, `--palha`), centralizada logo abaixo da ilustração, acima da barra. **B)** No lugar da dica, no canto superior esquerdo. **C)** Dentro de uma pílula como a do hero (`--vidro-escuro`, borda `--pedra`) | **A**, sem cor nem medida nova. Observação: no celular as miniaturas ficam ocultas, então "Veja as fotos abaixo" não tem fotos para onde apontar; recomendamos manter o texto literal até haver fotos | **A** (2026-11-03): 13 px, `--palha`, centralizada abaixo da ilustração |
+| P42 | O `model-viewer` tem textos próprios para leitor de tela, em inglês (por exemplo, "Use mouse, touch or arrow keys to move"). Traduzir pelo atributo `a11y`? | **A)** Traduzir; o `especialista-3d-webgl` levanta a lista na tarefa 7 e o dono aprova (como no D8). **B)** Deixar em inglês | **A** (só vale quando houver GLB) | **A** (2026-11-03): traduzir; lista a aprovar na tarefa 7 |
+| P43 | Limite do GLB: a §11 diz "até ~3 MB" | **A)** Erro acima de 3 MiB (3.145.728 bytes). **B)** Aviso acima de 3 MB e erro acima de 4 MB | **A**, simples e fiel ao número da spec; o dono afrouxa se um modelo bom não couber | **A** (2026-11-03): erro acima de 3 MiB (3.145.728 bytes) |
+| D22 | Aprovar o [ADR-0009](adr/0009-visualizador-3d-com-model-viewer.md) (instalar `@google/model-viewer` 4.4.0 e `three` 0.183.2)? | **A)** Aprovar agora (bloco B segue logo após o A). **B)** Aprovar, mas instalar só com o primeiro GLB (a etapa fecha só com o bloco A). **C)** Rejeitar e ficar só no SVG | **A**, porque o D21 pede o carregamento pronto; o custo para o visitante sem GLB é zero | **A** (2026-11-03): aprovado, instalar no bloco B; ADR-0009 **Aceito** |
 
 ---
 

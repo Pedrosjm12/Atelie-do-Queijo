@@ -6,6 +6,24 @@
   border-radius: var(--raio-palco);
 }
 
+/* Tela cheia (§7.2): o próprio palco; fundo --cave-funda, ilustração centralizada e barra visível. */
+.palco:fullscreen {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: auto;
+  padding: 56px 32px 32px;
+  border: 0;
+  border-radius: 0;
+}
+
+/* A ilustração (proporção 460 : 340) cabe na altura da tela, sem empurrar a barra para fora.
+   170px = 56px de respiro em cima + 32px embaixo (padding do palco) + ~82px da barra de botões. */
+.palco:fullscreen .ilustracao {
+  width: min(100%, calc((100dvh - 170px) * 460 / 340));
+  margin-inline: auto;
+}
+
 .dica {
   position: absolute;
   left: 20px;
@@ -37,6 +55,8 @@
 .ilustracao {
   width: 100%;
   overflow: hidden;
+  /* O duplo toque é nosso (Aproximar): o navegador não deve ampliar a página nem esperar o 2º toque. */
+  touch-action: manipulation;
 }
 
 /* O recorte fica no wrapper; só o filho cresce, sem vazar do palco. */
@@ -91,7 +111,10 @@
 }
 
 .botao[aria-disabled='true'] {
-  opacity: 0.65;
+  /* Esmaece só texto e borda (equivale a opacity .65) e não o botão inteiro: o contorno de
+     foco continua em ouro pleno (WCAG 1.4.11), como no QuantityStepper. */
+  color: color-mix(in srgb, var(--creme) 65%, transparent);
+  border-color: color-mix(in srgb, var(--pedra-clara) 65%, transparent);
   cursor: not-allowed;
 }
 

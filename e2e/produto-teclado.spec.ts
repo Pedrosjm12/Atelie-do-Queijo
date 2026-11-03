@@ -170,18 +170,24 @@ test.describe('página de produto só com teclado', () => {
     await expect(diminuir).toHaveAttribute('aria-disabled', 'true');
   });
 
-  test('Tela cheia é focável, aria-disabled, descrita e não faz nada', async ({ page }) => {
+  test('Tela cheia é focável, tem foco visível e o Enter entra e sai da tela cheia', async ({
+    page,
+  }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto(rota);
     const telaCheia = page.getByRole('button', { name: 'Tela cheia' });
-    await expect(telaCheia).toHaveAttribute('aria-disabled', 'true');
-    await expect(telaCheia).toHaveAccessibleDescription('Tela cheia disponível em breve');
+    await expect(telaCheia).toHaveAttribute('aria-pressed', 'false');
+    await expect(telaCheia).not.toHaveAttribute('aria-disabled');
     await page.getByRole('button', { name: 'Girar' }).focus();
     await page.keyboard.press('End');
     await expect(telaCheia).toBeFocused();
     expect(await temIndicadorDeFoco(telaCheia)).toBe(true);
+
     await page.keyboard.press('Enter');
+    await expect(telaCheia).toHaveAttribute('aria-pressed', 'true');
     await expect(telaCheia).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(telaCheia).toHaveAttribute('aria-pressed', 'false');
     expect(await page.evaluate(() => document.fullscreenElement)).toBeNull();
   });
 

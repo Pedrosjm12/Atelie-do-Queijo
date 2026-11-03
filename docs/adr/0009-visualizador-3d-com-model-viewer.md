@@ -1,6 +1,6 @@
 # ADR-0009 — Visualizador 3D com `@google/model-viewer`, carregamento tardio e fallback em SVG
 
-- **Status:** **Proposto** (aguarda aprovação do dono, D22). Nada é instalado antes da aprovação.
+- **Status:** **Aceito** (2026-11-03, aprovado pelo dono: D22 = A, instalar agora, no bloco B da etapa 5). Antes, estava Proposto. A instalação e o registro dela (seção abaixo) são da tarefa 6 do plano.
 - **Data:** 2026-11-03
 - **Contexto da etapa:** 5 (ver `docs/PLANO.md`, [Etapa 5](../PLANO.md#etapa-5--visualizador-3d-com-fallback-svg)). Confirma a dependência que o ADR-0001 já previa.
 
@@ -110,5 +110,7 @@ A preencher pelo `especialista-3d-webgl` na tarefa 6, depois da aprovação.
 | `resolved` e `integrity` | — |
 | `npm audit signatures` | — |
 | `npm audit --omit=dev` | — |
-| Linha de base (tarefa 1): compartilhado, JS inicial de `/`, `/queijos`, `/queijos/canastra-curado`; LCP e CLS do produto | — |
+| Linha de base (tarefa 1, 2026-11-03, `npm run medir:pacote`; kB = 1024 bytes, gzip) | Compartilhado **182,69 kB** (187.070 bytes, 8 arquivos; o fim da etapa 4 registrou 182,74 kB, diferença de 0,05 kB). JavaScript inicial: `/` 187,03 kB; `/queijos` 182,69 kB (dinâmica, só o compartilhado); `/queijos/canastra-curado` **189,88 kB**; `/checkout` 208,17 kB; `/sacola` 185,34 kB. Medido no commit `cdae7aa`, antes do bloco A |
+| Depois do bloco A (sem biblioteca 3D) | Compartilhado **182,69 kB** (+0,00); `/` 187,03 kB (+0,00); `/queijos/canastra-curado` **190,50 kB** (+0,62 kB, limite +4 kB); `/queijos` e `/checkout` sem mudança |
+| LCP e CLS do produto (bloco A; `npm run medir:pacote -- --web-vitals`, Chromium emulando Pixel 7, sem estrangulamento, 2 execuções) | `/queijos/canastra-curado`: LCP 176 e 228 ms, CLS 0,0000. `/`: LCP 224 e 188 ms, CLS 0,0000. Serve para comparar antes e depois; não é nota do Lighthouse |
 | Depois do bloco B: as mesmas medidas e o *chunk* tardio | — |

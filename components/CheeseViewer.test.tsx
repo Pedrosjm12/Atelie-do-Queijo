@@ -42,35 +42,51 @@ describe('CheeseViewer', () => {
 
   it('a dica some após a primeira interação', () => {
     render(<CheeseViewer queijo={queijo('canastra-curado')} />);
-    expect(screen.getByText(/Arraste para girar/)).toBeInTheDocument();
+    expect(screen.getByText('Toque duas vezes para aproximar')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Aproximar' }));
-    expect(screen.queryByText(/Arraste para girar/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Toque duas vezes/)).not.toBeInTheDocument();
   });
 
   it('a dica também some ao tocar na ilustração', () => {
     render(<CheeseViewer queijo={queijo('canastra-curado')} />);
     fireEvent.pointerDown(screen.getByRole('img', { name: ROTULO_CORTADO }));
-    expect(screen.queryByText(/Arraste para girar/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Toque duas vezes/)).not.toBeInTheDocument();
   });
 
-  it('Girar começa ligado e Aproximar desligado; ambos alternam aria-pressed', () => {
+  it('Aproximar começa desligado e alterna aria-pressed', () => {
+    render(<CheeseViewer queijo={queijo('canastra-curado')} />);
+    const aproximar = screen.getByRole('button', { name: 'Aproximar' });
+    expect(aproximar).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(aproximar);
+    expect(aproximar).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(aproximar);
+    expect(aproximar).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('sem GLB, Girar fica desligado, aria-disabled e descrito só para leitor de tela (P39)', () => {
     render(<CheeseViewer queijo={queijo('canastra-curado')} />);
     const girar = screen.getByRole('button', { name: 'Girar' });
-    const aproximar = screen.getByRole('button', { name: 'Aproximar' });
-    expect(girar).toHaveAttribute('aria-pressed', 'true');
-    expect(aproximar).toHaveAttribute('aria-pressed', 'false');
-    fireEvent.click(girar);
-    fireEvent.click(aproximar);
     expect(girar).toHaveAttribute('aria-pressed', 'false');
-    expect(aproximar).toHaveAttribute('aria-pressed', 'true');
+    expect(girar).toHaveAttribute('aria-disabled', 'true');
+    expect(girar).toHaveAccessibleDescription('Giro disponível com o modelo 3D');
+    // Continua focável (aria-disabled, não disabled); o clique não muda nada nem esconde a dica.
+    fireEvent.click(girar);
+    expect(girar).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getByText('Toque duas vezes para aproximar')).toBeInTheDocument();
+  });
+
+  it('sem GLB, a dica não promete giro ("Arraste para girar" só com modelo)', () => {
+    render(<CheeseViewer queijo={queijo('canastra-curado')} />);
+    expect(screen.getByTestId('dica-3d')).toHaveTextContent('Toque duas vezes para aproximar');
+    expect(screen.queryByText(/Arraste para girar/)).not.toBeInTheDocument();
   });
 
   it('expõe a barra de controles, Tela cheia e as miniaturas', () => {
     render(<CheeseViewer queijo={queijo('canastra-curado')} />);
     expect(screen.getByRole('toolbar', { name: 'Controles do 3D' })).toBeInTheDocument();
     const telaCheia = screen.getByRole('button', { name: 'Tela cheia' });
-    expect(telaCheia).toHaveAttribute('aria-disabled', 'true');
-    expect(telaCheia).toHaveAccessibleDescription('Tela cheia disponível em breve');
+    expect(telaCheia).toHaveAttribute('aria-pressed', 'false');
+    expect(telaCheia).not.toHaveAttribute('aria-disabled');
     expect(screen.getByText('Visualização 3D (atual)')).toBeInTheDocument();
     for (const d of ['na tábua', 'produtor', 'fazenda']) {
       expect(screen.getByText(`[FOTO: ${d}]`)).toBeInTheDocument();

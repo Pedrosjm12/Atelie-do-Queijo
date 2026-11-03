@@ -6,14 +6,19 @@ import {
   useId,
   useRef,
   useState,
+  useSyncExternalStore,
   type FocusEvent,
   type KeyboardEvent,
+  type PointerEvent,
 } from 'react';
 import type { Cheese } from '@/data/cheeses';
+import { temModelo } from '@/data/modelos3d';
+import { assinarMovimentoReduzido, prefereMovimentoReduzido } from '@/lib/suporte3d';
 import { CheeseIllustration } from './CheeseIllustration';
 import { Icone } from './icons';
 import { PhotoPlaceholder } from './PhotoPlaceholder';
 import { ILUSTRACOES_DE_PRODUTO } from './ilustracoes/CanastraProduto';
+import { useTelaCheia } from './useTelaCheia';
 import estilos from './CheeseViewer.module.css';
 
 type CheeseViewerProps = {
@@ -22,9 +27,16 @@ type CheeseViewerProps = {
 
 type EstadoDoVisualizador = {
   cortado: boolean;
-  girando: boolean;
+  /** `null` = a pessoa ainda não mexeu: vale o padrão (gira, salvo sem GLB ou movimento reduzido). */
+  girando: boolean | null;
   zoom: boolean;
 };
+
+/** Dois toques no palco, com no máximo esta pausa e esta distância, contam como "toque duas vezes". */
+const PAUSA_DO_DUPLO_TOQUE_MS = 300;
+const DISTANCIA_DO_DUPLO_TOQUE_PX = 30;
+/** Depois de um duplo toque, o `dblclick` que alguns navegadores ainda disparam é ignorado por este tempo. */
+const JANELA_DO_DBLCLICK_FANTASMA_MS = 700;
 
 const FOTOS = ['na tábua', 'produtor', 'fazenda'] as const;
 
@@ -37,8 +49,9 @@ function botoesVisiveis(barra: HTMLElement | null): HTMLButtonElement[] {
 }
 
 /**
- * Palco do queijo (spec §7.2, §7.6 e §10.3). Nesta etapa só mostra ilustração SVG;
- * o `model-viewer` entra aqui dentro na etapa 5, sem mudar a interface pública.
+ * Palco do queijo (spec §7.2, §7.6 e §10.3). Mostra a ilustração SVG; o `model-viewer` entra
+ * aqui dentro no bloco B da etapa 5 (só para queijos com GLB no manifesto), sem mudar a
+ * interface pública. Tela cheia e Aproximar (inclusive por duplo toque) já valem sobre o SVG.
  */
 export function CheeseViewer({ queijo }: CheeseViewerProps) {
   const ilustracoes = ILUSTRACOES_DE_PRODUTO[queijo.slug];
@@ -47,7 +60,7 @@ export function CheeseViewer({ queijo }: CheeseViewerProps) {
 
   const [estado, setEstado] = useState<EstadoDoVisualizador>({
     cortado: true,
-    girando: true,
+    girando: null,
     zoom: false,
   });
   const [interagiu, setInteragiu] = useState(false);
@@ -55,7 +68,55 @@ export function CheeseViewer({ queijo }: CheeseViewerProps) {
   const cortado = temCorte && estado.cortado;
   const marcarInteracao = () => setInteragiu(true);
 
+  // Girar (P39 = C): sem GLB o SVG não gira; o botão fica desabilitado e com aria-pressed="false".
+  // Com movimento reduzido (§10.3), o giro só liga se a pessoa pedir.
+  const giroDisponivel = temModelo(queijo.slug, cortado ? 'cortado' : 'inteiro');
+  const movimentoReduzido = useSyncExternalStore(
+    assinarMovimentoReduzido,
+    prefereMovimentoReduzido,
+    () => false,
+  );
+  const girando = giroDisponivel && (estado.girando ?? !movimentoReduzido);
+
+  const palcoRef = useRef<HTMLDivElement>(null);
+  const telaCheia = useTelaCheia(palcoRef);
   const idDoAvisoTelaCheia = useId();
+  const idDoAvisoGiro = useId();
+
+  // Aproximar por "toque duas vezes" (§7.2). O mouse usa `dblclick`; toque e caneta usam dois
+  // `pointerup` próximos, porque nem todo navegador de celular dispara `dblclick`.
+  const ultimoToque = useRef<{ instante: number; x: number; y: number } | null>(null);
+  const instanteDoUltimoDuploToque = useRef(-Infinity);
+
+  const alternarZoom = () => {
+    marcarInteracao();
+    setEstado((e) => ({ ...e, zoom: !e.zoom }));
+  };
+
+  const aoSoltarPonteiro = (evento: PointerEvent<HTMLDivElement>) => {
+    if (evento.pointerType === 'mouse') return;
+    const agora = performance.now();
+    const anterior = ultimoToque.current;
+    const duplo =
+      anterior !== null &&
+      agora - anterior.instante <= PAUSA_DO_DUPLO_TOQUE_MS &&
+      Math.hypot(evento.clientX - anterior.x, evento.clientY - anterior.y) <=
+        DISTANCIA_DO_DUPLO_TOQUE_PX;
+    if (duplo) {
+      ultimoToque.current = null;
+      instanteDoUltimoDuploToque.current = agora;
+      alternarZoom();
+    } else {
+      ultimoToque.current = { instante: agora, x: evento.clientX, y: evento.clientY };
+    }
+  };
+
+  const aoDarDoisCliques = () => {
+    // Depois de um duplo toque, alguns navegadores ainda disparam `dblclick`: não alternar de novo.
+    if (performance.now() - instanteDoUltimoDuploToque.current < JANELA_DO_DBLCLICK_FANTASMA_MS)
+      return;
+    alternarZoom();
+  };
 
   // Barra de ferramentas com tabIndex móvel (roving): um só botão visível entra na ordem de Tab.
   // O tabindex é ajustado direto no DOM porque depende do CSS (botões ocultos por breakpoint).
@@ -111,21 +172,32 @@ export function CheeseViewer({ queijo }: CheeseViewerProps) {
 
   return (
     <div>
-      <div className={estilos.palco}>
+      <div ref={palcoRef} className={estilos.palco}>
         {!interagiu && (
           <p className={estilos.dica} data-testid="dica-3d">
             <Icone nome="girar" tamanho={16} />
-            <span>
-              Arraste para girar
-              <span className={estilos.dicaExtra}> · Toque duas vezes para aproximar</span>
-            </span>
+            {/* Sem GLB o SVG não gira: a dica só promete o que existe (decisão do dono, §7.2). */}
+            {giroDisponivel ? (
+              <span>
+                Arraste para girar
+                <span className={estilos.dicaExtra}> · Toque duas vezes para aproximar</span>
+              </span>
+            ) : (
+              <span>Toque duas vezes para aproximar</span>
+            )}
           </p>
         )}
 
         <span className={estilos.indicador}>{cortado ? 'POR DENTRO' : 'PEÇA INTEIRA'}</span>
 
-        {/* Detecta só a primeira interação (esconde a dica); o arraste real vem na etapa 5. */}
-        <div className={estilos.ilustracao} data-zoom={estado.zoom} onPointerDown={marcarInteracao}>
+        {/* A primeira interação esconde a dica; duplo clique ou duplo toque alterna o Aproximar. */}
+        <div
+          className={estilos.ilustracao}
+          data-zoom={estado.zoom}
+          onPointerDown={marcarInteracao}
+          onPointerUp={aoSoltarPonteiro}
+          onDoubleClick={aoDarDoisCliques}
+        >
           {ilustracoes ? (
             cortado ? (
               <>
@@ -162,16 +234,23 @@ export function CheeseViewer({ queijo }: CheeseViewerProps) {
           <button
             type="button"
             className={`${estilos.botao} ${estilos.soDesktop}`}
-            aria-pressed={estado.girando}
+            aria-pressed={girando}
+            aria-disabled={giroDisponivel ? undefined : 'true'}
+            aria-describedby={giroDisponivel ? undefined : idDoAvisoGiro}
             onClick={() => {
+              if (!giroDisponivel) return;
               marcarInteracao();
-              // Efeito na etapa 5 (rotação automática do model-viewer); por ora só o estado.
-              setEstado((e) => ({ ...e, girando: !e.girando }));
+              setEstado((e) => ({ ...e, girando: !girando }));
             }}
           >
             <Icone nome="girar-curto" tamanho={16} />
             Girar
           </button>
+          {!giroDisponivel && (
+            <span id={idDoAvisoGiro} hidden>
+              Giro disponível com o modelo 3D
+            </span>
+          )}
 
           {temCorte && (
             <button
@@ -192,28 +271,33 @@ export function CheeseViewer({ queijo }: CheeseViewerProps) {
             type="button"
             className={estilos.botao}
             aria-pressed={estado.zoom}
-            onClick={() => {
-              marcarInteracao();
-              setEstado((e) => ({ ...e, zoom: !e.zoom }));
-            }}
+            onClick={alternarZoom}
           >
             <Icone nome="aproximar" tamanho={16} />
             Aproximar
           </button>
 
-          {/* Sem ação até a etapa 5 (Fullscreen API): focável, anunciado como indisponível. */}
+          {/* Fullscreen API no palco; sem suporte no navegador, fica focável e anunciado como indisponível. */}
           <button
             type="button"
             className={`${estilos.botao} ${estilos.soIcone} ${estilos.soDesktop}`}
             aria-label="Tela cheia"
-            aria-disabled="true"
-            aria-describedby={idDoAvisoTelaCheia}
+            aria-pressed={telaCheia.ativa}
+            aria-disabled={telaCheia.suportada ? undefined : 'true'}
+            aria-describedby={telaCheia.suportada ? undefined : idDoAvisoTelaCheia}
+            onClick={() => {
+              if (!telaCheia.suportada) return;
+              marcarInteracao();
+              telaCheia.alternar();
+            }}
           >
             <Icone nome="tela-cheia" tamanho={16} />
           </button>
-          <span id={idDoAvisoTelaCheia} hidden>
-            Tela cheia disponível em breve
-          </span>
+          {!telaCheia.suportada && (
+            <span id={idDoAvisoTelaCheia} hidden>
+              Tela cheia indisponível neste navegador
+            </span>
+          )}
         </div>
       </div>
 
