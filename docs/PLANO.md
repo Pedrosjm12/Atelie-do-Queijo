@@ -3,6 +3,8 @@
 > Fonte da verdade: `ATELIE-DO-QUEIJO-SPEC.md`. Decisões técnicas: `docs/adr/`.
 > Última atualização: 2026-10-29. Etapas 1, 2, 3 e 4 **concluídas**. A etapa 4 (sacola, frete e checkout simulados) está implementada e publicada; o fechamento documental (tarefa 17) está nesta atualização.
 >
+> **ATUALIZAÇÃO (2026-11-03):** o dono decidiu todas as pendências (D1 a D34, ver [Decisões do dono de 2026-11-03](#decisões-do-dono-de-2026-11-03-d1-a-d34)). **AVISO: dados de negócio fictícios** (WhatsApp, CNPJ, endereço, frete, produtor) serão usados por ora e **precisam ser trocados antes da publicação**. Antes da etapa 5, aplicar o bloco de ajustes listado naquela seção.
+>
 > **RETOMADA (2026-10-29): próximo passo é a etapa 5, visualizador 3D com fallback SVG.**
 >
 > - **Estado:** etapa 4 concluída (blocos A a E publicados, ver [Commits da etapa 4](#commits-da-etapa-4)). Lint, typecheck, format:check, testes, build e e2e passavam no commit `b06c604`. A loja segue **simulada**: nenhum pagamento real, nenhum e-mail enviado, frete e pedido simulados.
@@ -1253,6 +1255,66 @@ Tokenização (nenhum dado de cartão no nosso servidor); webhooks com assinatur
 - Criar `docs/conteudo.md` (guia do dono da loja) e `docs/ambiente.md` (variáveis de ambiente). Nenhum dos dois existe hoje, e o `.env.example` ainda só tem `NEXT_PUBLIC_SITE_URL` e `NEXT_PUBLIC_WHATSAPP_NUMBER`.
 - Atualizar o `CHANGELOG.md` e o README com hospedagem, gateway e ambientes.
 - Checklist de aceite da §14 da spec, com os desvios aprovados (P21 e os textos novos da [lista do dono](#decisões-e-textos-que-aguardam-o-dono-fim-da-etapa-4)).
+
+---
+
+## Decisões do dono de 2026-11-03 (D1 a D34)
+
+O dono aprovou **todas as opções recomendadas** da rodada de pendências (numeração D1 a D34, mesma ordem da conversa), com a exceção e os acréscimos abaixo. Esta seção **substitui** as listas "a confirmar pelo dono" e "Decisões e textos que aguardam o dono (fim da etapa 4)": o que está lá como sugestão passa a valer como decidido, conforme a tabela.
+
+> **AVISO: DADOS FICTÍCIOS (D26 a D30).** O dono pediu que, por ora, sejam usadas informações **fictícias** no lugar das lacunas abaixo. **Nenhum desses valores é real e nenhum pode ir para produção.** Cada valor fictício deve ficar num único lugar (`data/ficticio.ts`, criado na tarefa de aplicação), marcado com `// FICTÍCIO: substituir antes da publicação`, para o dono trocar depois. A etapa 9 não fecha enquanto este aviso existir (item do checklist de aceite).
+
+### Decisões
+
+| # | Decisão |
+| --- | --- |
+| D1 | Commits **sem** `Co-Authored-By` e sem menção ao Claude (vale o `CLAUDE.md`). Só o dono como autor. |
+| D2 | Borda dos campos: **manter** `--pedra-clara` (cor da spec); desvio registrado no checklist da §14 (P18). |
+| D3 | Botão desabilitado e pendente: subir a opacidade de `.5` para **`.65`** (revoga o `.5` do P19). Reconferir o contraste do foco. |
+| D4 | Confirmação do pedido mostra **Pedido nº AQ-…** acima do título (revoga o P36; desvio da §10.2 registrado no checklist). |
+| D5 | Tipografia do checkout (h2 28 px, resumo de erros 18 px, **Resumo do pedido** 22 px, legenda 12 px com `0,14em`): **aprovada**; registrar no checklist. |
+| D6 | P21 confirmado como desvio no checklist da §14. |
+| D7 | Textos visíveis novos do checkout (lista A): **aprovados**. |
+| D8 | Textos só para leitor de tela: **aprovados**. |
+| D9 | Nota fiscal do presente: **Nota fiscal sem valor visível ao presenteado.** aprovada. |
+| D10 | Decisões técnicas aprovadas: `autocomplete="tel-national"`; mesmo erro de pagamento para qualquer motivo; **Desconto no Pix** só com Pix escolhido. |
+| D11 | P6: **modelo de texto aprovado** ("Você prefere sabores {sabor}, vai servir {uso} e acompanhar com {acompanhamento}. O {nome} foi o que mais combinou com as três respostas."); a lacuna sai. |
+| D12 | P2: formato só com peso vira **"Meia peça"** (~500 g) e **"Fração"** (~250 g). |
+| D13 | Indicador de etapas: `gap` de 16 px abaixo de 400 px. |
+| D14 | Hífen e espaço sem quebra em "01310-100" e "e-mail" nas mensagens do frete. |
+| D15 | Item esgotado dentro do envio: **manter** `sacola-invalida` + **Voltar para a sacola**. |
+| D16 | Seletor de quantidade no celular: **manter** oculto (a barra fixa adiciona 1). |
+| D17 | **Adicionar** do cartão esgotado: definir só quando houver estoque real. |
+| D18 | Rodapé (Entregas refrigeradas, Trocas e devoluções, Perguntas frequentes): **texto sem link**. |
+| D19 | **Buscar** e **Minha conta**: **remover** do cabeçalho até existirem as funções. |
+| D20 | Presente: **um endereço só** no checkout. |
+| D21 | GLB: implementar a etapa 5 com fallback SVG e deixar o carregamento pronto para os GLB futuros. |
+| D22 | `@google/model-viewer`: o `arquiteto-de-software` escreve o ADR e o dono aprova antes de instalar. |
+| D23 | **Ver na mesa** (AR): oculto até haver GLB real (P11 mantido). |
+| D24 | Assistente: roteiro determinístico na etapa 6; IA real depois, com ADR. |
+| D25 | Newsletter e **Avise-me**: continuam sem gravar nada até a etapa 9 (P9/P15). |
+| D26 | **WhatsApp:** número **fictício** (ver aviso). |
+| D27 | **CNPJ e endereço do rodapé:** valores **fictícios**. |
+| D28 | **Frete:** tabela, prazo `[N]` e parcelas `[n]` **fictícios**, só enquanto a loja for simulada. |
+| D29 | **`[NOME DO PRODUTOR]` e `[ANO]`** do Canastra: **fictícios**. |
+| D30 | Os 9 queijos sem ficha: ver restrição abaixo. |
+| D31 | Hospedagem: **Vercel**, com ADR na etapa 9. Nada é publicado sem aprovação explícita. |
+| D32 | Gateway: **Mercado Pago** (com Pix). ADR do gateway na etapa 9 (tokenização, webhooks assinados, idempotência, segredos `server-only`, remover o gatilho `recusa@exemplo.com`). Sem conta nem cobrança real sem aprovação. |
+| D33 | LGPD: o agente redige um **rascunho** do aviso de privacidade; o dono valida com profissional de direito antes de publicar. |
+| D34 | `--placeholder` (4,47:1): manter e rever antes de publicar, se ainda houver `[FOTO: …]`. |
+
+**Restrição ao D30 (aguarda confirmação do dono).** A spec (§9) proíbe inventar características dos queijos sem ficha, e o `CLAUDE.md` manda manter as lacunas visíveis. Por isso, **só os dados de negócio** (D26 a D29) recebem valores fictícios. Selos, descrição e perfil sensorial dos 9 queijos continuam **`[A DEFINIR]`** até o dono confirmar que quer texto fictício também nesses campos.
+
+### Tarefas geradas por estas decisões
+
+| Tarefa | Responsável | Quando |
+| --- | --- | --- |
+| Aplicar D3, D4, D5 (registro), D11, D12, D13, D14, D18, D19 no código, nos testes e nos textos | `frontend-nextjs` (+ `guardiao-do-design`, `especialista-em-acessibilidade`) | Antes da etapa 5 (bloco único, um commit) |
+| Criar `data/ficticio.ts` e aplicar D26 a D29 (WhatsApp, CNPJ, endereço, frete, prazo, parcelas, produtor, ano); trocar as lacunas visíveis por esses valores | `engenheiro-de-ecommerce` + `frontend-nextjs` | Antes da etapa 6 (o WhatsApp é necessário nela) |
+| ADR do `@google/model-viewer` | `arquiteto-de-software` | Início da etapa 5 |
+| ADR da hospedagem (Vercel) e ADR do gateway (Mercado Pago) | `arquiteto-de-software`, `auditor-de-seguranca` | Etapa 9 |
+| Rascunho do aviso de privacidade | `auditor-de-seguranca` + `documentador-tecnico` | Etapa 9 |
+| Checklist da §14 com os desvios D2, D4, D5, D6 e o item "trocar dados fictícios" | `documentador-tecnico` | Etapa 9 |
 
 ---
 
