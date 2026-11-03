@@ -12,6 +12,32 @@ const eslintConfig = defineConfig([
     files: ['**/*.{js,jsx,ts,tsx}'],
     rules: { ...jsxA11y.flatConfigs.recommended.rules },
   },
+  // ADR-0009: a biblioteca 3D só entra em components/ModeloDoQueijo.tsx (chunk tardio). Os tipos
+  // (`import type`) podem ser usados em qualquer lugar; o valor, estático ou dinâmico, não.
+  {
+    files: ['**/*.{js,jsx,ts,tsx,mjs}'],
+    ignores: ['components/ModeloDoQueijo.tsx'],
+    rules: {
+      '@typescript-eslint/no-restricted-imports': [
+        'error',
+        {
+          paths: ['@google/model-viewer', 'three'].map((name) => ({
+            name,
+            allowTypeImports: true,
+            message: 'Só components/ModeloDoQueijo.tsx pode importar o 3D (ADR-0009).',
+          })),
+          patterns: [{ group: ['@google/model-viewer/*', 'three/*'], message: 'Ver ADR-0009.' }],
+        },
+      ],
+      'no-restricted-syntax': [
+        'error',
+        ...['@google/model-viewer', 'three'].map((pacote) => ({
+          selector: `ImportExpression[source.value='${pacote}']`,
+          message: 'Só components/ModeloDoQueijo.tsx pode importar o 3D (ADR-0009).',
+        })),
+      ],
+    },
+  },
   prettier,
   globalIgnores([
     '.next/**',

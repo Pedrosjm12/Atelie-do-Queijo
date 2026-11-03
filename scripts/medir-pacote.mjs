@@ -2,7 +2,7 @@
 //
 // Uso:
 //   npm run build && npm run medir:pacote
-//   npm run medir:pacote -- --web-vitals   (sobe o próprio `next start` na porta 3217 (falha se ela já responder); defina URL_BASE para usar outro servidor)
+//   npm run medir:pacote -- --web-vitals   (sobe o próprio `next start` em 127.0.0.1:3217 (falha se ela já responder); defina URL_BASE para usar outro servidor)
 //
 // O Next 16 (Turbopack) não imprime a tabela "First Load JS". Por isso a medição lê os arquivos
 // gerados: cada HTML pré-renderizado em `.next/server/app` (exceto `_not-found` e `_global-error`)
@@ -22,6 +22,14 @@ import { fileURLToPath } from 'node:url';
 const raiz = fileURLToPath(new URL('../', import.meta.url));
 const pastaApp = `${raiz}.next/server/app`;
 const pastaEstatica = `${raiz}.next`;
+// Linha de base (cdae7aa) + folga da etapa 5: compartilhado +0,5; produto +4; Home e /queijos +0.
+const ORCAMENTO = {
+  compartilhado: 182.69 + 0.5,
+  '/': 187.03,
+  '/queijos': 182.69,
+  '/queijos/canastra-curado': 189.88 + 4,
+  chunkTardio: 350,
+};
 const IGNORADAS = new Set(['_not-found.html', '_global-error.html']);
 
 async function listarHtml(pasta, prefixo = '') {
@@ -89,6 +97,31 @@ async function medirPacote() {
     `  ${'/queijos (dinâmica)'.padEnd(28)} ${kb(totalCompartilhado)} (só o compartilhado)`,
   );
 
+  // Orçamento da etapa 5 (ADR-0009), em kB (1024 bytes) gzip, sobre a linha de base de
+  // 2026-11-03 (commit cdae7aa, antes do 3D).
+  const totais = new Map();
+  for (const [rota, pagina] of paginas) totais.set(rota, await soma(pagina.scripts));
+  const kbDe = (bytes) => bytes / 1024;
+  const orcamento = [
+    ['compartilhado', kbDe(totalCompartilhado), ORCAMENTO.compartilhado],
+    ['/', kbDe(totais.get('/') ?? 0), ORCAMENTO['/']],
+    ['/queijos', kbDe(totalCompartilhado), ORCAMENTO['/queijos']],
+    [
+      '/queijos/canastra-curado',
+      kbDe(totais.get('/queijos/canastra-curado') ?? 0),
+      ORCAMENTO['/queijos/canastra-curado'],
+    ],
+  ];
+  const NL0 = String.fromCharCode(10);
+  console.log(`${NL0}Orçamento (limite = linha de base + folga):`);
+  for (const [nome, valor, limite] of orcamento) {
+    const ok = valor <= limite + 0.005;
+    if (!ok) process.exitCode = 1;
+    console.log(
+      `  ${ok ? 'ok  ' : 'ACIMA'} ${nome.padEnd(28)} ${valor.toFixed(2)} kB (limite ${limite.toFixed(2)} kB)`,
+    );
+  }
+
   // ADR-0009: o JavaScript inicial de nenhuma página pode conter o 3D. Os nomes dos arquivos
   // são hashes do Turbopack, então a checagem lê o CONTEÚDO dos scripts iniciais.
   const MARCAS_DO_3D = [/model-viewer/i, /ModelViewerElement/, /WebGLRenderer/, /ModeloDoQueijo/];
@@ -111,6 +144,47 @@ async function medirPacote() {
       : `${NL}ATENÇÃO: scripts iniciais com marcas do 3D:${NL}  ${citam.join(`${NL}  `)}`,
   );
   if (citam.length > 0) process.exitCode = 1;
+
+  // Chunk tardio: arquivos que não são scripts iniciais de página alguma e trazem o 3D.
+  const iniciais = new Set([...jaLidos.keys()]);
+  const tardios = [];
+  for (const arquivo of await listarJs(`${pastaEstatica}/static/chunks`)) {
+    const noSite = `/_next/static/chunks/${arquivo}`;
+    if (iniciais.has(noSite)) continue;
+    const conteudo = await readFile(`${pastaEstatica}/static/chunks/${arquivo}`, 'utf8');
+    if (MARCAS_DO_3D.some((m) => m.test(conteudo))) tardios.push(noSite);
+  }
+  if (tardios.length === 0) {
+    console.log(
+      `${NL}Chunk tardio do 3D: nenhum encontrado (a biblioteca está no pacote inicial?).`,
+    );
+    process.exitCode = 1;
+    return;
+  }
+  const totalTardio = await soma(tardios);
+  const okTardio = kbDe(totalTardio) <= ORCAMENTO.chunkTardio;
+  if (!okTardio) process.exitCode = 1;
+  console.log(
+    `${NL}Chunk tardio do 3D (ModeloDoQueijo + model-viewer + three): ${kb(totalTardio)} gzip em ${tardios.length} arquivo(s) (limite ${ORCAMENTO.chunkTardio} kB) ${okTardio ? 'ok' : 'ACIMA'}`,
+  );
+  // Nunca citado no HTML (nem como <script>, nem como preload).
+  const citados = [];
+  for (const [rota, pagina] of paginas) {
+    for (const t of tardios) {
+      if (pagina.html.includes(t.replace('/_next/static/chunks/', '')))
+        citados.push(`${rota}: ${t}`);
+    }
+  }
+  console.log(
+    citados.length === 0
+      ? 'Nenhuma página pré-renderizada cita o chunk tardio no HTML.'
+      : `ATENÇÃO: HTML cita o chunk tardio:${NL}  ${citados.join(`${NL}  `)}`,
+  );
+  if (citados.length > 0) process.exitCode = 1;
+}
+
+async function listarJs(pasta) {
+  return (await readdir(pasta)).filter((f) => f.endsWith('.js'));
 }
 
 const PORTA = 3217;
@@ -132,7 +206,7 @@ async function subirServidor(base) {
   }
   const servidor = spawn(
     process.execPath,
-    [`${raiz}node_modules/next/dist/bin/next`, 'start', '-p', String(PORTA)],
+    [`${raiz}node_modules/next/dist/bin/next`, 'start', '-H', '127.0.0.1', '-p', String(PORTA)],
     { cwd: raiz, stdio: 'ignore' },
   );
   let saiu = false;
@@ -169,7 +243,7 @@ async function medirWebVitals() {
   try {
     let base = process.env.URL_BASE;
     if (!base) {
-      base = `http://localhost:${PORTA}`;
+      base = `http://127.0.0.1:${PORTA}`;
       servidor = await subirServidor(base);
     }
     navegador = await chromium.launch();

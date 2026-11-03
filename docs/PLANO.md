@@ -1212,7 +1212,7 @@ O [ADR-0007](adr/0007-validacao-com-zod-mini.md) (Zod via `zod/mini`) foi aceito
 
 **Objetivo:** deixar o `CheeseViewer` completo (spec §7.2, §7.5, §7.6, §10.3 e §11): os controles passam a ter efeito, o 3D carrega tarde e sob demanda quando houver GLB, e o SVG do Apêndice A continua sendo o que o visitante vê primeiro e sempre que o 3D não puder ser exibido.
 
-**Situação:** detalhada em 2026-11-03; decisões do dono no mesmo dia. **Bloco A** em implementação (não usa dependência nova). **Bloco B** liberado: o [ADR-0009](adr/0009-visualizador-3d-com-model-viewer.md) está **Aceito** (D22 = A). **Bloco C** só com o primeiro GLB (P40 = B).
+**Situação:** detalhada em 2026-11-03; decisões do dono no mesmo dia. **Bloco A** implementado. **Bloco B** (tarefas 6 a 8) **implementado em 2026-11-03**, verificações da tarefa 8 pendentes: o [ADR-0009](adr/0009-visualizador-3d-com-model-viewer.md) está **Aceito** (D22 = A). **Bloco C** só com o primeiro GLB (P40 = B).
 
 **Pré-requisito:** etapa 4 concluída e o bloco de ajustes D3 a D19 aplicado (`65c6263`); `data/ficticio.ts` criado (`39fd9e0`).
 
@@ -1469,6 +1469,34 @@ Decididos pelo dono em 2026-11-03 e aplicados no bloco A:
 
 Registrar no checklist da §14 (aceite): os três desvios acima (Girar desabilitado sem GLB, descrição da Tela cheia, dica sem "Arraste para girar") e o rótulo fixo do P21.
 
+**Bloco B (2026-11-03): textos novos e desvios para o checklist da §14**
+
+| Onde | Texto / comportamento | Observação |
+| --- | --- | --- |
+| Legenda durante a carga (§7.5, P41 = A) | **Preparando a peça…** | `role="status"`, 13 px, `--palha`, centralizada entre a cena e a barra. Só em queijos com algum GLB; a linha de 20 px é reservada para não deslocar a barra |
+| Sem WebGL (§7.5) | **Seu navegador não exibe o 3D. Veja as fotos abaixo.** | Mesma região e estilo. No celular as miniaturas ficam ocultas: o texto aponta para fotos que não aparecem (a spec manda o texto literal) |
+| Botões novos (decisão (b), WCAG 2.5.7) | **Girar à esquerda** e **Girar à direita** (passo de 30°) | Só com GLB, no toolbar, depois de Girar. `aria-disabled` até o modelo estar pronto. Também param o giro automático |
+| **Desvio da §7.6** (decisão (a), WCAG 2.2.2) | **Girar** aparece também no celular, apenas quando o queijo tem GLB | A §7.6 só o mostra no desktop. Sem GLB continua oculto no celular. O giro automático para na primeira interação com o modelo (arrasto, roda, setas, botões) |
+| Textos internos do `model-viewer` (P42 = A) | Traduzidos pelo atributo `a11y` e pela região de avisos; lista abaixo, **aprovada pelo dono em 2026-11-03** | Só valem com GLB |
+| Anúncio ao chegar em `pronto` (aprovado pelo dono) | **Peça pronta. Use Girar à esquerda ou à direita.** | Só leitor de tela (`sr-only` dentro do `role="status"` do aviso), uma vez por carga |
+| Botões de giro desabilitados (aprovado pelo dono) | **Disponível quando a peça estiver pronta** | `aria-describedby` em `<span hidden>`, existe só enquanto o modelo não está pronto |
+
+Lista do P42 (aprovada pelo dono em 2026-11-03) (`TRADUCOES_A11Y` em `components/ModeloDoQueijo.tsx`): *front* "Vista de frente"; *back* "Vista por trás"; *left* "Vista pela esquerda"; *right* "Vista pela direita"; *upper-front* "Vista por cima, de frente"; *upper-back* "Vista por cima, por trás"; *upper-left* "Vista por cima, pela esquerda"; *upper-right* "Vista por cima, pela direita"; *lower-front* "Vista por baixo, de frente"; *lower-back* "Vista por baixo, por trás"; *lower-left* "Vista por baixo, pela esquerda"; *lower-right* "Vista por baixo, pela direita"; *interaction-prompt* "Use o mouse, o toque ou as setas do teclado para girar a peça." (vai depois do `alt` no rótulo); rótulo da região de avisos do shadow DOM (originalmente "Live announcements"): "Avisos do visualizador 3D". **Fica em inglês** (não há como traduzir sem alterar a biblioteca): o anúncio "Loading" da região de avisos enquanto o modelo carrega e o foco está nele, e os rótulos "Loading 3D model", "View in your space" e "Exit AR", que não aparecem (sem poster e sem `ar`).
+
+**Para o checklist da §14 (verificação do bloco B):**
+
+- A Canastra só tem GLB inteiro no cenário típico de teste, mas a página abre no corte: o 3D só aparece depois de **Ver por dentro**.
+- Os e2e com GLB mockado (`page.route`) só rodam localmente enquanto o manifesto estiver vazio (atendido em parte: rodados com um manifesto temporário, revertido, e pulados no CI).
+- Com economia de dados (`saveData`) o 3D não baixa sozinho e **não há opção manual** de pedi-lo.
+- Respiro entre o SVG e a barra: com GLB, a linha de aviso (16 px) ocupa o lugar do respiro, que fica com 16 px em vez dos 12 px da §7.2 (+4 px, só em queijos com GLB). Em tela cheia o desconto da cena passa de 170 para 174 px nesse caso.
+- Mensagem sem WebGL a 360 px cabe em uma linha (conferido por e2e). **Decisão pendente do dono:** no celular as miniaturas ficam ocultas, então "Veja as fotos abaixo" não aponta para fotos; o texto da spec foi mantido.
+- Movimento reduzido: Aproximar e os botões de giro saltam a câmera, sem interpolação. O anel de foco dourado do modelo é desenhado no contêiner (`data-foco`), porque o `:focus-visible` não atravessa o shadow DOM (conferido por e2e).
+- Se o 3D falhar com o foco num botão de giro que some, o foco vai para **Girar** (se visível) ou **Aproximar**.
+
+Desvios técnicos em relação ao plano: (0) a camada do 3D (`CamadaDoModelo`, com o anel de foco e o `ModeloDoQueijo`) é um único chunk tardio; (1) o `<model-viewer>` é criado por código em `ModeloDoQueijo` (atributos, não propriedades do React), então os valores da §11 aparecem como atributos do DOM; (2) os decodificadores são definidos em `self.ModelViewerElement` (ver ADR-0009, decisão 6), não na classe; (3) `React.lazy` + `Suspense` no lugar de `next/dynamic` (a documentação do Next 16 aceita os dois; o `next/dynamic` somava ~1,9 kB gzip ao JavaScript inicial do produto e estourava o orçamento) e uma fronteira de erro (`FronteiraDoModelo`) para que falha ao baixar o chunk volte ao SVG em vez de derrubar a página; (4) o zoom e os botões de giro usam a propriedade `cameraOrbit` mantendo theta/phi.
+
+**Resultado do bloco B (medidas em `npm run medir:pacote`, manifesto vazio):** compartilhado 182,69 kB (+0,00); Home 187,03 kB e `/queijos` 182,69 kB (+0,00); produto 193,77 kB (+3,89 sobre a linha de base, limite +4: pouca folga); chunk tardio 293,41 kB gzip (limite 350), ausente do HTML; LCP/CLS sem mudança. Requisitos obrigatórios 1 a 4 atendidos; o e2e com GLB mockado (`page.route`, GLB sintético em `e2e/_apoio/glbSintetico.ts`) está **pulado** com o manifesto vazio e foi rodado e aprovado localmente alterando o manifesto por instantes (revertido). **Pendências:** luz quente de ~3200 K e ambiente HDR próprio (§11) ficam para o primeiro GLB real (hoje vale a luz neutra padrão); `ar`/Ver na mesa segue oculto (D23); verificações da tarefa 8 (segurança, desempenho, acessibilidade, revisor).
+
 ### Requisitos obrigatórios do bloco B (critérios de pronto das tarefas 6 a 8)
 
 Vindos da verificação do bloco A (acessibilidade, testes e revisor). A tarefa 7 só fecha com todos; a 8 confere.
@@ -1484,7 +1512,7 @@ Vindos da verificação do bloco A (acessibilidade, testes e revisor). A tarefa 
 | --- | --- | --- | --- |
 | Docs | Este detalhamento e o ADR-0009 (Proposto) | `docs: detalha a etapa 5 e propõe o ADR-0009` | Publicado (`cdae7aa`); ADR aceito em 2026-11-03 |
 | A | Tarefas 1 a 5 | `feat(3d): liga tela cheia, zoom e validador de modelos sobre o SVG` | Implementado (tarefas 1 a 4); verificações da tarefa 5 pendentes |
-| B | Tarefas 6 a 8 | `feat(3d): adiciona o model-viewer com carregamento tardio e fallback em SVG` | Liberado (ADR-0009 Aceito) |
+| B | Tarefas 6 a 8 | `feat(3d): adiciona o model-viewer com carregamento tardio e fallback em SVG` | Implementado (tarefas 6 e 7 e testes da 8); verificações em paralelo (segurança, desempenho, acessibilidade, revisor) pendentes; sem commit |
 | C | Tarefas 9 a 11 | `feat(3d): adiciona o 3D no hero e o giro no cartão` | Só com o 1º GLB (P40 = B) |
 | Docs | Tarefa 12 | `docs: fecha a etapa 5` | A fazer |
 
@@ -1569,6 +1597,10 @@ Ordem: A → B → (C) → fechamento. B está liberado depois do A; C espera o 
 | Dependabot ou Renovate; `npm ci`, `npm audit` e `npm audit signatures` no CI                                                                                                                                                                                               | `devops-e-deploy`                                   |
 | Conferir `Host`/`X-Forwarded-Host` na hospedagem (CSRF das Server Actions: definir a causa e os hosts permitidos antes de publicar), `serverActions.allowedOrigins` exatos e `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` estável entre instâncias                                   | `devops-e-deploy`, `auditor-de-seguranca`           |
 | Logs da hospedagem sem corpo de POST                                                                                                                                                                                                                                       | `devops-e-deploy`                                   |
+
+**Licenças de terceiros (ADR-0009)**
+
+Gerar e publicar `public/licencas-de-terceiros.txt` com os avisos de `@google/model-viewer` (Apache-2.0), `three`, `lit` e demais dependências do 3D, e conferir se o build preserva os comentários `@license`. Responsável: `documentador-tecnico` e `devops-e-deploy`.
 
 **LGPD (antes da publicação, com o dono; validar com profissional de direito)**
 

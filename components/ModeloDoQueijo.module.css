@@ -1,0 +1,16 @@
+/* O palco do 3D ocupa exatamente a caixa do SVG (o CheeseViewer o posiciona por cima). */
+.hospedeiro {
+  position: absolute;
+  inset: 0;
+}
+
+/* Fundo transparente sobre --cave-funda (§11). */
+.modelo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  --poster-color: transparent;
+}
+
+/* O anel de foco dourado é do contêiner (CheeseViewer, `data-foco`): o foco fica no shadow DOM. */

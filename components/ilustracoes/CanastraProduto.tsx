@@ -5,6 +5,11 @@ import { atributosDeAcessibilidade, type PropsDaIlustracao } from './tipos';
 
 /** Apêndice A.5: ilustrações da página de produto do Canastra curado. */
 
+/** Rótulos A.5; o `alt` do model-viewer reaproveita os mesmos (spec §13). */
+const ROTULO_CANASTRA_CORTADO =
+  'Canastra curado com uma fatia cortada, mostrando a massa e as olhaduras';
+const ROTULO_CANASTRA_INTEIRO = 'Canastra curado, peça inteira';
+
 const ESTILO_PALCO = {
   width: '100%',
   height: 'auto',
@@ -21,10 +26,7 @@ export function CanastraCortado({ className, decorativa }: PropsDaIlustracao) {
       viewBox="0 0 460 340"
       className={className}
       style={ESTILO_PALCO}
-      {...atributosDeAcessibilidade(
-        'Canastra curado com uma fatia cortada, mostrando a massa e as olhaduras',
-        decorativa,
-      )}
+      {...atributosDeAcessibilidade(ROTULO_CANASTRA_CORTADO, decorativa)}
     >
       <defs>
         <radialGradient id={`${p}ph`} cx="50%" cy="46%" r="50%">
@@ -85,7 +87,7 @@ export function CanastraInteiro({ className, decorativa }: PropsDaIlustracao) {
       viewBox="0 0 460 340"
       className={className}
       style={ESTILO_PALCO}
-      {...atributosDeAcessibilidade('Canastra curado, peça inteira', decorativa)}
+      {...atributosDeAcessibilidade(ROTULO_CANASTRA_INTEIRO, decorativa)}
     >
       <defs>
         <radialGradient id={`${p}wh`} cx="50%" cy="46%" r="50%">
@@ -184,6 +186,8 @@ export interface IlustracoesDeProduto {
   cortado: ComponentType<PropsDaIlustracao>;
   inteiro: ComponentType<PropsDaIlustracao>;
   cortadoCelular: ComponentType<PropsDaIlustracao>;
+  /** Rótulo (`aria-label`) de cada variante desktop, também usado como `alt` do 3D. */
+  rotulos: { cortado: string; inteiro: string };
 }
 
 /** Ilustrações A.5 por slug. Queijos fora do mapa usam o gerador A.6 sem corte (P3). */
@@ -192,6 +196,7 @@ const POR_SLUG = {
     cortado: CanastraCortado,
     inteiro: CanastraInteiro,
     cortadoCelular: CanastraCortadoCelular,
+    rotulos: { cortado: ROTULO_CANASTRA_CORTADO, inteiro: ROTULO_CANASTRA_INTEIRO },
   },
 } as const satisfies Partial<Record<SlugDoQueijo, IlustracoesDeProduto>>;
 

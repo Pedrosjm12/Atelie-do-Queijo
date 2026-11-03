@@ -17,10 +17,10 @@
   border-radius: 0;
 }
 
-/* A ilustração (proporção 460 : 340) cabe na altura da tela, sem empurrar a barra para fora.
+/* A cena (proporção 460 : 340) cabe na altura da tela, sem empurrar a barra para fora.
    170px = 56px de respiro em cima + 32px embaixo (padding do palco) + ~82px da barra de botões. */
-.palco:fullscreen .ilustracao {
-  width: min(100%, calc((100dvh - 170px) * 460 / 340));
+.palco:fullscreen .cena {
+  width: min(100%, calc((100dvh - var(--desconto-da-cena, 170px)) * 460 / 340));
   margin-inline: auto;
 }
 
@@ -52,11 +52,64 @@
   color: var(--ouro);
 }
 
+/* Com a linha de aviso do 3D, a barra ganha ~4 px a mais (a linha toma o lugar do respiro). */
+.palco[data-aviso='true'] {
+  --desconto-da-cena: 174px;
+}
+
+/* SVG (poster e fallback) e, por cima dele, o 3D: o modelo ocupa a caixa do SVG, sem CLS. */
+.cena {
+  position: relative;
+  width: 100%;
+  /* O duplo toque é nosso (Aproximar): o navegador não deve ampliar a página nem esperar o 2º toque. */
+  touch-action: manipulation;
+}
+
 .ilustracao {
   width: 100%;
   overflow: hidden;
-  /* O duplo toque é nosso (Aproximar): o navegador não deve ampliar a página nem esperar o 2º toque. */
-  touch-action: manipulation;
+}
+
+/* Modelo pronto: o SVG sai da tela e da árvore de acessibilidade, mas guarda a caixa. */
+.ilustracao[aria-hidden='true'] {
+  visibility: hidden;
+}
+
+.modelo {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.modelo[data-foco='true'] {
+  outline: 2px solid var(--ouro);
+  outline-offset: -2px;
+}
+
+.modelo[data-pronto='true'] {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Legenda do 3D (§7.5, P41): 13 px, --palha, centralizada entre a cena e a barra. A linha é
+   reservada (16 px) e ocupa o lugar do respiro de 12 px da barra, para o aviso aparecer sem
+   deslocar nada e o vão visível seguir a §7.2 (16 px em vez de 12 px, só com GLB). */
+.aviso {
+  min-height: 16px;
+  margin: 0;
+  font-size: 13px;
+  line-height: 16px;
+  text-align: center;
+  color: var(--palha);
+}
+
+.aviso + .barra {
+  margin-top: 0;
+}
+
+.botao[data-giro='esquerda'] svg {
+  transform: scaleX(-1);
 }
 
 /* O recorte fica no wrapper; só o filho cresce, sem vazar do palco. */
@@ -169,6 +222,13 @@
   padding: 4px;
   background: transparent;
   font-size: 12px;
+}
+
+/* Troca SVG -> 3D com um fade curto; com movimento reduzido, seca. */
+@media (prefers-reduced-motion: no-preference) {
+  .modelo {
+    transition: opacity 0.3s ease;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

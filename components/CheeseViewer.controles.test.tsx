@@ -4,7 +4,15 @@ import { obterQueijo } from '@/lib/catalogo';
 import { temModelo } from '@/data/modelos3d';
 import { CheeseViewer } from './CheeseViewer';
 
-vi.mock('@/data/modelos3d', () => ({ temModelo: vi.fn(() => false) }));
+vi.mock('@/data/modelos3d', () => ({
+  temModelo: vi.fn(() => false),
+  caminhoDoModelo: (slug: string, variante: string) => `/models/${slug}-${variante}.glb`,
+}));
+// O jsdom não tem WebGL: com GLB simulado, o 3D só "vale" se o suporte disser que existe.
+vi.mock('@/lib/suporte3d', async (original) => ({
+  ...(await original<typeof import('@/lib/suporte3d')>()),
+  temWebGL: () => true,
+}));
 
 function queijo(slug: string) {
   const q = obterQueijo(slug);

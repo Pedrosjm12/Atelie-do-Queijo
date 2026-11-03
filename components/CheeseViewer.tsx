@@ -1,9 +1,12 @@
 'use client';
 
 import {
+  lazy,
+  Suspense,
   useCallback,
   useEffect,
   useId,
+  useReducer,
   useRef,
   useState,
   useSyncExternalStore,
@@ -12,14 +15,27 @@ import {
   type PointerEvent,
 } from 'react';
 import type { Cheese } from '@/data/cheeses';
-import { temModelo } from '@/data/modelos3d';
-import { assinarMovimentoReduzido, prefereMovimentoReduzido } from '@/lib/suporte3d';
+import { caminhoDoModelo, temModelo } from '@/data/modelos3d';
+import { proximaSituacao, TEMPO_LIMITE_DO_GLB_MS, type Situacao3d } from '@/lib/estadoDo3d';
+import {
+  assinarMovimentoReduzido,
+  prefereMovimentoReduzido,
+  querEconomizarDados,
+  quandoOcioso,
+  quandoVisivel,
+  temWebGL,
+} from '@/lib/suporte3d';
 import { CheeseIllustration } from './CheeseIllustration';
 import { Icone } from './icons';
 import { PhotoPlaceholder } from './PhotoPlaceholder';
+import { FronteiraDoModelo } from './FronteiraDoModelo';
 import { ILUSTRACOES_DE_PRODUTO } from './ilustracoes/CanastraProduto';
+import type { ControleDoModelo } from './ModeloDoQueijo';
 import { useTelaCheia } from './useTelaCheia';
 import estilos from './CheeseViewer.module.css';
+
+// Chunk tardio (ADR-0009): o modelo e a biblioteca só são pedidos quando o gatilho dispara.
+const CamadaDoModelo = lazy(() => import('./CamadaDoModelo'));
 
 type CheeseViewerProps = {
   queijo: Cheese;
@@ -38,6 +54,13 @@ const DISTANCIA_DO_DUPLO_TOQUE_PX = 30;
 /** Depois de um duplo toque, o `dblclick` que alguns navegadores ainda disparam é ignorado por este tempo. */
 const JANELA_DO_DBLCLICK_FANTASMA_MS = 700;
 
+/** Passo dos botões "Girar à esquerda/direita" (WCAG 2.5.7). */
+const PASSO_DO_GIRO_GRAUS = 30;
+
+const TEXTO_PREPARANDO = 'Preparando a peça…';
+const TEXTO_PRONTO = 'Peça pronta. Use Girar à esquerda ou à direita.'; // só leitor de tela
+const TEXTO_SEM_WEBGL = 'Seu navegador não exibe o 3D. Veja as fotos abaixo.';
+
 const FOTOS = ['na tábua', 'produtor', 'fazenda'] as const;
 
 /** Botões que o leitor de tela e o teclado alcançam: ignora os ocultos por CSS (display: none). */
@@ -49,9 +72,10 @@ function botoesVisiveis(barra: HTMLElement | null): HTMLButtonElement[] {
 }
 
 /**
- * Palco do queijo (spec §7.2, §7.6 e §10.3). Mostra a ilustração SVG; o `model-viewer` entra
- * aqui dentro no bloco B da etapa 5 (só para queijos com GLB no manifesto), sem mudar a
- * interface pública. Tela cheia e Aproximar (inclusive por duplo toque) já valem sobre o SVG.
+ * Palco do queijo (spec §7.2, §7.5, §7.6 e §10.3). Mostra primeiro a ilustração SVG; o
+ * `model-viewer` entra por cima, tarde, só para queijos com GLB no manifesto (ADR-0009), e o SVG
+ * volta sempre que o 3D não puder ser exibido. Tela cheia e Aproximar (inclusive por duplo
+ * toque) valem sobre o SVG e sobre o modelo.
  */
 export function CheeseViewer({ queijo }: CheeseViewerProps) {
   const ilustracoes = ILUSTRACOES_DE_PRODUTO[queijo.slug];
@@ -68,9 +92,69 @@ export function CheeseViewer({ queijo }: CheeseViewerProps) {
   const cortado = temCorte && estado.cortado;
   const marcarInteracao = () => setInteragiu(true);
 
+  const palcoRef = useRef<HTMLDivElement>(null);
+  const variante = cortado ? 'cortado' : 'inteiro';
+  // Os textos do 3D (§7.5) só existem para queijos que têm algum GLB.
+  const temAlgumGlb = temModelo(queijo.slug, 'inteiro') || temModelo(queijo.slug, 'cortado');
+  const temGlb = temModelo(queijo.slug, variante);
+
+  // Situação do 3D (lib/estadoDo3d). Começa igual no servidor e no cliente (sem saber de WebGL).
+  const situacaoInicial: Situacao3d = temGlb ? 'aguardando' : 'so-svg';
+  const [situacao, enviar] = useReducer(proximaSituacao, situacaoInicial);
+  const primeiraSituacao = useRef(true);
+  const [controleDoModelo, setControleDoModelo] = useState<ControleDoModelo | null>(null);
+
+  // Início e troca de variante. Sem GLB, nada além do `so-svg`: nenhuma API do navegador é tocada.
+  useEffect(() => {
+    const ambiente = {
+      temGlb,
+      temWebGL: temGlb ? temWebGL() : false,
+      economizarDados: temGlb ? querEconomizarDados() : false,
+    };
+    enviar({ tipo: primeiraSituacao.current ? 'iniciar' : 'trocou-variante', ...ambiente });
+    primeiraSituacao.current = false;
+  }, [temGlb, variante]);
+
+  // Gatilho: palco visível E navegador ocioso. O SVG já foi pintado, então o LCP não espera o 3D.
+  useEffect(() => {
+    if (situacao !== 'aguardando') return;
+    let cancelarOcioso = () => {};
+    const palco = palcoRef.current;
+    if (!palco) return;
+    const cancelarVisivel = quandoVisivel(palco, () => {
+      cancelarOcioso = quandoOcioso(() => enviar({ tipo: 'visivel' }));
+    });
+    return () => {
+      cancelarVisivel();
+      cancelarOcioso();
+    };
+  }, [situacao]);
+
+  // Tempo-limite: sem `load` em 20 s (biblioteca + GLB), volta ao SVG. Reinicia a cada troca de
+  // variante, porque o novo GLB começa a baixar de novo.
+  useEffect(() => {
+    if (situacao !== 'preparando') return;
+    const id = setTimeout(() => enviar({ tipo: 'falhou' }), TEMPO_LIMITE_DO_GLB_MS);
+    return () => clearTimeout(id);
+  }, [situacao, variante]);
+
+  // `enviar` é estável e o ModeloDoQueijo lê os callbacks por ref: funções inline bastam.
+  const aoCarregarModelo = () => enviar({ tipo: 'carregou' });
+  const aoFalharModelo = () => enviar({ tipo: 'falhou' });
+  // Primeira interação com o modelo: para o giro automático (WCAG 2.2.2) e some com a dica.
+  const aoInteragirComModelo = () => {
+    setInteragiu(true);
+    setEstado((e) => ({ ...e, girando: false }));
+  };
+
+  const mostrarModelo = situacao === 'preparando' || situacao === 'pronto';
+  const modeloPronto = situacao === 'pronto';
+
   // Girar (P39 = C): sem GLB o SVG não gira; o botão fica desabilitado e com aria-pressed="false".
+  // Também fica assim quando o 3D não vai aparecer (sem WebGL, erro, economia de dados).
   // Com movimento reduzido (§10.3), o giro só liga se a pessoa pedir.
-  const giroDisponivel = temModelo(queijo.slug, cortado ? 'cortado' : 'inteiro');
+  const giroDisponivel =
+    temGlb && situacao !== 'sem-webgl' && situacao !== 'erro' && situacao !== 'so-svg';
   const movimentoReduzido = useSyncExternalStore(
     assinarMovimentoReduzido,
     prefereMovimentoReduzido,
@@ -78,10 +162,14 @@ export function CheeseViewer({ queijo }: CheeseViewerProps) {
   );
   const girando = giroDisponivel && (estado.girando ?? !movimentoReduzido);
 
-  const palcoRef = useRef<HTMLDivElement>(null);
   const telaCheia = useTelaCheia(palcoRef);
+  // `alt` do 3D = o rótulo do SVG da variante (§13), desktop.
+  const rotulo = ilustracoes
+    ? ilustracoes.rotulos[variante]
+    : `${queijo.nome}, ilustração do queijo`;
   const idDoAvisoTelaCheia = useId();
   const idDoAvisoGiro = useId();
+  const idDoAvisoPronto = useId();
 
   // Aproximar por "toque duas vezes" (§7.2). O mouse usa `dblclick`; toque e caneta usam dois
   // `pointerup` próximos, porque nem todo navegador de celular dispara `dblclick`.
@@ -122,6 +210,7 @@ export function CheeseViewer({ queijo }: CheeseViewerProps) {
   // O tabindex é ajustado direto no DOM porque depende do CSS (botões ocultos por breakpoint).
   const barraRef = useRef<HTMLDivElement>(null);
   const ativoRef = useRef<HTMLButtonElement | null>(null);
+  const aproximarRef = useRef<HTMLButtonElement>(null);
 
   const sincronizarTabIndex = useCallback(() => {
     const visiveis = botoesVisiveis(barraRef.current);
@@ -136,7 +225,7 @@ export function CheeseViewer({ queijo }: CheeseViewerProps) {
     sincronizarTabIndex();
     window.addEventListener('resize', sincronizarTabIndex);
     return () => window.removeEventListener('resize', sincronizarTabIndex);
-  }, [sincronizarTabIndex, temCorte]);
+  }, [sincronizarTabIndex, temCorte, giroDisponivel]);
 
   const aoTeclar = (evento: KeyboardEvent<HTMLDivElement>) => {
     const visiveis = botoesVisiveis(barraRef.current);
@@ -170,9 +259,18 @@ export function CheeseViewer({ queijo }: CheeseViewerProps) {
     }
   };
 
+  // O 3D falhou e os botões "Girar à esquerda/direita" somem: o foco que estava num deles (agora
+  // fora do DOM, com o foco no <body>) vai para "Aproximar", que está sempre visível.
+  useEffect(() => {
+    const perdido = ativoRef.current;
+    if (!giroDisponivel && perdido?.dataset.giro && !perdido.isConnected) {
+      if (document.activeElement === document.body) aproximarRef.current?.focus();
+    }
+  }, [giroDisponivel]);
+
   return (
     <div>
-      <div ref={palcoRef} className={estilos.palco}>
+      <div ref={palcoRef} className={estilos.palco} data-aviso={temAlgumGlb}>
         {!interagiu && (
           <p className={estilos.dica} data-testid="dica-3d">
             <Icone nome="girar" tamanho={16} />
@@ -190,38 +288,72 @@ export function CheeseViewer({ queijo }: CheeseViewerProps) {
 
         <span className={estilos.indicador}>{cortado ? 'POR DENTRO' : 'PEÇA INTEIRA'}</span>
 
-        {/* A primeira interação esconde a dica; duplo clique ou duplo toque alterna o Aproximar. */}
+        {/* A primeira interação esconde a dica; duplo clique ou duplo toque alterna o Aproximar.
+            O SVG fica sempre na árvore (é o poster e o fallback); com o modelo pronto ele só
+            deixa de ser visível, mantendo a caixa para o 3D não causar CLS. */}
         <div
-          className={estilos.ilustracao}
-          data-zoom={estado.zoom}
+          className={estilos.cena}
           onPointerDown={marcarInteracao}
           onPointerUp={aoSoltarPonteiro}
           onDoubleClick={aoDarDoisCliques}
         >
-          {ilustracoes ? (
-            cortado ? (
-              <>
-                <div className={estilos.apenasDesktop}>
-                  <ilustracoes.cortado />
-                </div>
-                <div className={estilos.apenasCelular}>
-                  <ilustracoes.cortadoCelular />
-                </div>
-              </>
+          <div className={estilos.ilustracao} data-zoom={estado.zoom} aria-hidden={modeloPronto}>
+            {ilustracoes ? (
+              cortado ? (
+                <>
+                  <div className={estilos.apenasDesktop}>
+                    <ilustracoes.cortado />
+                  </div>
+                  <div className={estilos.apenasCelular}>
+                    <ilustracoes.cortadoCelular />
+                  </div>
+                </>
+              ) : (
+                <ilustracoes.inteiro />
+              )
             ) : (
-              <ilustracoes.inteiro />
-            )
-          ) : (
-            <div className={estilos.gerada}>
-              <CheeseIllustration
-                shape={queijo.ilustracao.shape}
-                side={queijo.ilustracao.side}
-                top={queijo.ilustracao.top}
-                label={queijo.nome}
-              />
-            </div>
+              <div className={estilos.gerada}>
+                <CheeseIllustration
+                  shape={queijo.ilustracao.shape}
+                  side={queijo.ilustracao.side}
+                  top={queijo.ilustracao.top}
+                  label={queijo.nome}
+                />
+              </div>
+            )}
+          </div>
+
+          {mostrarModelo && (
+            <FronteiraDoModelo aoFalhar={aoFalharModelo}>
+              <Suspense fallback={null}>
+                <CamadaDoModelo
+                  pronto={modeloPronto}
+                  src={caminhoDoModelo(queijo.slug, variante)}
+                  alt={rotulo}
+                  girando={girando}
+                  zoom={estado.zoom}
+                  aoCarregar={aoCarregarModelo}
+                  aoFalhar={aoFalharModelo}
+                  aoInteragir={aoInteragirComModelo}
+                  registrarControle={setControleDoModelo}
+                />
+              </Suspense>
+            </FronteiraDoModelo>
           )}
         </div>
+
+        {/* Legenda do 3D (§7.5, P41): só para queijos com GLB; a região existe sempre para o
+            anúncio funcionar e reserva a linha, sem empurrar a barra quando o texto aparece. */}
+        {temAlgumGlb && (
+          <p role="status" className={estilos.aviso}>
+            {situacao === 'preparando'
+              ? TEXTO_PREPARANDO
+              : situacao === 'sem-webgl'
+                ? TEXTO_SEM_WEBGL
+                : ''}
+            {modeloPronto && <span className="sr-only">{TEXTO_PRONTO}</span>}
+          </p>
+        )}
 
         <div
           ref={barraRef}
@@ -233,7 +365,7 @@ export function CheeseViewer({ queijo }: CheeseViewerProps) {
         >
           <button
             type="button"
-            className={`${estilos.botao} ${estilos.soDesktop}`}
+            className={`${estilos.botao} ${giroDisponivel ? '' : estilos.soDesktop}`}
             aria-pressed={girando}
             aria-disabled={giroDisponivel ? undefined : 'true'}
             aria-describedby={giroDisponivel ? undefined : idDoAvisoGiro}
@@ -252,6 +384,34 @@ export function CheeseViewer({ queijo }: CheeseViewerProps) {
             </span>
           )}
 
+          {giroDisponivel && !modeloPronto && (
+            <span id={idDoAvisoPronto} hidden>
+              Disponível quando a peça estiver pronta
+            </span>
+          )}
+
+          {/* WCAG 2.5.7: girar sem arrastar. Só com GLB; ativos quando o modelo já está na tela. */}
+          {giroDisponivel &&
+            (['esquerda', 'direita'] as const).map((lado) => (
+              <button
+                key={lado}
+                type="button"
+                data-giro={lado}
+                className={estilos.botao}
+                aria-disabled={modeloPronto ? undefined : 'true'}
+                aria-describedby={modeloPronto ? undefined : idDoAvisoPronto}
+                onClick={() => {
+                  if (!modeloPronto || !controleDoModelo) return;
+                  // Girar à esquerda/direita também encerra o giro automático (WCAG 2.2.2).
+                  aoInteragirComModelo();
+                  controleDoModelo.girarGraus((lado === 'esquerda' ? -1 : 1) * PASSO_DO_GIRO_GRAUS);
+                }}
+              >
+                <Icone nome="girar-curto" tamanho={16} />
+                Girar à {lado}
+              </button>
+            ))}
+
           {temCorte && (
             <button
               type="button"
@@ -269,6 +429,7 @@ export function CheeseViewer({ queijo }: CheeseViewerProps) {
 
           <button
             type="button"
+            ref={aproximarRef}
             className={estilos.botao}
             aria-pressed={estado.zoom}
             onClick={alternarZoom}

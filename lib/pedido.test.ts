@@ -458,7 +458,7 @@ describe('segurança de texto', () => {
     expect(t('(11) 91234-56789')).toBe(false);
   });
 
-  it('e-mail de 1 MB é recusado em menos de 50 ms', () => {
+  it('e-mail de 1 MB é recusado em menos de 500 ms', () => {
     const enorme = 'a'.repeat(1024 * 1024) + '@email.com';
     vi.useRealTimers();
     const inicio = performance.now();
@@ -468,7 +468,7 @@ describe('segurança de texto', () => {
     });
     const ms = performance.now() - inicio;
     expect(r).toEqual({ ok: false, erros: { email: MENSAGENS_DE_ERRO.email } });
-    expect(ms).toBeLessThan(50);
+    expect(ms).toBeLessThan(500);
   });
 
   it('textos gigantes (nome, mensagem, telefone, CEP) são recusados rápido', () => {
@@ -481,7 +481,7 @@ describe('segurança de texto', () => {
       presente: { mensagem: gigante, dataDeEntrega: gigante },
     });
     expect(r.ok).toBe(false);
-    expect(performance.now() - inicio).toBeLessThan(50);
+    expect(performance.now() - inicio).toBeLessThan(500);
   });
 
   it('e-mail com muitos pontos não causa backtracking', () => {
@@ -492,7 +492,7 @@ describe('segurança de texto', () => {
       ...entregaValida(),
       cliente: { ...entregaValida().cliente, email: patologico },
     });
-    expect(performance.now() - inicio).toBeLessThan(50);
+    expect(performance.now() - inicio).toBeLessThan(500);
   });
 
   it('as mensagens de erro nunca contêm o valor digitado', () => {

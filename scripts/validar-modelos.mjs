@@ -177,9 +177,19 @@ function validarConteudo(nome, bytes, decodificadores, limite, erros, avisos) {
   }
 
   const imagens = Array.isArray(json.images) ? json.images : [];
-  const buffer0 = Array.isArray(json.buffers) ? json.buffers[0] : undefined;
-  if (buffer0 && typeof buffer0.uri === 'string') {
-    erros.push(`${nome}: o buffer 0 tem uri externa; o GLB deve embutir os dados no pedaço BIN`);
+  // O GLB só pode ter o buffer 0, embutido no pedaço BIN: nenhum `uri` (nem data:) em buffer algum.
+  const buffers = Array.isArray(json.buffers) ? json.buffers : [];
+  buffers.forEach((buffer, i) => {
+    if (buffer !== null && typeof buffer === 'object' && 'uri' in buffer) {
+      const tipo =
+        typeof buffer.uri === 'string' && buffer.uri.startsWith('data:') ? 'data:' : 'externa';
+      erros.push(
+        `${nome}: o buffer ${i} tem uri ${tipo}; o GLB deve embutir os dados no pedaço BIN`,
+      );
+    }
+  });
+  if (buffers.length > 1) {
+    erros.push(`${nome}: ${buffers.length} buffers; só um (o pedaço BIN) é aceito`);
   }
   imagens.forEach((imagem, i) => {
     const rotulo = `${nome}: textura ${i}`;

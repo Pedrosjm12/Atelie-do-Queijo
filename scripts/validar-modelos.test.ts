@@ -332,6 +332,28 @@ describe('validarModelos: estrutura e casos de borda', () => {
     expect(r.erros).toEqual([expect.stringContaining('só o buffer 0')]);
   });
 
+  it('buffer 1 com uri externa é erro, e mais de um buffer também', () => {
+    const r = comArquivo(
+      glbComVista({ buffer: 0, byteOffset: 0, byteLength: 33 }, [
+        { byteLength: 33 },
+        { byteLength: 4, uri: 'https://exemplo.com/x.bin' },
+      ]),
+    );
+    expect(r.erros).toEqual([
+      expect.stringContaining('buffer 1 tem uri externa'),
+      expect.stringContaining('2 buffers'),
+    ]);
+  });
+
+  it('buffer com data: URI é erro', () => {
+    const r = comArquivo(
+      glbComVista({ buffer: 0, byteOffset: 0, byteLength: 33 }, [
+        { byteLength: 33, uri: 'data:application/octet-stream;base64,AAAA' },
+      ]),
+    );
+    expect(r.erros).toEqual([expect.stringContaining('buffer 0 tem uri data:')]);
+  });
+
   it('buffer 0 com uri externa é erro', () => {
     const r = comArquivo(
       glbComVista({ buffer: 0, byteOffset: 0, byteLength: 33 }, [{ byteLength: 33, uri: 'x.bin' }]),

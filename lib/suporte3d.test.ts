@@ -3,6 +3,8 @@ import {
   assinarMovimentoReduzido,
   limparCacheDoWebGL,
   prefereMovimentoReduzido,
+  quandoOcioso,
+  quandoVisivel,
   querEconomizarDados,
   temWebGL,
 } from './suporte3d';
@@ -135,5 +137,55 @@ describe('querEconomizarDados', () => {
       configurable: true,
     });
     expect(querEconomizarDados()).toBe(false);
+  });
+});
+
+describe('quandoOcioso e quandoVisivel', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+  });
+
+  it('quandoOcioso roda a tarefa uma vez e pode ser cancelado', () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    const tarefa = vi.fn();
+    quandoOcioso(tarefa);
+    vi.runAllTimers();
+    expect(tarefa).toHaveBeenCalledTimes(1);
+
+    const cancelada = vi.fn();
+    quandoOcioso(cancelada)();
+    vi.runAllTimers();
+    expect(cancelada).not.toHaveBeenCalled();
+  });
+
+  it('quandoOcioso usa setTimeout de reserva quando não há requestIdleCallback (Safari)', () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    vi.stubGlobal('requestIdleCallback', undefined);
+    const tarefa = vi.fn();
+    quandoOcioso(tarefa);
+    expect(tarefa).not.toHaveBeenCalled();
+    vi.advanceTimersByTime(200);
+    expect(tarefa).toHaveBeenCalledTimes(1);
+  });
+
+  it('quandoVisivel avisa só quando o elemento cruza a janela, uma única vez', () => {
+    const alvo = document.createElement('div');
+    const aviso = vi.fn();
+    quandoVisivel(alvo, aviso);
+    const stub = window.IntersectionObserver as unknown as { disparar(v: boolean): void };
+    stub.disparar(false);
+    expect(aviso).not.toHaveBeenCalled();
+    stub.disparar(true);
+    stub.disparar(true);
+    expect(aviso).toHaveBeenCalledTimes(1);
+  });
+
+  it('quandoVisivel desconecta ao cancelar', () => {
+    const alvo = document.createElement('div');
+    const aviso = vi.fn();
+    quandoVisivel(alvo, aviso)();
+    (window.IntersectionObserver as unknown as { disparar(v: boolean): void }).disparar(true);
+    expect(aviso).not.toHaveBeenCalled();
   });
 });

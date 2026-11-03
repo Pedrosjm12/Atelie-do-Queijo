@@ -50,3 +50,39 @@ export function querEconomizarDados(): boolean {
   const conexao = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
   return conexao?.saveData === true;
 }
+
+/** Prazo máximo (ms) que o `requestIdleCallback` espera antes de rodar de qualquer jeito. */
+const LIMITE_DE_OCIOSIDADE_MS = 2000;
+/** Espera de reserva (ms) nos navegadores sem `requestIdleCallback` (Safari). */
+const ESPERA_SEM_OCIOSIDADE_MS = 200;
+
+/**
+ * Roda `tarefa` quando o navegador ficar ocioso (`requestIdleCallback`, com `setTimeout` de
+ * reserva no Safari). Devolve a função que cancela.
+ */
+export function quandoOcioso(tarefa: () => void): () => void {
+  if (typeof window.requestIdleCallback === 'function') {
+    const id = window.requestIdleCallback(tarefa, { timeout: LIMITE_DE_OCIOSIDADE_MS });
+    return () => window.cancelIdleCallback(id);
+  }
+  const id = setTimeout(tarefa, ESPERA_SEM_OCIOSIDADE_MS);
+  return () => clearTimeout(id);
+}
+
+/**
+ * Avisa uma única vez quando `elemento` chega perto da janela (`rootMargin` de 200 px).
+ * Devolve a função que cancela.
+ */
+export function quandoVisivel(elemento: Element, aviso: () => void): () => void {
+  const observador = new IntersectionObserver(
+    (entradas) => {
+      if (entradas.some((e) => e.isIntersecting)) {
+        observador.disconnect();
+        aviso();
+      }
+    },
+    { rootMargin: '200px' },
+  );
+  observador.observe(elemento);
+  return () => observador.disconnect();
+}
