@@ -1,9 +1,11 @@
 # Plano de implementação — Ateliê do Queijo
 
 > Fonte da verdade: `ATELIE-DO-QUEIJO-SPEC.md`. Decisões técnicas: `docs/adr/`.
-> Última atualização: 2026-10-29. Etapas 1, 2, 3 e 4 **concluídas**. A etapa 4 (sacola, frete e checkout simulados) está implementada e publicada; o fechamento documental (tarefa 17) está nesta atualização.
+> Última atualização: 2026-11-03 (etapa 5 detalhada). Etapas 1, 2, 3 e 4 **concluídas**. A etapa 4 (sacola, frete e checkout simulados) está implementada e publicada; o fechamento documental (tarefa 17) está nesta atualização.
 >
 > **ATUALIZAÇÃO (2026-11-03):** o dono decidiu todas as pendências (D1 a D34, ver [Decisões do dono de 2026-11-03](#decisões-do-dono-de-2026-11-03-d1-a-d34)). **AVISO: dados de negócio fictícios** (WhatsApp, CNPJ, endereço, frete, produtor) serão usados por ora e **precisam ser trocados antes da publicação**. Antes da etapa 5, aplicar o bloco de ajustes listado naquela seção.
+>
+> **ETAPA 5 DETALHADA (2026-11-03):** ver [Etapa 5](#etapa-5--visualizador-3d-com-fallback-svg). O bloco A (controles sobre o SVG, manifesto e validador de GLB) pode começar com o `especialista-3d-webgl`. O bloco B (instalar o `model-viewer`) só começa depois de o dono aprovar o [ADR-0009](adr/0009-visualizador-3d-com-model-viewer.md). Perguntas ao dono: P39 a P43 e a aprovação do ADR (D22), em [Perguntas ao dono (etapa 5)](#perguntas-ao-dono-etapa-5).
 >
 > **RETOMADA (2026-10-29): próximo passo é a etapa 5, visualizador 3D com fallback SVG.**
 >
@@ -32,7 +34,7 @@ Convenções deste plano:
 | 2 | Tokens de design e componentes globais | `frontend-nextjs`, `guardiao-do-design` | Concluída |
 | 3 | Home → Catálogo → Produto (com `ProductCard`, `data/cheeses.ts` e ilustrações do Apêndice A) → interface do painel de Atendimento (§8). Sem sacola real, frete, 3D real nem roteiro do assistente | `frontend-nextjs`, `especialista-3d-webgl`, `engenheiro-de-ecommerce`, `guardiao-do-design` | Concluída ([detalhe](#etapa-3--home--catálogo--produto--painel-de-atendimento)) |
 | 4 | Sacola (contexto + `localStorage`), frete simulado e checkout simulado em `lib/commerce.ts` | `engenheiro-de-ecommerce`, `frontend-nextjs`, `auditor-de-seguranca` | **Concluída** ([detalhe](#etapa-4--sacola-frete-simulado-e-checkout-simulado)); P24 a P38 decididos em 2026-10-27 e implementados; commits `48e6ebe` a `b06c604` |
-| 5 | Visualizador 3D (`CheeseViewer` com `@google/model-viewer`) e fallback SVG do Apêndice A | `especialista-3d-webgl` | **Próxima.** A detalhar (começa pelo `arquiteto-de-software`) |
+| 5 | Visualizador 3D (`CheeseViewer` com `@google/model-viewer`) e fallback SVG do Apêndice A | `especialista-3d-webgl` | **Próxima. Detalhada em 2026-11-03** ([detalhe](#etapa-5--visualizador-3d-com-fallback-svg)); bloco A pode começar; bloco B aguarda a aprovação do ADR-0009 (Proposto) |
 | 6 | Assistente com roteiro determinístico, horários e links do WhatsApp no painel de atendimento | `especialista-em-ia-conversacional` | A detalhar |
 | 7 | Páginas restantes: Presentes, Aprenda, Produtores, 404 (textos da §12) | `frontend-nextjs` | A detalhar |
 | 8 | Rodada de qualidade: testes, acessibilidade, performance e SEO, segurança | `testes-e-qualidade`, `especialista-em-acessibilidade`, `performance-e-seo`, `auditor-de-seguranca` | A detalhar; herda itens da etapa 4 ([seção](#etapa-8--rodada-de-qualidade-herança-da-etapa-4) e [lista](#fica-para-depois-segurança-e-lgpd)) |
@@ -1206,6 +1208,310 @@ O [ADR-0007](adr/0007-validacao-com-zod-mini.md) (Zod via `zod/mini`) foi aceito
 
 ---
 
+## Etapa 5 — Visualizador 3D com fallback SVG
+
+**Objetivo:** deixar o `CheeseViewer` completo (spec §7.2, §7.5, §7.6, §10.3 e §11): os controles passam a ter efeito, o 3D carrega tarde e sob demanda quando houver GLB, e o SVG do Apêndice A continua sendo o que o visitante vê primeiro e sempre que o 3D não puder ser exibido.
+
+**Situação:** detalhada em 2026-11-03. **Bloco A pode começar já** (não usa dependência nova). O **bloco B só começa depois de o dono aprovar o [ADR-0009](adr/0009-visualizador-3d-com-model-viewer.md)** (D22). O bloco C depende da resposta ao P40.
+
+**Pré-requisito:** etapa 4 concluída e o bloco de ajustes D3 a D19 aplicado (`65c6263`); `data/ficticio.ts` criado (`39fd9e0`).
+
+**Decisões:** [ADR-0009](adr/0009-visualizador-3d-com-model-viewer.md) (**Proposto**: `@google/model-viewer` 4.4.0 + `three` 0.183.2, carregamento tardio, decodificadores sem CDN, manifesto de modelos). D21 (etapa só com SVG, pronta para GLB futuros), D22 (ADR antes de instalar), D23 / P11 (**Ver na mesa** oculto até haver GLB real), P21 (rótulo fixo **Ver por dentro** com `aria-pressed`), P23 (ativo de Girar e Aproximar).
+
+**Fato que molda a etapa (D21):** `public/models/` só tem `.gitkeep`. **Nenhum queijo tem GLB.** Com o manifesto vazio, o visitante recebe exatamente o que recebe hoje (SVG), mais os controles que passam a funcionar sobre o SVG; o `model-viewer` nunca é baixado. O caminho do GLB fica implementado, testado com *stub* e ativado sozinho quando o primeiro arquivo entrar no manifesto.
+
+**Skills:** antes de cada tarefa, conferir o mapa em `SKILLS-ATELIE-DO-QUEIJO.md` (em especial `performance` para o carregamento tardio e as regras `bundle-*` e `rerender-*` da `vercel-react-best-practices`). A spec vence em caso de conflito.
+
+### Escopo: o que entra e o que fica para depois
+
+| Item da spec | Etapa 5 | Depois |
+| --- | --- | --- |
+| Palco, dica, indicador, miniaturas (§7.2) | Sem mudança visual | — |
+| **Ver por dentro** (P21) | Com GLB: troca `<slug>-inteiro.glb` ↔ `<slug>-cortado.glb`. Sem GLB: troca A.5.1 ↔ A.5.2 (A.5.3 no celular), como hoje | Arte ou GLB cortado dos outros 9 queijos (P3) |
+| **Girar** (§10.3) | Com GLB: `auto-rotate` a `36deg` por segundo; para no primeiro toque no modelo (giro livre depois); o botão liga e desliga. Sem GLB: conforme o **P39** | — |
+| **Aproximar** e "toque duas vezes" (§7.2) | Com GLB: muda o raio da câmera (`camera-orbit` de 105% para 89%, o mesmo fator 1,18 do SVG). Sem GLB: o `scale(1.18)` que já existe. Duplo clique ou duplo toque no palco alterna o zoom nos dois modos | — |
+| **Tela cheia** (§7.2) | Fullscreen API no palco, `aria-pressed` com rótulo fixo "Tela cheia" (padrão do P21), Esc sai, estado sincronizado por `fullscreenchange`. Só desktop, como hoje. Sem suporte à API: `aria-disabled` com a descrição atual | — |
+| `prefers-reduced-motion` (§10.3) | Sem rotação automática; Girar começa com `aria-pressed="false"` e só gira se a pessoa ligar; sem transição de troca SVG → 3D | — |
+| **Preparando a peça…** (§7.5) | SVG visível + legenda enquanto o GLB baixa (só quando há GLB) | — |
+| **Seu navegador não exibe o 3D. Veja as fotos abaixo.** (§7.5) | SVG + mensagem, só quando o queijo **tem** GLB e o navegador não tem WebGL | Fotos reais nas miniaturas |
+| Erro de carregamento ou contexto WebGL perdido | Volta ao SVG, sem mensagem nova; tempo-limite de 20 s conta como erro | — |
+| **Ver na mesa** (AR, §7.6) | **Oculto** (D23/P11): o atributo `ar` não é usado, então o `model-viewer` também não mostra o botão dele | Com o primeiro GLB real: `ar` só no celular, `ar-modes`, USDZ para o iOS, aviso de privacidade do Scene Viewer |
+| Hero da Home (§5.2, §11) | Conforme o **P40** (recomendação: nada muda sem GLB) | Com GLB: `model-viewer` com giro lento, mantendo halo, ardósia e sombra |
+| Giro no hover do `ProductCard` (§4.6) | Conforme o **P40** (recomendação: nada muda sem GLB) | Com GLB: giro do modelo ao passar o mouse, só desktop |
+| Modelos GLB (§11) | Convenção de nomes, manifesto `data/modelos3d.ts` (vazio) e validador `npm run modelos:validar` no CI | Arquivos fornecidos pelo dono; decodificadores Draco/KTX2 em `public/decodificadores/` com o primeiro GLB comprimido |
+
+**Fora, por regra do projeto:** nenhuma variável de ambiente nova, nenhum serviço externo, nenhum arquivo carregado de CDN. Dependências novas só as do ADR-0009, e só depois da aprovação.
+
+### Contratos
+
+A interface pública **não muda:** `<CheeseViewer queijo={q} />` continua sendo a única forma de uso, em `app/queijos/[slug]/page.tsx`. O estado da §10.3 (`{ cortado, girando, zoom }`) continua dentro dele.
+
+#### `data/modelos3d.ts` (manifesto; sem dependências além de `import type`)
+
+```ts
+import type { SlugDoQueijo } from './cheeses';   // só tipo
+
+export type VarianteDoModelo = 'inteiro' | 'cortado';
+
+/** Presença confirmada pelo validador. `inteiro` é obrigatório; `cortado` é opcional. */
+export interface ModelosDoQueijo {
+  inteiro: true;
+  cortado: boolean;
+}
+
+/** Vazio até o dono fornecer os GLB (D21). Uma entrada só é aceita se os arquivos existirem. */
+export const MODELOS_3D: Partial<Record<SlugDoQueijo, ModelosDoQueijo>> = {};
+
+/** Convenção da §11: `/models/<slug>-<variante>.glb`. Único lugar que monta o caminho. */
+export function caminhoDoModelo(slug: SlugDoQueijo, variante: VarianteDoModelo): string;
+
+/** Tem GLB para esta variante? (`cortado` cai para false quando não houver o arquivo cortado.) */
+export function temModelo(slug: SlugDoQueijo, variante: VarianteDoModelo): boolean;
+
+/** §11: "até ~3 MB". Valor final conforme o P43. */
+export const LIMITE_DE_BYTES_DO_GLB: number;
+```
+
+- **Por que um manifesto e não `fs.existsSync`:** a página de produto é estática, mas `/queijos` é dinâmica e, na hospedagem, a função do servidor pode não enxergar `public/`. O manifesto é explícito, entra no código e é conferido pelo validador (tarefa 4).
+- **Por que fora de `data/cheeses.ts`:** o validador (script Node) lê o manifesto sem passar pelo alias `@/` nem pelas importações de valor de `cheeses.ts`. O padrão é o mesmo do mapa `ILUSTRACOES_DE_PRODUTO` (`Partial<Record<SlugDoQueijo, …>>`).
+- **Nunca** montar o caminho do GLB a partir de URL, busca ou entrada do usuário: o `src` do `model-viewer` sai só de `caminhoDoModelo`.
+
+#### `lib/suporte3d.ts` (só navegador; puro e testável com *mocks*)
+
+```ts
+/** Cria um canvas, tenta 'webgl2' e depois 'webgl', libera o contexto (WEBGL_lose_context). Resultado em cache. */
+export function temWebGL(): boolean;
+/** matchMedia('(prefers-reduced-motion: reduce)'). */
+export function prefereMovimentoReduzido(): boolean;
+/** navigator.connection?.saveData === true. Com economia de dados, o GLB não baixa sozinho. */
+export function querEconomizarDados(): boolean;
+```
+
+#### `lib/estadoDo3d.ts` (puro, sem React)
+
+```ts
+export type Situacao3d =
+  | 'so-svg'        // sem GLB para a variante atual (hoje: todos os queijos)
+  | 'aguardando'    // tem GLB; espera o palco ficar visível e o navegador ficar ocioso
+  | 'preparando'    // importando a biblioteca e baixando o GLB: SVG + "Preparando a peça…"
+  | 'pronto'        // evento `load`: o modelo substitui o SVG
+  | 'sem-webgl'     // tem GLB, mas sem WebGL: SVG + mensagem da §7.5
+  | 'erro';         // falha de carga, contexto perdido ou 20 s sem `load`: SVG, sem mensagem
+
+export type EventoDo3d =
+  | { tipo: 'iniciar'; temGlb: boolean; temWebGL: boolean; economizarDados: boolean }
+  | { tipo: 'visivel' } | { tipo: 'carregou' } | { tipo: 'falhou' } | { tipo: 'trocou-variante'; temGlb: boolean };
+
+export function proximaSituacao(atual: Situacao3d, evento: EventoDo3d): Situacao3d;
+export const TEMPO_LIMITE_DO_GLB_MS = 20_000;
+```
+
+#### `components/ModeloDoQueijo.tsx` (Client; carregado só por `next/dynamic(…, { ssr: false })` de dentro do `CheeseViewer`)
+
+```ts
+type PropsDoModeloDoQueijo = {
+  src: string;            // caminhoDoModelo(slug, variante)
+  alt: string;            // o mesmo aria-label do SVG da variante (§13)
+  girando: boolean;       // auto-rotate
+  zoom: boolean;          // camera-orbit 105% ↔ 89%
+  aoCarregar: () => void;
+  aoFalhar: () => void;   // `error` (carga ou contexto perdido) ou tempo-limite
+  aoInteragir: () => void; // `camera-change` com detail.source === 'user-interaction'
+};
+```
+
+- Faz `await import('@google/model-viewer')` dentro de um efeito, define `dracoDecoderLocation` e `ktx2TranscoderLocation` para `/decodificadores/draco/` e `/decodificadores/basis/` **antes** de qualquer `src` (ADR-0009; nada de CDN) e só então renderiza o `<model-viewer>`.
+- Atributos da §11: `camera-controls`, `auto-rotate` (quando `girando`), `auto-rotate-delay="0"`, `rotation-per-second="36deg"`, `shadow-intensity="1"`, `exposure="0.9"`, `interaction-prompt="none"`, `touch-action="pan-y"` (rolagem vertical da página continua funcionando no celular), `loading="eager"` (o atraso já é nosso), fundo transparente sobre `--cave-funda`. **Sem** `ar` (D23) e **sem** `poster` (o SVG faz esse papel).
+- Eventos por `ref` + `addEventListener` (`load`, `error`, `camera-change`), não por props `on…`: o comportamento de eventos de elementos customizados no React 19 deve ser conferido em react.dev antes de qualquer outra escolha.
+- Tipos do JSX: usar os que o pacote declarar (`lib/model-viewer.d.ts`); se não cobrirem `React.JSX.IntrinsicElements`, declarar só os atributos usados num `components/model-viewer.d.ts`, sem `any`.
+
+### Fronteiras Server/Client e carregamento tardio
+
+| Peça | Tipo | Motivo |
+| --- | --- | --- |
+| `app/queijos/[slug]/page.tsx` | Server, estática (continua) | Só passa `queijo` |
+| `CheeseViewer` | Client (continua) | Estado, toolbar, tela cheia, duplo toque, máquina de `Situacao3d`. O SVG continua sendo renderizado no servidor dentro dele (é o candidato a LCP) |
+| `ModeloDoQueijo` | Client, **chunk separado** via `next/dynamic(() => import('./ModeloDoQueijo'), { ssr: false })` | O `ssr: false` só é aceito em Client Component (documentação do Next 16, *Lazy Loading*); o `CheeseViewer` já é client |
+| `@google/model-viewer` + `three` | `import()` dentro do efeito do `ModeloDoQueijo` | Não entra no pacote compartilhado nem no JavaScript inicial de nenhuma rota |
+| `data/modelos3d.ts`, `lib/suporte3d.ts`, `lib/estadoDo3d.ts` | Módulos pequenos importados pelo `CheeseViewer` | Alguns centésimos de kB na rota de produto |
+| `Hero` (`app/_home/Hero.tsx`), `ProductCard` | Server (continuam) | Se o P40 mandar implementar agora, ganham uma ilha client pequena **renderizada só quando o manifesto tiver o queijo**. Server Component não usa `next/dynamic` para isso: a documentação do Next 16 avisa que, nesse caso, não há divisão automática de código |
+
+**Ordem de carregamento na página de produto (com GLB):**
+
+1. O HTML chega com o SVG (A.5 ou A.6) e os controles. Nada de 3D no HTML.
+2. Depois da hidratação, `iniciar`: sem GLB → `so-svg` (fim; zero custo). Sem WebGL → `sem-webgl`. Com economia de dados → fica em `so-svg`.
+3. `aguardando` até o palco cruzar a janela (`IntersectionObserver`, `rootMargin: '200px'`) **e** o navegador ficar ocioso (`requestIdleCallback`, com `setTimeout` de reserva no Safari). Assim o SVG já foi pintado e o LCP não espera o 3D (§11: "depois que a ilustração SVG já estiver visível").
+4. `preparando`: o *chunk* do `ModeloDoQueijo` e a biblioteca são importados; o `<model-viewer>` fica por cima do SVG, invisível, na **mesma proporção** do SVG (`aspect-ratio: 460 / 340` para o A.5, `300 / 190` para o A.6), para não haver CLS.
+5. `load` → `pronto`: o SVG sai da árvore de acessibilidade e some; o modelo aparece (troca sem transição com movimento reduzido).
+
+### Estados e textos
+
+| Situação | O que aparece | Texto (literal da §7.5) | Região |
+| --- | --- | --- | --- |
+| `so-svg` | SVG | — | — |
+| `preparando` | SVG + legenda | **Preparando a peça…** | `role="status"` (educada) |
+| `sem-webgl` | SVG + mensagem | **Seu navegador não exibe o 3D. Veja as fotos abaixo.** | `role="status"` |
+| `erro` | SVG | — (nenhum texto novo) | — |
+| `pronto` | Modelo | — | `alt` do `model-viewer` = `aria-label` do SVG da variante |
+
+Posição e estilo da legenda e da mensagem: a spec dá só o texto (**P41**).
+
+### Acessibilidade
+
+- A `role="toolbar"` com setas, Home, End e `tabIndex` móvel continua como está (P21). **Tela cheia** e **Girar** seguem o padrão `aria-pressed` + rótulo fixo.
+- Com o modelo pronto, o `model-viewer` entra na ordem de Tab (setas giram a peça); o `alt` dá o nome. Os textos internos dele para leitor de tela vêm em inglês: traduzir pelo atributo `a11y` (**P42**).
+- Em tela cheia o foco fica na barra; Esc sai e o `aria-pressed` volta a `false`.
+- `prefers-reduced-motion`: ver o escopo. Ligar o giro manualmente é permitido (movimento iniciado pela pessoa).
+- Alvos de 44 px (já atendidos) e foco dourado (já global).
+- Alternativa textual: o SVG com `role="img"` + `aria-label` é a alternativa do 3D em todos os estados.
+
+### Desempenho (orçamento)
+
+Mesmo método de medição do [ADR-0007](adr/0007-validacao-com-zod-mini.md#registro-da-instalação-tarefa-1-da-etapa-4), agora versionado em `scripts/medir-pacote.mjs` (tarefa 1).
+
+| Medida | Linha de base | Limite |
+| --- | --- | --- |
+| *First Load JS* compartilhado | 182,74 kB gzip (fim da etapa 4) | **+0,5 kB** (nada de 3D no layout) |
+| JavaScript inicial de `/queijos/[slug]` | Medido na tarefa 1 | **+4 kB gzip** (manifesto, `suporte3d`, `estadoDo3d`, tela cheia, duplo toque) |
+| JavaScript inicial da Home e de `/queijos` | Medido na tarefa 1 | **+0 kB** sem GLB |
+| *Chunk* tardio (`ModeloDoQueijo` + `model-viewer` + `three`) | Medido na tarefa 6 | **350 kB gzip**. Nunca aparece nos `<script>` do HTML de nenhuma página |
+| GLB | — | `LIMITE_DE_BYTES_DO_GLB` (P43), texturas até 2048 px |
+| LCP e CLS da página de produto | Medidos na tarefa 1 (Lighthouse local, celular) | LCP não piora; CLS 0 na troca SVG → 3D |
+
+### Testes: como testar sem WebGL no jsdom
+
+- **Unidade (Vitest + jsdom):** o jsdom não tem WebGL, `IntersectionObserver`, `matchMedia`, Fullscreen API nem `requestIdleCallback`. Por isso:
+  - `lib/estadoDo3d.ts` é puro: todas as transições da tabela de estados testadas sem DOM.
+  - `lib/suporte3d.ts`: `HTMLCanvasElement.prototype.getContext` simulado devolvendo `null` e um objeto falso.
+  - `CheeseViewer`: `vi.mock('@/data/modelos3d')` com um manifesto falso, `vi.mock('@google/model-viewer', () => ({}))` e um elemento falso registrado com `customElements.define('model-viewer', class extends HTMLElement {})`, que o teste faz disparar `load`, `error` e `camera-change`. Assim se verificam a legenda, a mensagem sem WebGL, a volta ao SVG, os atributos da §11 (e a ausência de `ar`), a troca de `src` no corte, a parada do giro no primeiro toque e o tempo-limite (relógio falso).
+  - *Stubs* de `IntersectionObserver`, `matchMedia`, `requestFullscreen`/`exitFullscreen` e `requestIdleCallback` entram no `vitest.setup.ts`, no mesmo estilo do `<dialog>` já simulado.
+- **E2E (Playwright, Chromium):**
+  - Sem GLB (o caso real de hoje): na página do Canastra, depois de ociosa, `customElements.get('model-viewer')` é `undefined` e não há requisição para `/models/` nem para outro domínio.
+  - Tela cheia: clicar → `document.fullscreenElement` é o palco; Esc → sai e `aria-pressed="false"`.
+  - Duplo clique no palco → **Aproximar** com `aria-pressed="true"`.
+  - `page.emulateMedia({ reducedMotion: 'reduce' })` → **Girar** começa com `aria-pressed="false"`.
+  - Sem rolagem horizontal de 360 a 1920 px (continua).
+  - Caminho com GLB: teste escrito agora e **pulado** enquanto `MODELOS_3D` estiver vazio (`test.skip`); ele passa a rodar sozinho com o primeiro GLB. Sem WebGL é simulado com `page.addInitScript` que faz `getContext('webgl'|'webgl2')` devolver `null`.
+- **Verificação manual com GLB de teste:** o `especialista-3d-webgl` testa localmente com um GLB genérico (CC0, fora do repositório) antes de cada commit do bloco B e descreve o resultado no PR. Nenhum GLB de teste vai para `public/`.
+- **Validador:** testes com GLB sintéticos montados em memória no próprio teste (cabeçalho, pedaço JSON e binário), sem arquivo binário no repositório.
+- **Regressão visual:** só o modo SVG é comparável pixel a pixel; o canvas 3D não é determinístico e fica fora da comparação.
+
+### Tarefas
+
+Cada tarefa termina com `lint`, `typecheck`, `format:check`, `test`, `build` e `test:e2e` passando. Estimativa de linhas entre parênteses.
+
+**Bloco A — Fundação e controles sobre o SVG (commit 1; não depende do ADR-0009)**
+
+1. **[performance-e-seo] Linha de base e script de medição** (~120)
+   - Versionar o método do ADR-0007 em `scripts/medir-pacote.mjs` (pasta nova `scripts/`, sugerida pelo próprio ADR-0007) e o script `npm run medir:pacote`. Medir o compartilhado, o JavaScript inicial de `/`, `/queijos` e `/queijos/canastra-curado`, e o LCP/CLS do produto (Lighthouse local, perfil celular).
+   - **Pronto quando:** o script reproduz os 182,74 kB do fim da etapa 4 (±0,1 kB) e as medidas estão anotadas no ADR-0009.
+
+2. **[especialista-3d-webgl] Manifesto, suporte e estados** (~300 com testes)
+   - `data/modelos3d.ts`, `lib/suporte3d.ts` e `lib/estadoDo3d.ts` conforme os contratos; *stubs* novos no `vitest.setup.ts`.
+   - **Pronto quando:** testes de `proximaSituacao` cobrem as 6 situações e todos os eventos; `caminhoDoModelo('canastra-curado', 'cortado') === '/models/canastra-curado-cortado.glb'`; `temModelo` devolve `false` para todos os 10 slugs com o manifesto vazio; `temWebGL` devolve `false` com `getContext` nulo.
+
+3. **[especialista-3d-webgl] Controles com efeito sobre o SVG** (~250 com testes)
+   - **Tela cheia** (Fullscreen API no palco, `aria-pressed`, `fullscreenchange`; `aria-disabled` só sem suporte), duplo clique ou duplo toque no palco alterna o zoom, **Girar** conforme o P39 (sem resposta do dono, o Girar fica como está hoje e o resto da tarefa segue), `prefers-reduced-motion` no estado inicial do Girar. Estilo do palco em tela cheia: fundo `--cave-funda`, ilustração centralizada, barra visível (sem valores novos de cor).
+   - **Pronto quando:** testes de componente: Tela cheia chama `requestFullscreen` no palco e o `aria-pressed` acompanha o `fullscreenchange`; `dblclick` no palco liga o **Aproximar**; com `matchMedia` de movimento reduzido, **Girar** começa em `false`. O teste atual de "Tela cheia disponível em breve" é atualizado. E2e da seção de testes (tela cheia, duplo clique, movimento reduzido) passando.
+
+4. **[especialista-3d-webgl + devops-e-deploy] Validador de GLB** (~300 com testes)
+   - `scripts/validar-modelos.mjs`, sem dependência nova (Node 24 lê o manifesto `.ts` com remoção de tipos; conferir na documentação do Node 24). Regras:
+     - nome `^<slug>-(inteiro|cortado)\.glb$` em `public/models/`, com `<slug>` presente no manifesto (as chaves do manifesto já são conferidas pelo `tsc` contra `SlugDoQueijo`, então o script não precisa importar `data/cheeses.ts`); todo arquivo listado no manifesto e toda entrada do manifesto com arquivo;
+     - cabeçalho GLB válido (`glTF`, versão 2, comprimento igual ao do arquivo);
+     - tamanho até `LIMITE_DE_BYTES_DO_GLB` (P43);
+     - `extensionsRequired` só dentro de uma lista permitida; se exigir `KHR_draco_mesh_compression` ou `KHR_texture_basisu`, os decodificadores precisam existir em `public/decodificadores/` (senão, erro: o `model-viewer` buscaria no CDN do Google);
+     - texturas: dimensões lidas do cabeçalho (KTX2, PNG ou JPEG) até 2048 px; textura sem compressão KTX2 gera **aviso**, não erro.
+   - Script `npm run modelos:validar`; passo novo no CI, antes do `build` (`devops-e-deploy`).
+   - **Pronto quando:** com `public/models/` vazio o script passa; testes com GLB sintéticos em memória cobrem: nome fora da convenção, arquivo sem entrada no manifesto, entrada sem arquivo, cabeçalho inválido, arquivo acima do limite, Draco sem decodificador local e textura de 4096 px.
+
+5. **Verificação do bloco A, em paralelo:** `especialista-em-acessibilidade` (tela cheia, duplo toque, `aria-pressed`), `guardiao-do-design` (palco a 1440 e 390 px sem mudança visual; palco em tela cheia), `testes-e-qualidade` → `revisor-de-codigo` → commit `feat(3d): liga tela cheia, zoom e validador de modelos sobre o SVG`.
+
+**Bloco B — `model-viewer` atrás do carregamento tardio (commit 2; exige o ADR-0009 Aceito)**
+
+6. **[especialista-3d-webgl] Instalação** (~10 + registro no ADR)
+   - `npm i @google/model-viewer@4.4.0 three@0.183.2 --save-exact` (ou as versões que o dono aprovar no ADR, respeitando os 14 dias). Registrar no ADR-0009: data de publicação, licenças (inclusive `lit` e `@monogrid/gainmap-js`), `resolved`/`integrity` do `package-lock.json`, `npm audit signatures`, `npm audit --omit=dev`.
+   - **Pronto quando:** versões exatas sem `^`/`~`; `npm audit --omit=dev` sem alerta alto ou crítico; `npm run medir:pacote` mostra o compartilhado e o JavaScript inicial do produto **sem mudança** (a biblioteca ainda não é importada).
+
+7. **[especialista-3d-webgl] `ModeloDoQueijo` e a máquina de estados no `CheeseViewer`** (~400 com testes; se passar, dividir em 7a carregamento/estados e 7b controles ligados ao modelo)
+   - Contrato acima; ordem de carregamento; legenda e mensagem da §7.5 (estilo do P41); `alt`; tradução do `a11y` (P42, se aprovado); corte troca o `src`; zoom muda o `camera-orbit`; primeiro toque no modelo desliga o giro e esconde a dica; tempo-limite de 20 s; mesma proporção do SVG (CLS 0).
+   - **Pronto quando:** os testes de unidade da seção de testes passam; `npm run medir:pacote` confirma o orçamento (o *chunk* tardio não aparece em nenhum HTML); verificação manual com GLB de teste descrita no PR; e2e "sem GLB, zero custo" passando; e2e do caminho com GLB escrito e pulado.
+
+8. **Verificação do bloco B, em paralelo:** `auditor-de-seguranca` (**obrigatório**: dependência nova, procedência, nenhuma requisição a CDN, `src` só do manifesto, requisitos de CSP anotados para a etapa 8), `performance-e-seo` (orçamento, LCP/CLS), `especialista-em-acessibilidade`, `testes-e-qualidade` → `revisor-de-codigo` → commit `feat(3d): adiciona o model-viewer com carregamento tardio e fallback em SVG`.
+
+**Bloco C — Hero e giro do cartão (commit 3; só se o P40 for "agora")**
+
+9. **[especialista-3d-webgl] Ilha `GiroDoCartao` no `ProductCard`** (~200 com testes)
+   - Renderizada só quando `temModelo(slug, 'inteiro')`. Desktop com `(hover: hover) and (pointer: fine)`; intenção de 250 ms antes de importar; `auto-rotate` sem controles; o SVG do cartão continua no HTML; sem efeito com movimento reduzido.
+   - **Pronto quando:** teste: sem entrada no manifesto, o cartão não renderiza a ilha (mesmo HTML de hoje); com manifesto falso, o *hover* importa o modelo e o `mouseleave` volta ao SVG.
+
+10. **[especialista-3d-webgl + guardiao-do-design] 3D no hero** (~250)
+    - Ilha no palco do hero, mesma ordem de carregamento, giro lento, sem controles além do arraste (a pílula "Arraste para girar" já existe). Halo, ardósia e sombra continuam do A.3; para isso é preciso uma variante do A.3 **sem o queijo**, que é um ativo novo e exige aprovação do dono e do guardião.
+    - **Pronto quando:** a variante do A.3 está aprovada; JavaScript inicial da Home sem mudança sem GLB; LCP da Home não piora com GLB.
+
+11. **Verificação do bloco C** (guardião, acessibilidade, desempenho) → `revisor-de-codigo` → commit `feat(3d): adiciona o 3D no hero e o giro no cartão`.
+
+**Fechamento**
+
+12. **[documentador-tecnico] Fechamento da etapa 5**
+    - `docs/conteudo.md` ganha a seção "Como entregar um modelo 3D" (convenção de nomes, limite, texturas 2K, Draco/KTX2, como rodar `npm run modelos:validar`, como incluir no manifesto); CHANGELOG; situação desta etapa e do ADR-0009 neste plano.
+    - **Pronto quando:** commit `docs: fecha a etapa 5` publicado.
+
+### Commits da etapa 5
+
+| Bloco | Conteúdo | Mensagem | Situação |
+| --- | --- | --- | --- |
+| Docs | Este detalhamento e o ADR-0009 (Proposto) | `docs: detalha a etapa 5 e propõe o ADR-0009` | Pendente (sessão principal) |
+| A | Tarefas 1 a 5 | `feat(3d): liga tela cheia, zoom e validador de modelos sobre o SVG` | A fazer |
+| B | Tarefas 6 a 8 | `feat(3d): adiciona o model-viewer com carregamento tardio e fallback em SVG` | Aguarda o ADR-0009 |
+| C | Tarefas 9 a 11 | `feat(3d): adiciona o 3D no hero e o giro no cartão` | Aguarda o P40 |
+| Docs | Tarefa 12 | `docs: fecha a etapa 5` | A fazer |
+
+Ordem: A → B → (C) → fechamento. A não espera o dono; B espera o ADR-0009; C espera o P40.
+
+### Verificação (vale para cada bloco)
+
+- **`guardiao-do-design`:** palco a 1440 e 390 px igual ao de hoje no modo SVG (nenhuma mudança visual não aprovada); legenda e mensagem conforme o P41; palco em tela cheia só com tokens existentes.
+- **`especialista-em-acessibilidade`:** WCAG 2.2 AA. Toolbar (setas, Home, End), `aria-pressed` de Girar, Aproximar e Tela cheia, foco em tela cheia, `role="status"` das legendas, `alt` do modelo, `a11y` traduzido, movimento reduzido.
+- **`testes-e-qualidade`:** unidade em `lib/` e no `CheeseViewer`; e2e da seção de testes; nenhuma requisição a outro domínio em nenhuma rota.
+- **`performance-e-seo`:** orçamento da tabela; LCP e CLS do produto.
+- **`auditor-de-seguranca`:** obrigatório no bloco B.
+- **`revisor-de-codigo`:** antes de cada commit.
+
+### Critérios de pronto da etapa 5
+
+- Spec §7.5 (os dois textos do 3D), §10.3 e §11 atendidas, com o manifesto vazio e com um manifesto falso nos testes.
+- **Ver na mesa** ausente do HTML (D23).
+- Sem GLB, nenhum byte do `model-viewer` é baixado em nenhuma página, e nenhuma requisição vai para outro domínio.
+- Orçamento de desempenho respeitado e registrado no ADR-0009.
+- `npm run modelos:validar` no CI.
+- Única dependência nova: `@google/model-viewer` + `three` (ADR-0009), instaladas só depois da aprovação.
+
+### Riscos da etapa 5
+
+- **Caminho do GLB sem teste ponta a ponta** (não há GLB) → *stub* de elemento nos testes de unidade, e2e pulado que se ativa sozinho, verificação manual com GLB de teste fora do repositório.
+- **Biblioteca carregando decodificadores do CDN do Google** → locais definidos antes de qualquer `src`; validador barra GLB comprimido sem decodificador local; e2e confere que não há requisição externa.
+- **`three` fora da faixa do `model-viewer`** (o `peerDependency` é `^0.183.0`, que no npm só aceita 0.183.x) → versão exata 0.183.2; Dependabot/Renovate (etapa 9) não pode subir o `three` sozinho: agrupar as duas atualizações.
+- **WebGL por software no Chromium sem cabeça** (o Chrome vem restringindo o SwiftShader automático) → nenhum e2e desta etapa depende de WebGL real; o caso com GLB, quando ativado, pode exigir `--enable-unsafe-swiftshader` só no projeto de teste.
+- **Fullscreen API no Chromium sem cabeça ou no Safari** → teste de unidade com *stub*; e2e em Chromium; sem suporte, o botão fica `aria-disabled`.
+- **Erro de hidratação no Girar com movimento reduzido** (o servidor não sabe a preferência) → servidor e primeira renderização usam o padrão da §10.3; a preferência é aplicada depois da montagem, sem mudar o HTML do servidor.
+- **CLS na troca SVG → 3D** → mesma proporção do SVG, modelo por cima e invisível até `load`.
+- **Textos internos do `model-viewer` em inglês** → atributo `a11y` (P42).
+- **Licença Apache-2.0 exige manter os avisos** → conferir se o build preserva os comentários de licença; página ou arquivo de avisos de terceiros na etapa 9.
+- **CSP futura (etapa 8)** → o 3D exige, no mínimo, `connect-src 'self'`; com Draco/KTX2, `worker-src blob:` e `'wasm-unsafe-eval'` em `script-src`; texturas podem usar `blob:` em `img-src`. Conferir na etapa 8 com o GLB real; anotado no ADR-0009.
+
+### Perguntas ao dono (etapa 5)
+
+| # | Pergunta | Opções | Recomendação |
+| --- | --- | --- | --- |
+| P39 | Sem GLB, o que fazer com **Girar** e com a dica "Arraste para girar", que prometem um giro que o SVG não tem? | **A)** Como no protótipo: Girar visível e com `aria-pressed="true"`, sem efeito. **B)** Sem GLB, esconder o Girar e mostrar só "Toque duas vezes para aproximar" na dica (desvio de texto e de layout). **C)** Manter o visual do protótipo, mas o Girar fica `aria-pressed="false"` e `aria-disabled="true"`, com o texto só para leitor de tela "Giro disponível com o modelo 3D" (mesmo padrão já usado na Tela cheia) | **C** agora (fidelidade visual e estado honesto para o leitor de tela), revendo antes da publicação se ainda não houver GLB |
+| P40 | Hero e giro do cartão sem GLB | **A)** Implementar agora as ilhas, ativadas pelo manifesto (~450 linhas sem efeito visível e sem e2e real). **B)** Implementar quando chegar o primeiro GLB; os contratos já ficam neste plano. **C)** Efeito em CSS sobre o SVG agora (mudança de design fora da spec) | **B.** O hero precisa de uma variante do A.3 sem o queijo (ativo novo a aprovar) e o giro do cartão baixa até ~3 MB por cartão; nada disso pode ser calibrado sem o GLB |
+| P41 | Visual da legenda **Preparando a peça…** e da mensagem sem WebGL (a spec só dá o texto) | **A)** Mesmo estilo da dica (13 px, `--palha`), centralizada logo abaixo da ilustração, acima da barra. **B)** No lugar da dica, no canto superior esquerdo. **C)** Dentro de uma pílula como a do hero (`--vidro-escuro`, borda `--pedra`) | **A**, sem cor nem medida nova. Observação: no celular as miniaturas ficam ocultas, então "Veja as fotos abaixo" não tem fotos para onde apontar; recomendamos manter o texto literal até haver fotos |
+| P42 | O `model-viewer` tem textos próprios para leitor de tela, em inglês (por exemplo, "Use mouse, touch or arrow keys to move"). Traduzir pelo atributo `a11y`? | **A)** Traduzir; o `especialista-3d-webgl` levanta a lista na tarefa 7 e o dono aprova (como no D8). **B)** Deixar em inglês | **A** (só vale quando houver GLB) |
+| P43 | Limite do GLB: a §11 diz "até ~3 MB" | **A)** Erro acima de 3 MiB (3.145.728 bytes). **B)** Aviso acima de 3 MB e erro acima de 4 MB | **A**, simples e fiel ao número da spec; o dono afrouxa se um modelo bom não couber |
+| D22 | Aprovar o [ADR-0009](adr/0009-visualizador-3d-com-model-viewer.md) (instalar `@google/model-viewer` 4.4.0 e `three` 0.183.2)? | **A)** Aprovar agora (bloco B segue logo após o A). **B)** Aprovar, mas instalar só com o primeiro GLB (a etapa fecha só com o bloco A). **C)** Rejeitar e ficar só no SVG | **A**, porque o D21 pede o carregamento pronto; o custo para o visitante sem GLB é zero |
+
+---
+
 ## Etapa 8 — Rodada de qualidade (herança da etapa 4)
 
 > A etapa 8 ainda será detalhada pelo `arquiteto-de-software`. Esta seção reúne o que a etapa 4 deixou para ela, copiado de [Fica para depois (segurança e LGPD)](#fica-para-depois-segurança-e-lgpd), de [Fica para depois (blocos C e D)](#fica-para-depois-blocos-c-e-d) e de [Fica para depois (bloco E)](#fica-para-depois-bloco-e). As tabelas originais continuam onde estão.
@@ -1327,7 +1633,7 @@ Continuam como lacuna, por decisão do dono: dados dos 9 queijos sem ficha (`[A 
 | --- | --- | --- |
 | Aplicar D3, D4, D5 (registro), D11, D12, D13, D14, D18, D19 no código, nos testes e nos textos | `frontend-nextjs` (+ `guardiao-do-design`, `especialista-em-acessibilidade`) | Antes da etapa 5 (bloco único, um commit) — **Concluída em 2026-11-03.** Texto final do quiz: "Você prefere sabores {sabor}, vai servir {uso}, e acompanhar com {acompanhamento}. {nome} foi o que mais combinou com as três respostas." (uso: "para você mesmo, com calma"; sem artigo antes do nome, aprovado pelo dono). D14 feito com `white-space: nowrap` (`SemQuebra`), não com U+2011. |
 | Criar `data/ficticio.ts` e aplicar D26 a D29 (WhatsApp, CNPJ, endereço, frete, prazo, parcelas, produtor, ano); trocar as lacunas visíveis por esses valores | `engenheiro-de-ecommerce` + `frontend-nextjs` | Antes da etapa 6 (o WhatsApp é necessário nela) — **Concluída em 2026-11-03.** |
-| ADR do `@google/model-viewer` | `arquiteto-de-software` | Início da etapa 5 |
+| ADR do `@google/model-viewer` | `arquiteto-de-software` | Início da etapa 5 — **Escrito em 2026-11-03** ([ADR-0009](adr/0009-visualizador-3d-com-model-viewer.md), Proposto; aguarda o dono) |
 | ADR da hospedagem (Vercel) e ADR do gateway (Mercado Pago) | `arquiteto-de-software`, `auditor-de-seguranca` | Etapa 9 |
 | Rascunho do aviso de privacidade | `auditor-de-seguranca` + `documentador-tecnico` | Etapa 9 |
 | Checklist da §14 com os desvios D2, D4, D5, D6 e o item "trocar dados fictícios": remover `DADOS_FICTICIOS_ATIVOS` e a trava do `next.config.ts` ao trocar os dados, e atualizar junto os testes unitários e e2e que citam os valores fictícios (CNPJ, endereço, frete, parcelas, produtor, ano) | `documentador-tecnico` | Etapa 9 |

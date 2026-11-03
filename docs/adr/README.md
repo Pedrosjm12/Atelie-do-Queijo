@@ -19,3 +19,4 @@ Cada decisão técnica relevante do Ateliê do Queijo fica registrada aqui, em `
 | [0006](0006-typecheck-com-next-typegen.md) | Typecheck com `next typegen` | Aceito | 2026-10-26 |
 | [0007](0007-validacao-com-zod-mini.md) | Validação na borda com Zod (`zod/mini`) | Aceito | 2026-10-27 |
 | [0008](0008-sacola-frete-e-checkout-simulados.md) | Sacola persistida, frete e checkout simulados: fronteiras e persistência | Aceito | 2026-10-27 |
+| [0009](0009-visualizador-3d-com-model-viewer.md) | Visualizador 3D com `@google/model-viewer`, carregamento tardio e fallback em SVG | **Proposto** (aguarda o dono) | 2026-11-03 |
