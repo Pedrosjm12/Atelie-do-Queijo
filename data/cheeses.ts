@@ -7,6 +7,7 @@ export type Origem = 'brasil' | 'mundo';
 export type Shape = 'wide' | 'tall' | 'flat' | 'small';
 
 import type { Centavos } from '@/lib/dinheiro';
+import { ANO_PRODUTOR_CANASTRA_FICTICIO, PRODUTOR_CANASTRA_FICTICIO } from './ficticio';
 
 export type { Centavos };
 
@@ -117,7 +118,7 @@ export const QUEIJOS = [
     destaqueSemana: 1,
     vitrine: { tag: 'BRASIL · CANASTRA, MG' },
     detalhe: {
-      produtor: 'Queijaria [NOME DO PRODUTOR]',
+      produtor: `Queijaria ${PRODUTOR_CANASTRA_FICTICIO}`,
       selos: [
         { tipo: 'origem', texto: 'Selo Arte' },
         { tipo: 'maturacao', texto: 'Leite cru' },
@@ -129,7 +130,7 @@ export const QUEIJOS = [
         'Casca firme e dourada, massa levemente esfarelada. Intenso, com notas de manteiga tostada e final picante.',
       perfil: { intensidade: 4, cremosidade: 2, salinidade: 3, aroma: 4 },
       historia: [
-        'Na Serra da Canastra, o queijo é feito com leite cru da ordenha do dia e o pingo, o fermento natural recolhido do soro da fornada anterior. [NOME DO PRODUTOR] mantém o método da família desde [ANO].',
+        `Na Serra da Canastra, o queijo é feito com leite cru da ordenha do dia e o pingo, o fermento natural recolhido do soro da fornada anterior. ${PRODUTOR_CANASTRA_FICTICIO} mantém o método da família desde ${ANO_PRODUTOR_CANASTRA_FICTICIO}.`,
         'Depois de prensado à mão, cada queijo matura 60 dias em prateleiras de madeira, virado diariamente, até a casca ficar firme e dourada.',
       ],
       harmonizacao: {

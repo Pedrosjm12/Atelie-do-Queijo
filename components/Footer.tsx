@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { CNPJ_FICTICIO, ENDERECO_FICTICIO } from '@/data/ficticio';
 import { BotaoAbrirAtendimento } from './Atendimento';
 import estilos from './Footer.module.css';
 import { NomeDaMarca } from './Logo';
@@ -80,7 +81,9 @@ export function Footer() {
       </nav>
 
       <div className={`conteudo ${estilos.base}`}>
-        <p>Ateliê do Queijo · CNPJ [00.000.000/0000-00] · [Endereço]</p>
+        <p>
+          Ateliê do Queijo · CNPJ {CNPJ_FICTICIO} · {ENDERECO_FICTICIO}
+        </p>
         <p>Produtos de origem animal com inspeção sanitária · Pix · Cartões</p>
       </div>
     </footer>

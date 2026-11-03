@@ -34,7 +34,7 @@ test.describe('checkout, etapa 1 (Entrega)', () => {
     await preencherComTeclado(page);
     await expect(campo(page, 'CEP')).toHaveValue('01310-100');
     await expect(campo(page, 'Telefone')).toHaveValue('(11) 91234-5678');
-    await expect(page.getByText('Chega refrigerado em até [N] dias úteis.')).toBeVisible();
+    await expect(page.getByText('Chega refrigerado em até 3 dias úteis.')).toBeVisible();
     await tabAte(page, page.getByRole('button', { name: 'Continuar para o pagamento' }));
     await page.keyboard.press('Enter');
 
@@ -62,7 +62,7 @@ test.describe('checkout, etapa 1 (Entrega)', () => {
     await page.goto('/checkout');
     await expect(page.getByRole('heading', { level: 2, name: 'Entrega' })).toBeVisible();
     await preencherComTeclado(page);
-    await expect(page.getByText('Chega refrigerado em até [N] dias úteis.')).toBeVisible();
+    await expect(page.getByText('Chega refrigerado em até 3 dias úteis.')).toBeVisible();
 
     // Enter dentro de um campo envia o formulário: nada pode ir para a barra de endereço.
     await campo(page, 'Número').press('Enter');

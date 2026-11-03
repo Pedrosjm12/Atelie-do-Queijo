@@ -1,0 +1,91 @@
+/**
+ * ÚNICO lugar com os dados de negócio FICTÍCIOS (decisões D26 a D29 do dono, 2026-11-03).
+ * Nenhum valor daqui é real e nenhum pode ir para produção: o dono troca tudo antes da publicação
+ * (item do checklist de aceite da etapa 9). Ver o aviso em docs/PLANO.md.
+ * Só importa tipos (apagados na compilação): seguro para o servidor, o navegador e o `next.config.ts`.
+ */
+
+import type { Centavos } from '../lib/dinheiro';
+
+// --- Trava de produção -------------------------------------------------------------------------
+
+/**
+ * Enquanto houver qualquer dado fictício neste arquivo, fica `true`. O `next.config.ts` faz o build
+ * FALHAR com `VERCEL_ENV === 'production'` e este valor `true`. O dono remove a trava (e esta
+ * constante) ao trocar os dados reais (checklist da etapa 9).
+ */
+// FICTÍCIO: substituir antes da publicação
+export const DADOS_FICTICIOS_ATIVOS = true;
+
+/** Lança erro em português se um build de produção (Vercel) tentar usar dados fictícios. */
+export function exigirSemDadosFicticiosEmProducao(
+  ambiente: string | undefined,
+  ficticiosAtivos: boolean = DADOS_FICTICIOS_ATIVOS,
+): void {
+  if (ambiente === 'production' && ficticiosAtivos) {
+    throw new Error(
+      'Build de produção bloqueado: data/ficticio.ts ainda tem dados fictícios (WhatsApp, CNPJ, endereço, frete, parcelas, produtor). Troque pelos dados reais e remova DADOS_FICTICIOS_ATIVOS e esta trava.',
+    );
+  }
+}
+
+// --- WhatsApp (spec §8.3: formato internacional, só dígitos) ----------------------------------
+
+// FICTÍCIO: substituir antes da publicação (DDD 20 não existe: o número não pode ser de ninguém)
+export const NUMERO_WHATSAPP_FICTICIO = '5520900000000';
+
+const FORMATO_DO_NUMERO = /^55\d{10,11}$/;
+
+/**
+ * Número do WhatsApp da loja, só dígitos. Usa `NEXT_PUBLIC_WHATSAPP_NUMBER` quando definida e no
+ * formato `55` + DDD + número (`^55\d{10,11}$`). Fora de produção, cai no fictício. Com
+ * `VERCEL_ENV === 'production'` e variável ausente ou inválida, devolve `null`: a interface deverá
+ * esconder os links do WhatsApp (tratado na etapa 6). A referência a `process.env.NEXT_PUBLIC_*` é
+ * direta de propósito: o Next só a substitui no pacote do navegador assim.
+ */
+export function numeroDoWhatsApp(): string | null {
+  const definido = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER?.replace(/\D/g, '') ?? '';
+  if (FORMATO_DO_NUMERO.test(definido)) return definido;
+  return process.env.VERCEL_ENV === 'production' ? null : NUMERO_WHATSAPP_FICTICIO;
+}
+
+// --- Rodapé (spec §4.9) -----------------------------------------------------------------------
+
+// FICTÍCIO: substituir antes da publicação
+export const CNPJ_FICTICIO = '00.000.000/0001-00';
+
+// FICTÍCIO: substituir antes da publicação
+export const ENDERECO_FICTICIO = 'Rua Exemplo, 123, São Paulo, SP';
+
+// --- Pagamento ----------------------------------------------------------------------------------
+
+// FICTÍCIO: substituir antes da publicação
+export const PARCELAS_SEM_JUROS_FICTICIAS = 3;
+
+// --- Frete (tabela simulada por faixa de CEP; faixas atendidas definidas em calcularFrete) -----
+
+export interface FaixaDeFrete {
+  /** Primeiro CEP da faixa (8 dígitos, como número), inclusive. */
+  de: number;
+  /** Último CEP da faixa, inclusive. */
+  ate: number;
+  /** Prazo em dias úteis. */
+  prazoDiasUteis: number;
+  /** Valor em centavos para pedidos abaixo de R$ 180 (a partir disso o frete é grátis). */
+  valor: Centavos;
+}
+
+// FICTÍCIO: substituir antes da publicação
+export const FAIXAS_DE_FRETE_FICTICIAS: readonly FaixaDeFrete[] = [
+  { de: 1_000_000, ate: 19_999_999, prazoDiasUteis: 3, valor: 2490 },
+  { de: 20_000_000, ate: 39_999_999, prazoDiasUteis: 4, valor: 3290 },
+  { de: 40_000_000, ate: 99_999_999, prazoDiasUteis: 5, valor: 4590 },
+];
+
+// --- Produtor do Canastra (spec §7.3) ----------------------------------------------------------
+
+// FICTÍCIO: substituir antes da publicação
+export const PRODUTOR_CANASTRA_FICTICIO = 'Produtor Exemplo';
+
+// FICTÍCIO: substituir antes da publicação
+export const ANO_PRODUTOR_CANASTRA_FICTICIO = '1985';

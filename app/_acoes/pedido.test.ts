@@ -42,13 +42,13 @@ describe('confirmarPedido (Server Action chamada direto)', () => {
     expect(Object.keys(modulo)).toEqual(['confirmarPedido']);
   });
 
-  it('caso feliz: número AQ-dddddd e totais iguais a calcularTotais (Pix, frete em lacuna)', async () => {
+  it('caso feliz: número AQ-dddddd e totais iguais a calcularTotais (Pix, frete da tabela fictícia)', async () => {
     const r = await confirmarPedido(entradaValida());
     expect(r).toMatchObject({ ok: true, email: 'maria@email.com' });
     if (!r.ok) throw new Error('esperava ok');
     expect(r).toHaveProperty('numero');
     expect((r as { numero: string }).numero).toMatch(/^AQ-\d{6}$/);
-    expect((r as { totais: unknown }).totais).toEqual(calcularTotais(formato.preco, null, 'pix'));
+    expect((r as { totais: unknown }).totais).toEqual(calcularTotais(formato.preco, 2490, 'pix'));
     expect((r as { totais: { descontoPix: number } }).totais.descontoPix).toBe(
       formato.preco - precoNoPix(formato.preco),
     );

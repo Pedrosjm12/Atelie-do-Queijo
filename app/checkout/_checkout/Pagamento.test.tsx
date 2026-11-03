@@ -107,7 +107,7 @@ describe('etapa 2: forma de pagamento e resumo', () => {
     await irParaOPagamento(userEvent.setup({ delay: null }));
     const grupo = screen.getByRole('group', { name: 'Forma de pagamento' });
     const pix = within(grupo).getByRole('radio', { name: 'Pix (5% de desconto)' });
-    const cartao = within(grupo).getByRole('radio', { name: 'Cartão em até [n]x sem juros' });
+    const cartao = within(grupo).getByRole('radio', { name: 'Cartão em até 3x sem juros' });
     expect(pix).not.toBeChecked();
     expect(cartao).not.toBeChecked();
     expect(screen.queryByLabelText(/n[uú]mero do cart|cvv|validade|cpf/i)).not.toBeInTheDocument();
@@ -153,7 +153,7 @@ describe('etapa 2: forma de pagamento e resumo', () => {
     );
     expect(valorDe('Total', resumo)?.textContent).toBe(formatarPreco(pix.total ?? 0));
 
-    await usuario.click(screen.getByRole('radio', { name: 'Cartão em até [n]x sem juros' }));
+    await usuario.click(screen.getByRole('radio', { name: 'Cartão em até 3x sem juros' }));
     expect(within(resumo).queryByText('Desconto no Pix')).not.toBeInTheDocument();
     expect(valorDe('Total', resumo)?.textContent).toBe(formatarPreco(cartao.total ?? 0));
     expect(pix.total).not.toBe(cartao.total);
@@ -218,13 +218,13 @@ describe('etapa 2: forma de pagamento e resumo', () => {
     const usuario = userEvent.setup({ delay: null });
     renderizar();
     await irParaOPagamento(usuario);
-    await usuario.click(screen.getByRole('radio', { name: 'Cartão em até [n]x sem juros' }));
+    await usuario.click(screen.getByRole('radio', { name: 'Cartão em até 3x sem juros' }));
     await usuario.click(screen.getByRole('button', { name: 'Voltar para a entrega' }));
     expect(await screen.findByRole('heading', { level: 2, name: 'Entrega' })).toBeInTheDocument();
     expect(campo('Nome completo')).toHaveValue('Maria Souza');
     await usuario.click(screen.getByRole('button', { name: 'Continuar para o pagamento' }));
     await screen.findByRole('heading', { level: 2, name: 'Pagamento' });
-    expect(screen.getByRole('radio', { name: 'Cartão em até [n]x sem juros' })).toBeChecked();
+    expect(screen.getByRole('radio', { name: 'Cartão em até 3x sem juros' })).toBeChecked();
   });
 });
 
@@ -262,7 +262,7 @@ describe('etapa 2: anúncios só para leitor de tela', () => {
     expect(anuncios()[0]!.textContent).toBe(
       `Pix escolhido. Desconto de ${formatarPreco(pix.descontoPix)}. Total ${formatarPreco(pix.total ?? 0)}.`,
     );
-    await usuario.click(screen.getByRole('radio', { name: 'Cartão em até [n]x sem juros' }));
+    await usuario.click(screen.getByRole('radio', { name: 'Cartão em até 3x sem juros' }));
     expect(anuncios()[0]!.textContent).toBe(
       `Cartão escolhido. Sem desconto. Total ${formatarPreco(cartao.total ?? 0)}.`,
     );
@@ -274,7 +274,7 @@ describe('etapa 2: anúncios só para leitor de tela', () => {
     const usuario = userEvent.setup({ delay: null });
     renderizar();
     await irParaOPagamento(usuario);
-    await usuario.click(screen.getByRole('radio', { name: 'Cartão em até [n]x sem juros' }));
+    await usuario.click(screen.getByRole('radio', { name: 'Cartão em até 3x sem juros' }));
     expect(anuncios()[0]!.textContent).toBe(
       'Cartão escolhido. Sem desconto. Total R$\u00A0[PREÇO].',
     );

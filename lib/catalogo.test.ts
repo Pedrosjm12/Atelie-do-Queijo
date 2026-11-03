@@ -67,14 +67,15 @@ describe('integridade dos dados', () => {
     }
   });
 
-  it('mantém as lacunas literais do Canastra e [A DEFINIR] nos demais', () => {
+  it('usa o produtor fictício no Canastra (D29), mantém as demais lacunas e [A DEFINIR] nos demais', () => {
     const c = queijo('canastra-curado').detalhe;
-    expect(c.produtor).toBe('Queijaria [NOME DO PRODUTOR]');
+    expect(c.produtor).toBe('Queijaria Produtor Exemplo');
     expect(c.perfil).toEqual({ intensidade: 4, cremosidade: 2, salinidade: 3, aroma: 4 });
     expect(c.fichaTecnica).toContain('[SELO E NÚMERO]');
     expect(c.fichaTecnica).toContain('[DATA]');
     expect(c.comoGuardar).toContain('[N]');
-    expect(c.historia[0]).toContain('[ANO]');
+    expect(c.historia[0]).toContain('Produtor Exemplo mantém o método da família desde 1985.');
+    expect(c.historia[0]).not.toMatch(/\[NOME DO PRODUTOR\]|\[ANO\]/);
     for (const q of QUEIJOS.slice(1)) {
       expect(q.detalhe.descricao).toBe('[A DEFINIR]');
       expect(q.detalhe.selos).toEqual([{ tipo: 'origem', texto: '[A DEFINIR]' }]);

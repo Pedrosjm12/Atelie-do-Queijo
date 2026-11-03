@@ -18,7 +18,7 @@ async function preencherEntrega(page: Page, email: string = DADOS.email) {
   await campo(page, 'Bairro').fill(DADOS.bairro);
   await campo(page, 'Cidade').fill(DADOS.cidade);
   await campo(page, 'Estado').selectOption('SP');
-  await expect(page.getByText('Chega refrigerado em até [N] dias úteis.')).toBeVisible();
+  await expect(page.getByText('Chega refrigerado em até 3 dias úteis.')).toBeVisible();
 }
 
 async function irParaOPagamento(page: Page, email?: string) {
@@ -28,7 +28,7 @@ async function irParaOPagamento(page: Page, email?: string) {
 }
 
 const pix = (page: Page) => page.getByRole('radio', { name: 'Pix (5% de desconto)' });
-const cartao = (page: Page) => page.getByRole('radio', { name: 'Cartão em até [n]x sem juros' });
+const cartao = (page: Page) => page.getByRole('radio', { name: 'Cartão em até 3x sem juros' });
 /** O rádio é visualmente oculto (padrão dos formatos): o clique vai no rótulo. */
 const escolher = (page: Page, rotulo: string) =>
   page.locator('label').filter({ hasText: rotulo }).click();
@@ -152,7 +152,7 @@ test.describe('checkout, etapas 2 e 3 (Pagamento e Confirmação)', () => {
     await escolher(page, 'Pix (5% de desconto)');
     await expect(resumo.getByText('Desconto no Pix')).toBeVisible();
     const comPix = await totalDoResumo(page).textContent();
-    await escolher(page, 'Cartão em até [n]x sem juros');
+    await escolher(page, 'Cartão em até 3x sem juros');
     await expect(resumo.getByText('Desconto no Pix')).toHaveCount(0);
     const comCartao = await totalDoResumo(page).textContent();
     expect(comPix).not.toBe(comCartao);

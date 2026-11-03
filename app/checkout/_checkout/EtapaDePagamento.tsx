@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useTransition, type FormEvent, type Ref } 
 import { confirmarPedido } from '@/app/_acoes/pedido';
 import { BotaoAbrirAtendimento } from '@/components/Atendimento';
 import { Button } from '@/components/Button';
+import { PARCELAS_SEM_JUROS_FICTICIAS } from '@/data/ficticio';
 import { calcularTotais, type FormaDePagamento, type TotaisDoPedido } from '@/lib/commerce';
 import { formatarPreco, formatarPrecoOuLacuna } from '@/lib/format';
 import { MENSAGENS_DE_ERRO } from '@/lib/pedido';
@@ -15,9 +16,9 @@ import { ID_DO_TITULO_DA_ETAPA } from './ids';
 import { ResumoDoPedido } from './ResumoDoPedido';
 import estilos from './Checkout.module.css';
 
-// Textos literais da spec §10.2 (P33). `[n]` continua lacuna visível.
+// Textos da spec §10.2 (P33). O número de parcelas é fictício (D28): vem de `data/ficticio.ts`.
 const ROTULO_DO_PIX = 'Pix (5% de desconto)';
-const ROTULO_DO_CARTAO = 'Cartão em até [n]x sem juros';
+const ROTULO_DO_CARTAO = `Cartão em até ${PARCELAS_SEM_JUROS_FICTICIAS}x sem juros`;
 
 const OPCOES: readonly { valor: FormaDePagamento; rotulo: string }[] = [
   { valor: 'pix', rotulo: ROTULO_DO_PIX },

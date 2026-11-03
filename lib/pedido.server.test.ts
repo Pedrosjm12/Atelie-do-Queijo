@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it, vi } from 'vitest';
+import { FAIXAS_DE_FRETE_FICTICIAS } from '@/data/ficticio';
 import { calcularTotais, normalizarCep } from './commerce';
 import type { Cep, PedidoPrecificado } from './commerce';
 import { calcularFrete, criarPedido } from './pedido.server';
@@ -12,14 +13,31 @@ describe('calcularFrete (simulado)', () => {
     }
   });
 
-  it('demais CEPs → atendido com prazo e valor em lacuna (P27)', async () => {
-    for (const cep of ['01000000', '01310100', '99999999']) {
-      expect(await calcularFrete(normalizarCep(cep)!)).toEqual({
+  it('demais CEPs → atendido com prazo e valor da tabela fictícia por faixa (D28)', async () => {
+    const esperado: [string, number, number][] = [
+      ['01000000', 3, 2490],
+      ['01310100', 3, 2490],
+      ['19999999', 3, 2490],
+      ['20000000', 4, 3290],
+      ['39999999', 4, 3290],
+      ['40000000', 5, 4590],
+      ['99999999', 5, 4590],
+    ];
+    for (const [cep, prazoDiasUteis, valor] of esperado) {
+      expect(await calcularFrete(normalizarCep(cep)!), cep).toEqual({
         situacao: 'atendido',
-        prazoDiasUteis: null,
-        valor: null,
+        prazoDiasUteis,
+        valor,
       });
     }
+  });
+
+  it('a tabela fictícia cobre todo o intervalo atendido, sem buracos nem sobreposição', () => {
+    expect(FAIXAS_DE_FRETE_FICTICIAS[0]?.de).toBe(1_000_000);
+    expect(FAIXAS_DE_FRETE_FICTICIAS.at(-1)?.ate).toBe(99_999_999);
+    FAIXAS_DE_FRETE_FICTICIAS.slice(1).forEach((f, i) => {
+      expect(f.de).toBe(FAIXAS_DE_FRETE_FICTICIAS[i]!.ate + 1);
+    });
   });
 
   it('defensiva: o que não é CEP de 8 dígitos vira fora de área, sem lançar', async () => {
@@ -38,6 +56,24 @@ describe('calcularFrete (simulado)', () => {
       expect(await calcularFrete(v as unknown as Cep), String(v)).toEqual({
         situacao: 'fora-de-area',
       });
+    }
+  });
+});
+
+describe('calcularFrete sem faixa na tabela', () => {
+  it('devolve atendido com prazo e valor null (lacuna), sem lançar', async () => {
+    vi.resetModules();
+    vi.doMock('@/data/ficticio', () => ({ FAIXAS_DE_FRETE_FICTICIAS: [] }));
+    try {
+      const { calcularFrete: calcular } = await import('./pedido.server');
+      expect(await calcular(normalizarCep('01310100')!)).toEqual({
+        situacao: 'atendido',
+        prazoDiasUteis: null,
+        valor: null,
+      });
+    } finally {
+      vi.doUnmock('@/data/ficticio');
+      vi.resetModules();
     }
   });
 });

@@ -27,10 +27,10 @@ describe('consultarFrete (Server Action chamada direto)', () => {
     await expect(consultarFrete(entrada)).resolves.toEqual({ ok: false, erro: 'cep-invalido' });
   });
 
-  it('CEP com hífen ou sem → atendido, com prazo e valor ainda em lacuna (P27)', async () => {
+  it('CEP com hífen ou sem → atendido, com prazo e valor da tabela fictícia (D28)', async () => {
     const esperado = {
       ok: true,
-      resultado: { situacao: 'atendido', prazoDiasUteis: null, valor: null },
+      resultado: { situacao: 'atendido', prazoDiasUteis: 3, valor: 2490 },
     };
     await expect(consultarFrete('01310100')).resolves.toEqual(esperado);
     await expect(consultarFrete('01310-100')).resolves.toEqual(esperado);

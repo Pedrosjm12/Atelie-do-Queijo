@@ -22,7 +22,7 @@ test.describe('página de produto', () => {
     await expect(page.getByRole('navigation', { name: 'Você está em' })).toContainText(
       'Início/Queijos/Brasil/Canastra curado',
     );
-    await expect(page.getByText('Queijaria [NOME DO PRODUTOR]')).toBeVisible();
+    await expect(page.getByText('Queijaria Produtor Exemplo')).toBeVisible();
     await expect(page.getByRole('img', { name: 'Intensidade: 4 de 5' })).toBeVisible();
   });
 

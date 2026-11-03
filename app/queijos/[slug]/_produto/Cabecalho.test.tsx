@@ -39,7 +39,7 @@ describe('CabecalhoDoProduto', () => {
     render(<CabecalhoDoProduto queijo={queijo('canastra-curado')} />);
     expect(screen.getByText('BRASIL · SERRA DA CANASTRA, MG')).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 1, name: 'Canastra curado' })).toBeInTheDocument();
-    expect(screen.getByText('Queijaria [NOME DO PRODUTOR]')).toBeInTheDocument();
+    expect(screen.getByText('Queijaria Produtor Exemplo')).toBeInTheDocument();
     expect(screen.getByText('Selo Arte')).toBeInTheDocument();
     expect(screen.getByText('Leite cru')).toBeInTheDocument();
     expect(screen.getByText('60 dias de cura')).toBeInTheDocument();

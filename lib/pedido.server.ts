@@ -1,4 +1,5 @@
 import 'server-only';
+import { FAIXAS_DE_FRETE_FICTICIAS } from '@/data/ficticio';
 import type { Cep, PedidoPrecificado, ResultadoDoFrete, ResultadoDoPedido } from './commerce';
 
 // Módulo SÓ DO SERVIDOR (ADR-0008 §3): as implementações SIMULADAS de `calcularFrete` e
@@ -13,15 +14,23 @@ const ULTIMO_CEP_FORA_DE_AREA = 999_999;
 
 /**
  * SIMULADO. Faixa 00000-000 a 00999-999 (não existe nos Correios) → fora de área (P28); os demais
- * → atendido com prazo e valor `null` (lacunas `[N]` e `R$ [PREÇO]`, P27). A tabela real vem com
+ * → atendido com prazo e valor da tabela FICTÍCIA por faixa de CEP (`data/ficticio.ts`, D28). Se
+ * um CEP ficar sem faixa, devolve `null` (lacunas `[N]` e `R$ [PREÇO]`, P27). A tabela real vem com
  * a transportadora; `async` desde já para a troca não mudar quem chama. Defensiva: o `Cep` é só
  * uma marca de tipo, então confere em tempo de execução que é texto de 8 dígitos; senão, trata
  * como fora de área.
  */
 export async function calcularFrete(cep: Cep): Promise<ResultadoDoFrete> {
   if (typeof cep !== 'string' || !/^\d{8}$/.test(cep)) return { situacao: 'fora-de-area' };
-  if (Number(cep) <= ULTIMO_CEP_FORA_DE_AREA) return { situacao: 'fora-de-area' };
-  return { situacao: 'atendido', prazoDiasUteis: null, valor: null };
+  const numero = Number(cep);
+  if (numero <= ULTIMO_CEP_FORA_DE_AREA) return { situacao: 'fora-de-area' };
+  const faixa = FAIXAS_DE_FRETE_FICTICIAS.find((f) => numero >= f.de && numero <= f.ate);
+  // Sem faixa na tabela (não ocorre com a tabela atual): mantém o suporte à lacuna `null`.
+  return {
+    situacao: 'atendido',
+    prazoDiasUteis: faixa?.prazoDiasUteis ?? null,
+    valor: faixa?.valor ?? null,
+  };
 }
 
 const DIGITOS_DO_NUMERO = 6;

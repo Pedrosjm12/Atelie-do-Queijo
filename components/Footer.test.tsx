@@ -26,10 +26,12 @@ describe('Footer', () => {
     }
   });
 
-  it('mantém as lacunas da spec visíveis', () => {
+  it('mostra o CNPJ e o endereço fictícios (D27)', () => {
     renderizar();
     expect(
-      screen.getByText('Ateliê do Queijo · CNPJ [00.000.000/0000-00] · [Endereço]'),
+      screen.getByText(
+        'Ateliê do Queijo · CNPJ 00.000.000/0001-00 · Rua Exemplo, 123, São Paulo, SP',
+      ),
     ).toBeInTheDocument();
   });
 });

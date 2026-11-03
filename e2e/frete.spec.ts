@@ -28,7 +28,7 @@ test.describe('calculadora de frete do produto', () => {
     await expect(campo(page)).toHaveValue('01310-100');
     await calcular(page).click();
 
-    await expect(page.getByText('Chega refrigerado em até [N] dias úteis.')).toBeVisible();
+    await expect(page.getByText('Chega refrigerado em até 3 dias úteis.')).toBeVisible();
     expect(page.url()).not.toMatch(/01310|cep=/);
     expect(new URL(page.url()).search).toBe('');
     expect(problemas).toEqual([]);
@@ -38,7 +38,7 @@ test.describe('calculadora de frete do produto', () => {
     await page.goto(ROTA);
     await digitarCep(page, '01310100');
     await campo(page).press('Enter');
-    await expect(page.getByText('Chega refrigerado em até [N] dias úteis.')).toBeVisible();
+    await expect(page.getByText('Chega refrigerado em até 3 dias úteis.')).toBeVisible();
     expect(new URL(page.url()).search).toBe('');
   });
 
@@ -98,7 +98,7 @@ test.describe('calculadora de frete do produto', () => {
     await digitarCep(page, '01310100');
     await calcular(page).click();
     const original = await pedido;
-    await expect(page.getByText('Chega refrigerado em até [N] dias úteis.')).toBeVisible();
+    await expect(page.getByText('Chega refrigerado em até 3 dias úteis.')).toBeVisible();
 
     const cabecalhos = original.headers();
     const idDaAcao = cabecalhos['next-action']!;

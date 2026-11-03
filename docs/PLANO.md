@@ -1174,7 +1174,7 @@ Todas as perguntas abaixo foram **decididas pelo dono em 2026-10-27**. P24 e P27
 | P30 | Sobre o que incide o desconto de 5% do Pix no pedido? | Só sobre o **subtotal dos produtos** (sem frete), com um único arredondamento: `precoNoPix(subtotal)`. |
 | P31 | O que faz **Embalar para presente** na página de produto, e a embalagem tem custo? | Adiciona o formato e a quantidade escolhidos à sacola e marca o **pedido inteiro** como presente (um cartão e uma data por pedido, §10.2). Mesmo aviso de sucesso. **Sem custo** na simulação. A sacola mostra a linha "Embalagem para presente" com opção de tirar. |
 | P32 | Quais dados o checkout pede? (a spec não lista campos) | Mínimo para entregar: nome completo, e-mail, telefone, CEP, endereço, número, complemento (opcional), bairro, cidade, UF. **Sem CPF** e sem preenchimento automático pelo CEP nesta etapa (LGPD: coletar só o necessário). O CPF entra com o gateway real, se ele exigir. |
-| P33 | Pagamento simulado: o que aparece ao escolher Pix ou Cartão? | Só a escolha (rádios). **Nenhum campo de cartão** (nada de número, CVV ou validade) e nenhum QR code; **Confirmar pedido** confirma direto. `[n]` de "Cartão em até [n]x sem juros" continua lacuna. |
+| P33 | Pagamento simulado: o que aparece ao escolher Pix ou Cartão? | Só a escolha (rádios). **Nenhum campo de cartão** (nada de número, CVV ou validade) e nenhum QR code; **Confirmar pedido** confirma direto. `[n]` de "Cartão em até [n]x sem juros" continua lacuna (revogado por D28: 3x fictício). |
 | P34 | Regras da data de entrega do presente. | De **amanhã até 60 dias** à frente (fuso de São Paulo), qualquer dia. O aviso de envio de segunda a quarta continua só informativo. A regra real (prazo pelo CEP, sem fim de semana) vem com a transportadora. |
 | P35 | Quantidade máxima por item (a spec só define o mínimo 1). | **10 unidades** por linha (formato), no produto e na sacola. O **+** fica desabilitado em 10 (opacidade 0,5, P19). |
 | P36 | A confirmação mostra o número do pedido? | **Não**, para seguir o texto literal da §10.2. O número (`AQ-123456`) é gerado e fica disponível para a etapa 6 (mensagem de pedido do WhatsApp). Se o dono quiser exibi-lo, sugestão: **Pedido nº AQ-123456** acima do título. |
@@ -1195,7 +1195,7 @@ Todas foram decididas em 2026-10-27 e **implementadas**. A tabela diz onde e o q
 | P29, P30 | Tarefa 3 (`commerce.ts`: frete grátis em ≥ R$ 180 sobre o subtotal antes do Pix; Pix só sobre o subtotal) | Nada                                                                                                                           |
 | P31     | Tarefas 7 e 11 (Embalar para presente; linha "Embalagem para presente" com **Tirar**)                       | Nada                                                                                                                           |
 | P32     | Tarefa 14 (campos do checkout, sem CPF)                                                                      | Nada                                                                                                                           |
-| P33     | Tarefa 15 (rádios Pix e Cartão, sem campo de cartão; `[n]` continua lacuna)                                  | Informar o `[n]` das parcelas                                                                                                  |
+| P33     | Tarefa 15 (rádios Pix e Cartão, sem campo de cartão; `[n]` continua lacuna)                                  | Informar o `[n]` das parcelas (revogado por D28: 3x fictício)                                                                                                  |
 | P34     | Tarefa 14 (data de amanhã até 60 dias, fuso de São Paulo)                                                    | Nada                                                                                                                           |
 | P35     | Tarefas 2, 7 e 11 (máximo de 10 por linha)                                                                   | Nada                                                                                                                           |
 | P36     | Tarefa 15 (a confirmação **não** mostra o número do pedido)                                                  | Decidir se mostra **Pedido nº AQ-…**                                                                                           |
@@ -1264,6 +1264,22 @@ O dono aprovou **todas as opções recomendadas** da rodada de pendências (nume
 
 > **AVISO: DADOS FICTÍCIOS (D26 a D30).** O dono pediu que, por ora, sejam usadas informações **fictícias** no lugar das lacunas abaixo. **Nenhum desses valores é real e nenhum pode ir para produção.** Cada valor fictício deve ficar num único lugar (`data/ficticio.ts`, criado na tarefa de aplicação), marcado com `// FICTÍCIO: substituir antes da publicação`, para o dono trocar depois. A etapa 9 não fecha enquanto este aviso existir (item do checklist de aceite).
 
+**Valores fictícios adotados** (todos em `data/ficticio.ts`, marcados `// FICTÍCIO: substituir antes da publicação`; o dono troca tudo antes da publicação):
+
+| Dado | Valor fictício | Onde é usado |
+| --- | --- | --- |
+| WhatsApp (D26) | `5520900000000` (DDD 20 inexistente). `numeroDoWhatsApp()` usa `NEXT_PUBLIC_WHATSAPP_NUMBER` se for `^55\d{10,11}$`; senão cai no fictício fora de produção e devolve `null` com `VERCEL_ENV=production` (a interface deve esconder os links; etapa 6) | Ainda sem uso na interface; os links `wa.me` vêm na etapa 6 |
+| CNPJ (D27) | `00.000.000/0001-00` | `components/Footer.tsx` |
+| Endereço (D27) | `Rua Exemplo, 123, São Paulo, SP` | `components/Footer.tsx` |
+| Frete e prazo (D28) | CEP 01000-000 a 19999-999: R$ 24,90, 3 dias úteis; 20000-000 a 39999-999: R$ 32,90, 4 dias úteis; 40000-000 a 99999-999: R$ 45,90, 5 dias úteis (grátis a partir de R$ 180; 00000-000 a 00999-999 segue fora de área) | `lib/pedido.server.ts` (`calcularFrete`) |
+| Parcelas sem juros (D28) | 3 ("Cartão em até 3x sem juros") | `app/checkout/_checkout/EtapaDePagamento.tsx` |
+| Produtor do Canastra (D29) | `Produtor Exemplo` ("Queijaria Produtor Exemplo") | `data/cheeses.ts` |
+| Ano do produtor (D29) | `1985` | `data/cheeses.ts` |
+
+**Trava automática:** `DADOS_FICTICIOS_ATIVOS = true` em `data/ficticio.ts` faz o `next.config.ts` lançar erro no build quando `VERCEL_ENV === 'production'`. O dono remove a trava ao trocar os dados.
+
+Continuam como lacuna, por decisão do dono: dados dos 9 queijos sem ficha (`[A DEFINIR]`), preços dos kits (`R$ [PREÇO]`), `[N]` dias de "Como guardar", `[SELO E NÚMERO]`, `[DATA]`, sugestões de vinho e cerveja e o `[n]` de estoque.
+
 ### Decisões
 
 | # | Decisão |
@@ -1299,7 +1315,7 @@ O dono aprovou **todas as opções recomendadas** da rodada de pendências (nume
 | D29 | **`[NOME DO PRODUTOR]` e `[ANO]`** do Canastra: **fictícios**. |
 | D30 | Os 9 queijos sem ficha: ver restrição abaixo. |
 | D31 | Hospedagem: **Vercel**, com ADR na etapa 9. Nada é publicado sem aprovação explícita. |
-| D32 | Gateway: **Mercado Pago** (com Pix). ADR do gateway na etapa 9 (tokenização, webhooks assinados, idempotência, segredos `server-only`, remover o gatilho `recusa@exemplo.com`). Sem conta nem cobrança real sem aprovação. |
+| D32 | Gateway: **Mercado Pago** (com Pix). ADR do gateway na etapa 9 (tokenização, webhooks assinados, idempotência, segredos `server-only`, remover o gatilho `recusa@exemplo.com`; validar no servidor o número de parcelas contra a regra real, nunca aceitar do cliente). Sem conta nem cobrança real sem aprovação. |
 | D33 | LGPD: o agente redige um **rascunho** do aviso de privacidade; o dono valida com profissional de direito antes de publicar. |
 | D34 | `--placeholder` (4,47:1): manter e rever antes de publicar, se ainda houver `[FOTO: …]`. |
 
@@ -1310,11 +1326,11 @@ O dono aprovou **todas as opções recomendadas** da rodada de pendências (nume
 | Tarefa | Responsável | Quando |
 | --- | --- | --- |
 | Aplicar D3, D4, D5 (registro), D11, D12, D13, D14, D18, D19 no código, nos testes e nos textos | `frontend-nextjs` (+ `guardiao-do-design`, `especialista-em-acessibilidade`) | Antes da etapa 5 (bloco único, um commit) — **Concluída em 2026-11-03.** Texto final do quiz: "Você prefere sabores {sabor}, vai servir {uso}, e acompanhar com {acompanhamento}. {nome} foi o que mais combinou com as três respostas." (uso: "para você mesmo, com calma"; sem artigo antes do nome, aprovado pelo dono). D14 feito com `white-space: nowrap` (`SemQuebra`), não com U+2011. |
-| Criar `data/ficticio.ts` e aplicar D26 a D29 (WhatsApp, CNPJ, endereço, frete, prazo, parcelas, produtor, ano); trocar as lacunas visíveis por esses valores | `engenheiro-de-ecommerce` + `frontend-nextjs` | Antes da etapa 6 (o WhatsApp é necessário nela) |
+| Criar `data/ficticio.ts` e aplicar D26 a D29 (WhatsApp, CNPJ, endereço, frete, prazo, parcelas, produtor, ano); trocar as lacunas visíveis por esses valores | `engenheiro-de-ecommerce` + `frontend-nextjs` | Antes da etapa 6 (o WhatsApp é necessário nela) — **Concluída em 2026-11-03.** |
 | ADR do `@google/model-viewer` | `arquiteto-de-software` | Início da etapa 5 |
 | ADR da hospedagem (Vercel) e ADR do gateway (Mercado Pago) | `arquiteto-de-software`, `auditor-de-seguranca` | Etapa 9 |
 | Rascunho do aviso de privacidade | `auditor-de-seguranca` + `documentador-tecnico` | Etapa 9 |
-| Checklist da §14 com os desvios D2, D4, D5, D6 e o item "trocar dados fictícios" | `documentador-tecnico` | Etapa 9 |
+| Checklist da §14 com os desvios D2, D4, D5, D6 e o item "trocar dados fictícios": remover `DADOS_FICTICIOS_ATIVOS` e a trava do `next.config.ts` ao trocar os dados, e atualizar junto os testes unitários e e2e que citam os valores fictícios (CNPJ, endereço, frete, parcelas, produtor, ano) | `documentador-tecnico` | Etapa 9 |
 
 ---
 
@@ -1446,7 +1462,7 @@ Decisão técnica a confirmar: o telefone usa `autocomplete="tel-national"` (e n
 
 ### Textos novos da tarefa 15 (a confirmar pelo dono)
 
-Textos da etapa 2, do erro e da etapa 3 que a spec §10.2 e o P25 não definem. Os literais da spec (**Pix (5% de desconto)**, **Cartão em até [n]x sem juros**, a mensagem de erro, o título e o texto da confirmação) e os de P25 (**Subtotal**, **Frete**, **Desconto no Pix**, **Total**, **Grátis**, **Confirmar pedido**, **Voltar para a entrega**, **Embalar para presente**, **Mensagem do cartão**, **Data de entrega**, **Escolha Pix ou cartão.**) foram usados como estão.
+Textos da etapa 2, do erro e da etapa 3 que a spec §10.2 e o P25 não definem. Os literais da spec (**Pix (5% de desconto)**, **Cartão em até [n]x sem juros** (revogado por D28: 3x fictício), a mensagem de erro, o título e o texto da confirmação) e os de P25 (**Subtotal**, **Frete**, **Desconto no Pix**, **Total**, **Grátis**, **Confirmar pedido**, **Voltar para a entrega**, **Embalar para presente**, **Mensagem do cartão**, **Data de entrega**, **Escolha Pix ou cartão.**) foram usados como estão.
 
 | Texto | Onde | Visível? |
 | --- | --- | --- |
