@@ -63,7 +63,8 @@ const POR_TABUA: readonly SlugDoQueijo[] = [
   'cabra-com-cinzas',
 ];
 
-const POR_ACOMPANHAMENTO: Record<Acompanhamento, readonly SlugDoQueijo[]> = {
+/** Também usada pelo assistente para harmonizar (`lib/roteiro.ts`): mesma fonte, §10.4. */
+export const POR_ACOMPANHAMENTO: Record<Acompanhamento, readonly SlugDoQueijo[]> = {
   tinto: ['canastra-curado', 'manchego', 'parmigiano-reggiano'],
   'branco-espumante': ['brie-frances', 'cabra-com-cinzas'],
   cerveja: ['tipo-gruyere', 'gorgonzola-dolce'],
