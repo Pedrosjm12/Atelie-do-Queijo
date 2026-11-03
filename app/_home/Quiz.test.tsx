@@ -99,7 +99,11 @@ describe('Quiz', () => {
     expect(screen.getByText('SEU QUEIJO É')).toBeInTheDocument();
     const titulo = screen.getByRole('heading', { level: 2, name: 'Canastra curado' });
     expect(titulo).toHaveFocus();
-    expect(screen.getByText('[POR QUE COMBINA COM VOCÊ]')).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        'Você prefere sabores intensos e marcantes, vai servir para você mesmo, com calma, e acompanhar com vinho tinto. Canastra curado foi o que mais combinou com as três respostas.',
+      ),
+    ).toBeInTheDocument();
     const adicionar = screen.getByRole('button', { name: 'Adicionar à sacola' });
     expect(adicionar).not.toHaveAttribute('aria-disabled');
     await usuario.click(adicionar);

@@ -28,7 +28,7 @@ const AVISO_DE_ENVIO =
  * a página limpa o formulário. Por isso voltar da etapa 2 para a 1 mantém os dados. Antes da
  * leitura do localStorage (`pronta === false`) nada que dependa da sacola aparece.
  *
- * Depois de `ok: true`: o formulário é ZERADO (fica só o e-mail e os totais devolvidos pelo
+ * Depois de `ok: true`: o formulário é ZERADO (fica só o número, o e-mail e os totais devolvidos pelo
  * servidor), a sacola é limpa e a confirmação passa a valer ANTES do estado vazio (que a sacola
  * vazia, de outro modo, mostraria por cima dela).
  */

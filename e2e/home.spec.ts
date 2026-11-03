@@ -173,7 +173,11 @@ test.describe('home', () => {
 
     await expect(quiz.getByText('SEU QUEIJO É')).toBeVisible();
     await expect(quiz.getByRole('heading', { level: 2, name: 'Canastra curado' })).toBeFocused();
-    await expect(quiz.getByText('[POR QUE COMBINA COM VOCÊ]')).toBeVisible();
+    await expect(
+      quiz.getByText(
+        'Você prefere sabores intensos e marcantes, vai servir para você mesmo, com calma, e acompanhar com vinho tinto. Canastra curado foi o que mais combinou com as três respostas.',
+      ),
+    ).toBeVisible();
     await expect(quiz.getByRole('button', { name: 'Adicionar à sacola' })).toBeVisible();
 
     await quiz.getByRole('button', { name: 'Refazer o teste' }).click();

@@ -47,14 +47,14 @@ describe('Header', () => {
     expect(sacola).toHaveAttribute('href', '/sacola');
   });
 
-  it('tem botões de busca e conta com rótulo', () => {
+  it('não tem os botões de busca e de conta (D19)', () => {
     usePathname.mockReturnValue('/');
     render(
       <SacolaProvider>
         <Header />
       </SacolaProvider>,
     );
-    expect(screen.getByRole('button', { name: 'Buscar' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Minha conta' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Buscar' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Minha conta' })).not.toBeInTheDocument();
   });
 });

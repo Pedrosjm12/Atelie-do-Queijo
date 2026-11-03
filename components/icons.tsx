@@ -2,18 +2,7 @@ import type { ReactNode, SVGProps } from 'react';
 
 // Ícones de traço da spec §4.10, com os paths exatos.
 const caminhos = {
-  buscar: (
-    <>
-      <circle cx="11" cy="11" r="7" />
-      <path d="M20 20l-4-4" />
-    </>
-  ),
-  conta: (
-    <>
-      <circle cx="12" cy="8" r="4" />
-      <path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6" />
-    </>
-  ),
+  // buscar/conta: removidos do cabeçalho por D19; paths na spec §4.10
   sacola: (
     <>
       <path d="M5 8h14l-1 12H6Z" />

@@ -109,7 +109,7 @@ export function EtapaDePagamento({
           pagamento,
         });
         if (resposta.ok) {
-          aoConfirmar({ email: resposta.email, totais: resposta.totais });
+          aoConfirmar({ numero: resposta.numero, email: resposta.email, totais: resposta.totais });
           return;
         }
         switch (resposta.motivo) {

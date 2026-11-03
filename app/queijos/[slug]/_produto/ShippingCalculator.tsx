@@ -10,6 +10,7 @@ import {
   type FormEvent,
 } from 'react';
 import { consultarFrete } from '@/app/_acoes/frete';
+import { SemQuebra } from '@/components/SemQuebra';
 import { Icone } from '@/components/icons';
 import {
   MENSAGEM_DE_CEP_INVALIDO,
@@ -180,7 +181,7 @@ export function ShippingCalculator() {
         {mensagem !== null && (
           <p className={classeDaMensagem}>
             {comIcone && <Icone nome="frio" tamanho={16} espessura={1.5} />}
-            {mensagem}
+            <SemQuebra texto={mensagem} />
           </p>
         )}
       </div>

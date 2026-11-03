@@ -353,9 +353,11 @@ describe('confirmar pedido', () => {
     expect(valorDe('Desconto no Pix', totais)).toHaveTextContent('R$ 0,05');
     expect(valorDe('Total', totais)).toHaveTextContent('R$ 1,06');
 
-    // P36: sem número do pedido. Sem estado vazio por cima. Sem dado digitado na tela.
+    // D4: o número do pedido aparece acima do título. Sem estado vazio por cima. Sem dado digitado na tela.
     const corpo = document.body.textContent ?? '';
-    expect(corpo).not.toContain('AQ-123456');
+    expect(screen.getByText('Pedido nº AQ-123456')).toBeInTheDocument();
+    // D4: o número do pedido descreve o título (aria-describedby), sem mudar o nome acessível.
+    expect(titulo).toHaveAccessibleDescription('Pedido nº AQ-123456');
     expect(corpo).not.toContain('Sua tábua ainda está vazia.');
     for (const digitado of ['Maria', 'Souza', 'Paulista', '1578', 'Bela Vista', '91234']) {
       expect(corpo).not.toContain(digitado);

@@ -9,6 +9,10 @@ vi.mock('@/app/_acoes/frete', () => ({ consultarFrete }));
 import { MENSAGEM_DE_FRETE_INDISPONIVEL } from '@/lib/freteNaTela';
 import { ShippingCalculator } from './ShippingCalculator';
 
+/** D14: a mensagem tem spans (nowrap) dentro do <p>; casa pelo texto completo do parágrafo. */
+const mensagemCompleta = (texto: string) => (_conteudo: string, el: Element | null) =>
+  el?.tagName === 'P' && el.textContent === texto;
+
 const campo = () => screen.getByLabelText('Calcule o frete e o prazo');
 const calcular = () => screen.getByRole('button', { name: 'Calcular' });
 const regiao = () => document.querySelector('[aria-live="polite"]') as HTMLElement;
@@ -98,7 +102,9 @@ describe('ShippingCalculator', () => {
 
     expect(
       await screen.findByText(
-        'Ainda não chegamos ao seu CEP com segurança refrigerada. Deixe seu e-mail e avisamos.',
+        mensagemCompleta(
+          'Ainda não chegamos ao seu CEP com segurança refrigerada. Deixe seu e-mail e avisamos.',
+        ),
       ),
     ).toBeInTheDocument();
     expect(screen.queryByRole('textbox', { name: /e-mail/i })).not.toBeInTheDocument();
@@ -121,7 +127,7 @@ describe('ShippingCalculator', () => {
       if (digitado) await usuario.type(campo(), digitado);
       await usuario.click(calcular());
 
-      const mensagem = screen.getByText(MENSAGEM_DE_CEP_INVALIDO);
+      const mensagem = screen.getByText(mensagemCompleta(MENSAGEM_DE_CEP_INVALIDO));
       expect(campo()).toHaveAttribute('aria-invalid', 'true');
       expect(campo().getAttribute('aria-describedby')).toBe(regiao().id);
       expect(regiao()).toContainElement(mensagem);
@@ -136,7 +142,7 @@ describe('ShippingCalculator', () => {
     render(<ShippingCalculator />);
     await usuario.type(campo(), '01310100');
     await usuario.click(calcular());
-    expect(await screen.findByText(MENSAGEM_DE_CEP_INVALIDO)).toBeInTheDocument();
+    expect(await screen.findByText(mensagemCompleta(MENSAGEM_DE_CEP_INVALIDO))).toBeInTheDocument();
     expect(campo()).toHaveAttribute('aria-invalid', 'true');
   });
 
@@ -248,7 +254,7 @@ describe('ShippingCalculator', () => {
     await act(async () => {
       concluir({ ok: false, erro: 'cep-invalido' });
     });
-    expect(await screen.findByText(MENSAGEM_DE_CEP_INVALIDO)).toBeInTheDocument();
+    expect(await screen.findByText(mensagemCompleta(MENSAGEM_DE_CEP_INVALIDO))).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Outro' })).toHaveFocus();
   });
 });

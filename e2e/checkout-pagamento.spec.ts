@@ -92,7 +92,7 @@ test.describe('checkout, etapas 2 e 3 (Pagamento e Confirmação)', () => {
     );
     await expect(page.getByRole('link', { name: 'Sacola 0 itens' }).first()).toBeVisible();
     await expect(page.getByText('Sua tábua ainda está vazia.')).toHaveCount(0);
-    await expect(page.getByText(/AQ-\d{6}/)).toHaveCount(0); // P36
+    await expect(page.getByText(/^Pedido nº AQ-\d{6}$/)).toBeVisible(); // D4
     await semIdsDuplicados(page);
 
     // Nenhum valor digitado ficou na URL, no storage nem em cookies (só o e-mail, na tela).

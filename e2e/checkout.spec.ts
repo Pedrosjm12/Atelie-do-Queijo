@@ -139,6 +139,23 @@ test.describe('checkout, etapa 1 (Entrega)', () => {
     }
   });
 
+  test('360 px: as três etapas ficam cada uma numa linha só (D13)', async ({ page }) => {
+    await page.setViewportSize({ width: 360, height: 800 });
+    await semearSacola(page);
+    await page.goto('/checkout');
+    const itens = page.getByRole('list', { name: 'Etapas do pedido' }).getByRole('listitem');
+    await expect(itens).toHaveCount(3);
+    const caixas = await itens.evaluateAll((els) =>
+      els.map((el) => {
+        const r = el.getBoundingClientRect();
+        return { y: Math.round(r.y), altura: Math.round(r.height) };
+      }),
+    );
+    // Mesmo y e mesma altura: nenhuma quebrou de linha nem foi para a linha de baixo.
+    expect(new Set(caixas.map((c) => c.y)).size).toBe(1);
+    expect(new Set(caixas.map((c) => c.altura)).size).toBe(1);
+  });
+
   test('sacola vazia mostra o estado vazio da /sacola', async ({ page }) => {
     await page.goto('/checkout');
     await expect(page.getByText('Sua tábua ainda está vazia.')).toBeVisible();

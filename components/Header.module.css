@@ -27,22 +27,6 @@
   gap: 8px;
 }
 
-.botaoIcone {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: var(--alvo-toque);
-  height: var(--alvo-toque);
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: var(--creme);
-}
-
-.botaoIcone:hover {
-  color: var(--ouro);
-}
-
 .sacola {
   display: inline-flex;
   align-items: center;
@@ -83,10 +67,6 @@
 
   .acoes {
     justify-self: end;
-  }
-
-  .botaoIcone {
-    display: none;
   }
 
   .sacola {

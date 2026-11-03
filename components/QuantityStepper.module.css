@@ -19,9 +19,9 @@
 }
 
 .passo[aria-disabled='true'] {
-  /* Esmaece só o conteúdo (equivale a opacity .5, P19) e não o botão inteiro:
+  /* Esmaece só o conteúdo (equivale a opacity .65, D3) e não o botão inteiro:
      o contorno de foco continua pleno (WCAG 1.4.11). */
-  color: color-mix(in srgb, var(--creme) 50%, transparent);
+  color: color-mix(in srgb, var(--creme) 65%, transparent);
   cursor: not-allowed;
 }
 

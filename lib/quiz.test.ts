@@ -6,6 +6,7 @@ import {
   pesoEmGramas,
   recomendarQueijo,
   respostasCompletas,
+  textoPorQueCombina,
   type Acompanhamento,
   type QueijoDoQuiz,
   type RespostasDoQuiz,
@@ -143,5 +144,65 @@ describe('respostasCompletas', () => {
     expect(
       respostasCompletas({ sabor: 'doces', uso: 'tabua', acompanhamento: 'cerveja' }),
     ).toBeNull();
+  });
+});
+
+describe('textoPorQueCombina (D11)', () => {
+  const sabor: Record<Sabor, string> = {
+    suaves: 'suaves e amanteigados',
+    equilibrados: 'equilibrados',
+    intensos: 'intensos e marcantes',
+  };
+  const uso: Record<Uso, string> = {
+    tabua: 'como tábua para receber',
+    presente: 'como presente',
+    'para-mim': 'para você mesmo, com calma',
+  };
+  const acompanhamento: Record<Acompanhamento, string> = {
+    tinto: 'vinho tinto',
+    'branco-espumante': 'vinho branco ou espumante',
+    cerveja: 'cerveja',
+    'cafe-mel': 'café ou mel',
+  };
+  const combinacoes = SABORES.flatMap((s) =>
+    USOS.flatMap((u) => ACOMPANHAMENTOS.map((a) => [s, u, a] as const)),
+  );
+
+  it('frases completas escritas literalmente', () => {
+    expect(
+      textoPorQueCombina(
+        { sabor: 'suaves', uso: 'tabua', acompanhamento: 'cafe-mel' },
+        'Brie francês',
+      ),
+    ).toBe(
+      'Você prefere sabores suaves e amanteigados, vai servir como tábua para receber, e acompanhar com café ou mel. Brie francês foi o que mais combinou com as três respostas.',
+    );
+    expect(
+      textoPorQueCombina(
+        { sabor: 'equilibrados', uso: 'presente', acompanhamento: 'cerveja' },
+        'Tipo Gruyère',
+      ),
+    ).toBe(
+      'Você prefere sabores equilibrados, vai servir como presente, e acompanhar com cerveja. Tipo Gruyère foi o que mais combinou com as três respostas.',
+    );
+    expect(
+      textoPorQueCombina(
+        { sabor: 'intensos', uso: 'para-mim', acompanhamento: 'branco-espumante' },
+        'Manchego DOP',
+      ),
+    ).toBe(
+      'Você prefere sabores intensos e marcantes, vai servir para você mesmo, com calma, e acompanhar com vinho branco ou espumante. Manchego DOP foi o que mais combinou com as três respostas.',
+    );
+  });
+
+  it('cobre as 36 combinações', () => {
+    expect(combinacoes).toHaveLength(36);
+  });
+
+  it.each(combinacoes)('%s + %s + %s: texto completo, sem undefined', (s, u, a) => {
+    expect(textoPorQueCombina({ sabor: s, uso: u, acompanhamento: a }, 'Brie francês')).toBe(
+      `Você prefere sabores ${sabor[s]}, vai servir ${uso[u]}, e acompanhar com ${acompanhamento[a]}. ` +
+        'Brie francês foi o que mais combinou com as três respostas.',
+    );
   });
 });

@@ -14,6 +14,10 @@ vi.mock('@/app/_acoes/frete', () => ({ consultarFrete }));
 
 import { FluxoDoCheckout } from './FluxoDoCheckout';
 
+/** D14: a mensagem tem spans (nowrap) dentro do <p>; casa pelo texto completo do parágrafo. */
+const mensagemCompleta = (texto: string) => (_conteudo: string, el: Element | null) =>
+  el?.tagName === 'P' && el.textContent === texto;
+
 const ATENDIDO = {
   ok: true,
   resultado: { situacao: 'atendido', prazoDiasUteis: null, valor: null },
@@ -208,7 +212,7 @@ describe('FluxoDoCheckout: validação e resumo de erros', () => {
     await screen.findByRole('heading', { name: 'Entrega' });
     preencher('CEP', '0131');
     await usuario.click(continuar());
-    expect(await screen.findByText(MENSAGEM_DE_CEP_INVALIDO, { selector: 'p' })).toBeVisible();
+    expect(await screen.findByText(mensagemCompleta(MENSAGEM_DE_CEP_INVALIDO))).toBeVisible();
     expect(consultarFrete).not.toHaveBeenCalled();
   });
 });
@@ -229,7 +233,7 @@ describe('FluxoDoCheckout: frete', () => {
     expect(await screen.findByText('Chega refrigerado em até [N] dias úteis.')).toBeVisible();
     liberarPrimeira(FORA_DE_AREA);
     await Promise.resolve();
-    expect(screen.queryByText(MENSAGEM_FORA_DE_AREA)).not.toBeInTheDocument();
+    expect(screen.queryByText(mensagemCompleta(MENSAGEM_FORA_DE_AREA))).not.toBeInTheDocument();
     expect(screen.getByText('Chega refrigerado em até [N] dias úteis.')).toBeVisible();
   });
 
@@ -239,7 +243,7 @@ describe('FluxoDoCheckout: frete', () => {
     renderizar();
     await screen.findByRole('heading', { name: 'Entrega' });
     preencherTudo();
-    expect(await screen.findByText(MENSAGEM_FORA_DE_AREA)).toBeVisible();
+    expect(await screen.findByText(mensagemCompleta(MENSAGEM_FORA_DE_AREA))).toBeVisible();
     expect(campo('CEP')).toHaveAttribute('aria-invalid', 'true');
     await usuario.click(continuar());
 

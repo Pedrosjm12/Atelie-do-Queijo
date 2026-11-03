@@ -11,6 +11,7 @@ import {
   PERGUNTAS,
   recomendarQueijo,
   respostasCompletas,
+  textoPorQueCombina,
   type QueijoDoQuiz,
   type RespostasDoQuiz,
 } from '@/lib/quiz';
@@ -28,9 +29,6 @@ export interface ResumoDoQueijo extends QueijoDoQuiz {
 type QuizProps = { queijos: readonly ResumoDoQueijo[] };
 
 type Respostas = Partial<Record<keyof RespostasDoQuiz, string>>;
-
-/** Lacuna da spec §5.6 ("gerado das respostas", sem modelo de texto): visível até o dono aprovar (P6). */
-const POR_QUE_COMBINA = '[POR QUE COMBINA COM VOCÊ]';
 
 const PADDING_DO_BOTAO = { '--botao-padding-x': '32px' } as CSSProperties;
 
@@ -99,7 +97,7 @@ export function Quiz({ queijos }: QuizProps) {
               <CheeseIllustration {...recomendado.ilustracao} label={recomendado.nome} />
             )}
           </div>
-          <p className={estilos.porQue}>{POR_QUE_COMBINA}</p>
+          <p className={estilos.porQue}>{textoPorQueCombina(completas, recomendado.nome)}</p>
           <div className={estilos.acoesDoResultado}>
             <BotaoAdicionar
               slug={recomendado.slug}

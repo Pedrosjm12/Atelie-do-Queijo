@@ -82,9 +82,12 @@ describe('integridade dos dados', () => {
     }
   });
 
-  it('deixa os formatos sem nome na spec como [A DEFINIR]', () => {
+  it('nomeia os formatos que a spec só dá o peso (D12): ~500 g = Meia peça, ~250 g = Fração', () => {
     for (const slug of ['brie-frances', 'parmigiano-reggiano', 'manchego']) {
-      expect(queijo(slug).formatos.every((f) => f.nome === '[A DEFINIR]')).toBe(true);
+      expect(queijo(slug).formatos.map((f) => [f.peso, f.nome])).toEqual([
+        ['~500 g', 'Meia peça'],
+        ['~250 g', 'Fração'],
+      ]);
     }
   });
 

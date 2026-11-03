@@ -11,6 +11,7 @@ type OverlineProps = {
   tom?: 'palha' | 'mofo';
   as?: 'p' | 'span' | 'h2' | 'h3';
   className?: string;
+  id?: string;
 };
 
 /** Sobretítulo em maiúsculas (spec 3.2). */
@@ -21,6 +22,7 @@ export function Overline({
   tom = 'palha',
   as: Elemento = 'p',
   className,
+  id,
 }: OverlineProps) {
   const classes = [
     estilos.overline,
@@ -32,5 +34,9 @@ export function Overline({
     .filter(Boolean)
     .join(' ');
 
-  return <Elemento className={classes}>{children}</Elemento>;
+  return (
+    <Elemento id={id} className={classes}>
+      {children}
+    </Elemento>
+  );
 }

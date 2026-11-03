@@ -25,6 +25,13 @@
   color: var(--palha);
 }
 
+/* D13: abaixo de 400px o gap cai para 16px e "3. Confirmação" não quebra a 360px. */
+@media (max-width: 399px) {
+  .etapas {
+    gap: 8px 16px;
+  }
+}
+
 .etapa {
   padding-block: 8px;
   border-bottom: 2px solid transparent;
@@ -242,7 +249,7 @@ select.entrada {
 }
 
 .continuar[aria-disabled='true'] {
-  opacity: 0.5;
+  opacity: 0.65;
   cursor: not-allowed;
 }
 
@@ -404,6 +411,10 @@ select.entrada {
 }
 
 /* Confirmação */
+.tituloDaConfirmacao {
+  margin-top: 16px;
+}
+
 .textoDaConfirmacao {
   margin-top: 16px;
   max-width: 560px;
@@ -423,7 +434,7 @@ select.entrada {
 }
 
 .acoes [aria-disabled='true'] {
-  opacity: 0.5;
+  opacity: 0.65;
   cursor: not-allowed;
 }
 

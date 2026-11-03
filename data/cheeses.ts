@@ -13,7 +13,7 @@ export type { Centavos };
 export interface Formato {
   /** Estável: vai para a sacola na etapa 4. */
   id: string;
-  /** "Peça inteira", "Meia peça", "Fração", "Peça". "[A DEFINIR]" quando a §9 só dá o peso. */
+  /** "Peça inteira", "Meia peça", "Fração", "Peça". Formatos só com peso na §9: ~500 g = "Meia peça", ~250 g = "Fração" (D12). */
   nome: string;
   /** Rótulo do celular (§7.6). Sem ele, usa `nome`. */
   nomeCurto?: string;
@@ -229,8 +229,8 @@ export const QUEIJOS = [
     tag: 'FRANÇA · IMPORTADO',
     nota: 'Cremoso, notas de cogumelo.',
     formatos: [
-      { id: '500g', nome: A_DEFINIR, peso: '~500 g', preco: 22495 },
-      { id: '250g', nome: A_DEFINIR, peso: '~250 g', preco: 12248 },
+      { id: '500g', nome: 'Meia peça', nomeCurto: 'Meia', peso: '~500 g', preco: 22495 },
+      { id: '250g', nome: 'Fração', peso: '~250 g', preco: 12248 },
     ],
     ilustracao: { shape: 'flat', side: '#CFC6B2', top: '#F5EFE2' },
     destaqueSemana: 2,
@@ -245,8 +245,8 @@ export const QUEIJOS = [
     tag: 'ITÁLIA · IMPORTADO',
     nota: 'Granuloso, salgado, umami.',
     formatos: [
-      { id: '500g', nome: A_DEFINIR, peso: '~500 g', preco: 23000 },
-      { id: '250g', nome: A_DEFINIR, peso: '~250 g', preco: 12500 },
+      { id: '500g', nome: 'Meia peça', nomeCurto: 'Meia', peso: '~500 g', preco: 23000 },
+      { id: '250g', nome: 'Fração', peso: '~250 g', preco: 12500 },
     ],
     ilustracao: { shape: 'tall', side: '#B88F3F', top: '#E2C27A' },
     detalhe: DETALHE_A_DEFINIR,
@@ -259,8 +259,8 @@ export const QUEIJOS = [
     tag: 'ESPANHA · IMPORTADO',
     nota: 'Leite de ovelha, firme e curado.',
     formatos: [
-      { id: '500g', nome: A_DEFINIR, peso: '~500 g', preco: 23998 },
-      { id: '250g', nome: A_DEFINIR, peso: '~250 g', preco: 12999 },
+      { id: '500g', nome: 'Meia peça', nomeCurto: 'Meia', peso: '~500 g', preco: 23998 },
+      { id: '250g', nome: 'Fração', peso: '~250 g', preco: 12999 },
     ],
     ilustracao: { shape: 'wide', side: '#8C6A3A', top: '#D8B878' },
     detalhe: DETALHE_A_DEFINIR,

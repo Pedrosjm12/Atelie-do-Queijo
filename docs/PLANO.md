@@ -1309,7 +1309,7 @@ O dono aprovou **todas as opções recomendadas** da rodada de pendências (nume
 
 | Tarefa | Responsável | Quando |
 | --- | --- | --- |
-| Aplicar D3, D4, D5 (registro), D11, D12, D13, D14, D18, D19 no código, nos testes e nos textos | `frontend-nextjs` (+ `guardiao-do-design`, `especialista-em-acessibilidade`) | Antes da etapa 5 (bloco único, um commit) |
+| Aplicar D3, D4, D5 (registro), D11, D12, D13, D14, D18, D19 no código, nos testes e nos textos | `frontend-nextjs` (+ `guardiao-do-design`, `especialista-em-acessibilidade`) | Antes da etapa 5 (bloco único, um commit) — **Concluída em 2026-11-03.** Texto final do quiz: "Você prefere sabores {sabor}, vai servir {uso}, e acompanhar com {acompanhamento}. {nome} foi o que mais combinou com as três respostas." (uso: "para você mesmo, com calma"; sem artigo antes do nome, aprovado pelo dono). D14 feito com `white-space: nowrap` (`SemQuebra`), não com U+2011. |
 | Criar `data/ficticio.ts` e aplicar D26 a D29 (WhatsApp, CNPJ, endereço, frete, prazo, parcelas, produtor, ano); trocar as lacunas visíveis por esses valores | `engenheiro-de-ecommerce` + `frontend-nextjs` | Antes da etapa 6 (o WhatsApp é necessário nela) |
 | ADR do `@google/model-viewer` | `arquiteto-de-software` | Início da etapa 5 |
 | ADR da hospedagem (Vercel) e ADR do gateway (Mercado Pago) | `arquiteto-de-software`, `auditor-de-seguranca` | Etapa 9 |

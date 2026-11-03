@@ -7,7 +7,7 @@ type QuantityStepperProps = {
   onChange: (valor: number) => void;
   /** Spec §7.2, item 8: mínimo 1. */
   minimo?: number;
-  /** P35: 10 unidades por linha. O + fica `aria-disabled` (opacidade 0,5, P19) ao chegar nele. */
+  /** P35: 10 unidades por linha. O + fica `aria-disabled` (opacidade 0,65, D3) ao chegar nele. */
   maximo?: number;
   /** Nome do grupo para leitores de tela; na sacola inclui o item. Padrão: "Quantidade". */
   rotulo?: string;

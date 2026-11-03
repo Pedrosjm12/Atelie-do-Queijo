@@ -148,3 +148,31 @@ export function respostasCompletas(
     return null;
   return { sabor, uso, acompanhamento };
 }
+
+// D11: trechos em minúsculas, como nos chips, já com a preposição que a frase pede.
+const TEXTO_DO_SABOR: Record<Sabor, string> = {
+  suaves: 'suaves e amanteigados',
+  equilibrados: 'equilibrados',
+  intensos: 'intensos e marcantes',
+};
+const TEXTO_DO_USO: Record<Uso, string> = {
+  tabua: 'como tábua para receber',
+  presente: 'como presente',
+  'para-mim': 'para você mesmo, com calma',
+};
+const TEXTO_DO_ACOMPANHAMENTO: Record<Acompanhamento, string> = {
+  tinto: 'vinho tinto',
+  'branco-espumante': 'vinho branco ou espumante',
+  cerveja: 'cerveja',
+  'cafe-mel': 'café ou mel',
+};
+
+/** Texto do resultado do quiz (D11): por que o queijo combina com as três respostas. */
+export function textoPorQueCombina(r: RespostasDoQuiz, nomeDoQueijo: string): string {
+  return (
+    `Você prefere sabores ${TEXTO_DO_SABOR[r.sabor]}, ` +
+    `vai servir ${TEXTO_DO_USO[r.uso]}, e ` +
+    `acompanhar com ${TEXTO_DO_ACOMPANHAMENTO[r.acompanhamento]}. ` +
+    `${nomeDoQueijo} foi o que mais combinou com as três respostas.`
+  );
+}

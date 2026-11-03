@@ -1,12 +1,15 @@
-import type { Ref } from 'react';
+import { useId, type Ref } from 'react';
 import { Button } from '@/components/Button';
+import { Overline } from '@/components/Overline';
 import type { TotaisDoPedido } from '@/lib/commerce';
 import { ID_DO_TITULO_DA_ETAPA } from './ids';
 import { TotaisDoResumo } from './ResumoDoPedido';
 import estilos from './Checkout.module.css';
 
 export type PedidoConfirmado = {
-  /** O e-mail como o servidor devolveu (P36: o número do pedido NÃO aparece). */
+  /** Número do pedido como o servidor devolveu ("AQ-…"; D4, revoga o P36). */
+  numero: string;
+  /** O e-mail como o servidor devolveu. */
   email: string;
   /** Totais devolvidos pelo servidor; o cliente não recalcula. */
   totais: TotaisDoPedido;
@@ -20,13 +23,16 @@ export function Confirmacao({
   refDoTitulo: Ref<HTMLHeadingElement>;
   pedido: PedidoConfirmado;
 }) {
+  const idDoPedido = useId();
   return (
     <section aria-labelledby={ID_DO_TITULO_DA_ETAPA} className={estilos.etapaCorpo}>
+      <Overline id={idDoPedido}>{`Pedido nº ${pedido.numero}`}</Overline>
       <h2
         id={ID_DO_TITULO_DA_ETAPA}
         ref={refDoTitulo}
         tabIndex={-1}
-        className={estilos.tituloDaEtapa}
+        aria-describedby={idDoPedido}
+        className={`${estilos.tituloDaEtapa} ${estilos.tituloDaConfirmacao}`}
       >
         Seu queijo já está sendo preparado.
       </h2>

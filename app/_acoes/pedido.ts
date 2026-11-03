@@ -37,7 +37,7 @@ function ehObjetoSimples(valor: unknown): valor is Record<string, unknown> {
  * Confirma o pedido (SIMULADO). Endpoint público: `entrada` pode ser qualquer coisa. Recalcula TUDO
  * no servidor a partir do catálogo (preço, subtotal, frete, desconto do Pix, total); preço ou total
  * vindos do cliente são ignorados. Nunca lança, não registra nada em log e não repete a entrada na
- * resposta (só o e-mail, que a confirmação exibe). Item inválido, inexistente, fora do índice ou
+ * resposta (só o número do pedido e o e-mail, que a confirmação exibe; D4). Item inválido, inexistente, fora do índice ou
  * esgotado → `sacola-invalida`, sem consertar em silêncio.
  */
 export async function confirmarPedido(entrada: unknown): Promise<RespostaDoPedido> {

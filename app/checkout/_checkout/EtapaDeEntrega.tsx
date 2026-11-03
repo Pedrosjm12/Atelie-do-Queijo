@@ -11,6 +11,7 @@ import {
   type Ref,
 } from 'react';
 import { Button } from '@/components/Button';
+import { SemQuebra } from '@/components/SemQuebra';
 import { Icone } from '@/components/icons';
 import { MENSAGEM_DE_CEP_INVALIDO, mascararCep, normalizarCep } from '@/lib/commerce';
 import {
@@ -50,13 +51,13 @@ type EtapaDeEntregaProps = {
 
 /** Texto do frete embaixo do CEP, ou `null` (mesmos estados do `ShippingCalculator`). */
 function mensagemDoCep(erro: string | undefined, frete: FreteDoCheckout): MensagemDoCampo | null {
-  if (erro) return { texto: erro, tipo: 'erro' };
+  if (erro) return { texto: <SemQuebra texto={erro} />, tipo: 'erro' };
   const { estado } = frete;
   switch (estado.tipo) {
     case 'calculando':
       return { texto: 'Calculando…', tipo: 'leitor' };
     case 'cep-invalido':
-      return { texto: MENSAGEM_DE_CEP_INVALIDO, tipo: 'erro' };
+      return { texto: <SemQuebra texto={MENSAGEM_DE_CEP_INVALIDO} />, tipo: 'erro' };
     case 'falha':
       return { texto: MENSAGEM_DE_FRETE_INDISPONIVEL, tipo: 'erro' };
     case 'resultado':
@@ -70,7 +71,7 @@ function mensagemDoCep(erro: string | undefined, frete: FreteDoCheckout): Mensag
             ),
             tipo: 'info',
           }
-        : { texto: MENSAGEM_FORA_DE_AREA, tipo: 'erro' };
+        : { texto: <SemQuebra texto={MENSAGEM_FORA_DE_AREA} />, tipo: 'erro' };
     default:
       return null;
   }
@@ -213,7 +214,7 @@ export function EtapaDeEntrega({
                   className={estilos.linkDoErro}
                   onClick={(evento) => irParaOCampo(evento, campo)}
                 >
-                  {ROTULOS[campo]}: {erros[campo]}
+                  {ROTULOS[campo]}: <SemQuebra texto={erros[campo] ?? ''} />
                 </a>
               </li>
             ))}
