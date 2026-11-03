@@ -1,14 +1,15 @@
 # Plano de implementação — Ateliê do Queijo
 
 > Fonte da verdade: `ATELIE-DO-QUEIJO-SPEC.md`. Decisões técnicas: `docs/adr/`.
-> Última atualização: 2026-11-03 (fechamento da etapa 5). Etapas 1, 2, 3, 4 e 5 **concluídas**. A loja segue **simulada**.
+> Última atualização: 2026-11-03 (fechamento da etapa 5 e detalhamento da etapa 6). Etapas 1, 2, 3, 4 e 5 **concluídas**; etapa 6 **detalhada**. A loja segue **simulada**.
 >
 > **AVISO: dados de negócio fictícios** (WhatsApp, CNPJ, endereço, frete, parcelas, produtor) estão em `data/ficticio.ts` e **precisam ser trocados antes da publicação**; o build de produção na Vercel falha enquanto a trava existir. Ver [Decisões do dono de 2026-11-03](#decisões-do-dono-de-2026-11-03-d1-a-d34).
 >
-> **RETOMADA (2026-11-03): a etapa 5 está concluída; o próximo passo é a etapa 6, assistente com roteiro determinístico, horários e links do WhatsApp** (`especialista-em-ia-conversacional`, detalhada antes pelo `arquiteto-de-software`).
+> **RETOMADA (2026-11-03): a etapa 5 está concluída e a etapa 6 (assistente com roteiro determinístico, horários e links do WhatsApp) está detalhada** em [Etapa 6](#etapa-6--assistente-com-roteiro-determinístico-horário-e-links-do-whatsapp), com o [ADR-0010](adr/0010-assistente-deterministico-e-whatsapp.md) (Aceito, sem dependência nova).
 >
+> - **Próximo passo:** o dono responde às [perguntas P44 a P52](#perguntas-ao-dono-etapa-6) (o que fazem **Sugira um queijo**, **Montar uma tábua** e **Sim, com cartão**; resumo na mensagem do WhatsApp; texto livre; nova aba; feriados; conversa ao reabrir; e os textos novos do assistente, que ficam como `[A DEFINIR: …]` até ele escrever). As tarefas 1 e 2 (`lib/whatsapp.ts` e contratos de `lib/assistant.ts`, `especialista-em-ia-conversacional`) podem começar antes; a tarefa 3 (motor) depende de P44 a P48.
 > - **Estado:** etapa 5 publicada nos commits `92fb989` (bloco A) e `a990e3a` (bloco B); ver [Commits da etapa 5](#commits-da-etapa-5). **Nenhum queijo tem GLB**: o visitante vê o SVG, com Tela cheia, Aproximar e Girar funcionando sobre ele, e a biblioteca 3D nunca é baixada. O **bloco C** (hero da Home e giro no cartão) está **pendente, só com o 1º GLB** (P40 = B). Detalhes e pendências da etapa em [Etapa 5](#etapa-5--visualizador-3d-com-fallback-svg) e em [O que a etapa 5 deixou para a frente](#o-que-a-etapa-5-deixou-para-a-frente).
-> - **Para a etapa 6:** o número do WhatsApp vem de `numeroDoWhatsApp()` (`data/ficticio.ts`); com `VERCEL_ENV=production` e variável ausente ou inválida, ele devolve `null` e a interface deve esconder os links. Ver [`docs/ambiente.md`](ambiente.md).
+> - **Para a etapa 6:** o número do WhatsApp vem de `numeroDoWhatsApp()` (`data/ficticio.ts`); com `VERCEL_ENV=production` e variável ausente ou inválida, ele devolve `null` e a interface deve esconder os links. Ver [`docs/ambiente.md`](ambiente.md). **Atenção (ADR-0010):** `VERCEL_ENV` não chega ao navegador, então a função só pode ser chamada no servidor (`app/layout.tsx`), que passa o número ao `AtendimentoProvider`.
 > - **Tudo o que aguarda o dono** (textos novos, contrastes, comportamentos, LGPD) está em [Decisões e textos que aguardam o dono (fim da etapa 4)](#decisões-e-textos-que-aguardam-o-dono-fim-da-etapa-4), com as decisões D1 a D34 já aplicadas por cima. Nada ali bloqueia a etapa 6.
 > - **Como retomar:** abra o Claude Code na pasta do projeto, peça "continue de onde paramos" e ele lerá esta nota. Rode `git status` e `npm run lint && npm run typecheck && npm run format:check && npm test && npm run modelos:validar && npm run build && npm run test:e2e` para confirmar o estado antes de seguir.
 > - **Para a etapa 8 (teste instável):** `e2e/pagina-sacola.spec.ts:23` falhou uma vez, sob carga, e passou isolado e nas reexecuções (suspeita: corrida de hidratação). Dois testes do vitest também falharam uma vez na primeira execução; os limites de tempo de `lib/pedido.test.ts` foram relaxados por precaução. Investigar se voltarem.
@@ -33,12 +34,12 @@ Convenções deste plano:
 | 3 | Home → Catálogo → Produto (com `ProductCard`, `data/cheeses.ts` e ilustrações do Apêndice A) → interface do painel de Atendimento (§8). Sem sacola real, frete, 3D real nem roteiro do assistente | `frontend-nextjs`, `especialista-3d-webgl`, `engenheiro-de-ecommerce`, `guardiao-do-design` | Concluída ([detalhe](#etapa-3--home--catálogo--produto--painel-de-atendimento)) |
 | 4 | Sacola (contexto + `localStorage`), frete simulado e checkout simulado em `lib/commerce.ts` | `engenheiro-de-ecommerce`, `frontend-nextjs`, `auditor-de-seguranca` | **Concluída** ([detalhe](#etapa-4--sacola-frete-simulado-e-checkout-simulado)); P24 a P38 decididos em 2026-10-27 e implementados; commits `48e6ebe` a `b06c604` |
 | 5 | Visualizador 3D (`CheeseViewer` com `@google/model-viewer`) e fallback SVG do Apêndice A | `especialista-3d-webgl` | **Concluída** ([detalhe](#etapa-5--visualizador-3d-com-fallback-svg)); blocos A e B publicados (`92fb989`, `a990e3a`), [ADR-0009](adr/0009-visualizador-3d-com-model-viewer.md) Aceito. **Bloco C pendente, só com o 1º GLB** |
-| 6 | Assistente com roteiro determinístico, horários e links do WhatsApp no painel de atendimento | `especialista-em-ia-conversacional` | **Próxima.** A detalhar |
+| 6 | Assistente com roteiro determinístico, horários e links do WhatsApp no painel de atendimento | `especialista-em-ia-conversacional`, `frontend-nextjs` | **Próxima. Detalhada** ([detalhe](#etapa-6--assistente-com-roteiro-determinístico-horário-e-links-do-whatsapp)); [ADR-0010](adr/0010-assistente-deterministico-e-whatsapp.md) Aceito. Aguarda as respostas do dono a [P44 a P52](#perguntas-ao-dono-etapa-6) (tarefas 1 e 2 podem começar antes) |
 | 7 | Páginas restantes: Presentes, Aprenda, Produtores, 404 (textos da §12) | `frontend-nextjs` | A detalhar |
 | 8 | Rodada de qualidade: testes, acessibilidade, performance e SEO, segurança | `testes-e-qualidade`, `especialista-em-acessibilidade`, `performance-e-seo`, `auditor-de-seguranca` | A detalhar; herda itens da etapa 4 ([seção](#etapa-8--rodada-de-qualidade-herança-da-etapa-4) e [lista](#fica-para-depois-segurança-e-lgpd)) |
 | 9 | CI completo, ambientes e checklist de aceite da §14 | `devops-e-deploy`, `documentador-tecnico` | A detalhar; herda itens da etapa 4 ([seção](#etapa-9--ci-completo-ambientes-e-aceite-herança-da-etapa-4) e [lista](#fica-para-depois-segurança-e-lgpd)) |
 
-As etapas 5 a 9 serão detalhadas pelo `arquiteto-de-software` no início de cada uma.
+As etapas 7 a 9 serão detalhadas pelo `arquiteto-de-software` no início de cada uma.
 
 ---
 
@@ -1572,6 +1573,346 @@ Ordem: A → B → fechamento; C espera o primeiro GLB (P40 = B).
 
 ---
 
+## Etapa 6 — Assistente com roteiro determinístico, horário e links do WhatsApp
+
+**Objetivo:** dar ação a todos os controles do painel de atendimento e ao **Fale com um queijista** do produto (spec §8.2, §8.3, §10.5 e item "Painel de atendimento" da §14): a conversa começa só com a saudação e as respostas rápidas (P4), segue uma árvore de opções determinística, passa para humano pelo WhatsApp com a mensagem da §8.3 e mostra o horário ou a mensagem de cave fechada conforme a hora em `America/Sao_Paulo`.
+
+**Situação: detalhada em 2026-11-03.** Aguardando as respostas do dono às [perguntas P44 a P52](#perguntas-ao-dono-etapa-6) antes do bloco A (as tarefas 1 e 2 podem começar antes; a 3 depende de P44 a P48).
+
+**Pré-requisito:** etapa 5 concluída (`a990e3a`, `5794996`); `data/ficticio.ts` com `numeroDoWhatsApp()` (`39fd9e0`).
+
+**Decisões:** [ADR-0010](adr/0010-assistente-deterministico-e-whatsapp.md) (motor puro atrás de interface assíncrona, roteiro carregado sob demanda, número resolvido no servidor, horário com `Intl`, sem dependência nova). D24 (roteiro determinístico agora, IA depois com ADR), D26 (número fictício), P4 (conversa começa só com a saudação), P5 (aba do queijista dentro do horário).
+
+**Skills:** antes de cada tarefa, conferir o mapa em `SKILLS-ATELIE-DO-QUEIJO.md` (em especial as regras `bundle-*` e `rerender-*` da `vercel-react-best-practices` para o *chunk* tardio e o estado da conversa). A spec vence em caso de conflito.
+
+### Escopo: o que entra e o que fica para depois
+
+| Item da spec | Etapa 6 | Depois |
+| --- | --- | --- |
+| Conversa inicial (§8.2, itens 1 e 2; P4) | Só a saudação e **Sugira um queijo** · **Montar uma tábua** · **Onde está meu pedido?** | — |
+| Roteiro do protótipo (§8.2, itens 3 a 7) | Reproduzido quando a pessoa escreve uma frase com presente + vinho tinto (a frase do item 3 é o caso de teste): resposta do item 4, cartão do Canastra, pergunta do item 6 e as respostas **Sim, com cartão** (sugerida) · **Ver outras opções** | — |
+| Árvore de opções (§8.2, "Regras do assistente") | Sugerir queijo (P44), montar tábua (P45), status do pedido, harmonização, presente (P46), passagem para humano, saúde, "não entendi" (P48). Textos sem fonte na spec ficam como lacuna `[A DEFINIR: …]` (P52) | IA real (D24), com ADR próprio |
+| Cartão de produto no chat (§8.2) | Qualquer um dos 10 queijos: A.7 para o Canastra, A.6 a 84 px para os demais (decisão da etapa 3); botão `aria-label="Ver {nome} em 3D"` | — |
+| Adicionar à sacola pelo chat | Conforme P46, pela ação devolvida pelo motor e executada pelo painel com `useSacola()`; aviso **Adicionado à sacola. Boa escolha.** (§7.5) | — |
+| Consulta de pedido pelo número | Valida o formato `AQ-` + 6 dígitos e passa para humano com **Olá! Quero falar sobre o pedido nº [número].** Os pedidos são simulados e não são gravados (ADR-0008), então não há consulta real | Com o gateway e um banco (etapa 9 ou depois) |
+| Passagem para humano (§8.2) | Mensagem literal **Vou chamar um queijista da nossa equipe. Continue pelo WhatsApp, já com o resumo desta conversa.** + o botão verde da faixa com a mensagem da §8.3 escolhida pelo contexto (P47) | — |
+| Links `wa.me` (§8.3, §10.5) | Faixa de passagem, aba **Queijista (WhatsApp)** e **Fale com um queijista** do produto viram `<a href="https://wa.me/…">` (P49) | **Pedir orçamento** de `/presentes` (mensagem corporativa) na etapa 7, com o mesmo componente |
+| Horário (§1, §8.3) | Dentro: linha **Seg a sex, 9h às 18h · sáb, 9h às 15h** + botão (P5). Fora: a mensagem literal de cave fechada **no lugar** da linha de horário + botão (o botão continua, §8.3). Feriados conforme P50 | — |
+| Número ausente em produção (`numeroDoWhatsApp() === null`) | Os links e botões do WhatsApp **não são renderizados** (regra de `docs/ambiente.md`); a aba continua com o texto do horário | Etapa 9: avaliar falhar o build (ADR-0010, alternativas) |
+| Mensagem automática do WhatsApp Business (§8.3) | **Fora** (não é código; configuração do dono no aplicativo) | Checklist da etapa 9 |
+| Faixa de passagem (§8.2) | Sem mudança visual; o botão vira link | — |
+
+**Fora, por regra do projeto:** nenhuma dependência nova, nenhuma variável de ambiente nova, nenhuma requisição de rede, nada gravado (`localStorage`, `sessionStorage`, servidor ou log).
+
+### Contratos
+
+#### `lib/whatsapp.ts` (puro; não importa `data/`)
+
+```ts
+export type NumeroDoPedido = `AQ-${string}`;   // sempre validado por lerNumeroDoPedido
+
+export type MotivoDoContato =
+  | { tipo: 'geral' }
+  | { tipo: 'produto'; nomeDoQueijo: string }   // nome vindo do catálogo, nunca do usuário
+  | { tipo: 'pedido'; numero: NumeroDoPedido }
+  | { tipo: 'corporativo' };
+
+/** Textos literais da §8.3: geral, produto ("…sobre o {nome}."), pedido ("…pedido nº {número}.") e corporativo. */
+export function mensagemDoWhatsApp(motivo: MotivoDoContato): string;
+
+/** `https://wa.me/<numero>?text=<encodeURIComponent(mensagem)>`. RangeError se `numero` não casar com ^55\d{10,11}$. */
+export function linkDoWhatsApp(numero: string, motivo: MotivoDoContato): string;
+
+/** "aq-123456", "AQ 123456", "AQ123456" → "AQ-123456"; qualquer outra coisa → null. Mesmo formato de lib/pedido.server.ts. */
+export function lerNumeroDoPedido(texto: string): NumeroDoPedido | null;
+
+export const FUSO_DO_ATENDIMENTO = 'America/Sao_Paulo';
+
+export type IntervaloDoDia = Readonly<{ abre: number; fecha: number }>;   // minutos desde 0h, [abre, fecha)
+
+/** 7 posições, índice 0 = domingo (null = fechado). Dom: null; seg a sex: { abre: 540, fecha: 1080 }; sáb: { abre: 540, fecha: 900 }. */
+export const HORARIO_DO_ATENDIMENTO: readonly (IntervaloDoDia | null)[];
+
+/** Dia, hora e minuto lidos com Intl.DateTimeFormat no fuso de São Paulo, qualquer que seja o fuso da máquina. */
+export function atendimentoHumanoAberto(agora?: Date): boolean;
+
+/** Textos literais: linha do horário (§8.2) e mensagem de cave fechada (§8.3). */
+export const TEXTO_DO_HORARIO: string;
+export const TEXTO_DA_CAVE_FECHADA: string;
+```
+
+- Fronteiras: 8:59 fechado, 9:00 aberto, 17:59 aberto, 18:00 fechado; sábado 14:59 aberto, 15:00 fechado; domingo sempre fechado. O Brasil não tem horário de verão desde 2019, mas o cálculo pelo `Intl` não depende disso.
+- O número do WhatsApp não é lido aqui: chega por parâmetro (ADR-0010, decisão 5).
+
+#### `lib/assistant.ts` (leve, no pacote global; ponto de integração da §8.2)
+
+```ts
+import type { Shape, SlugDoQueijo } from '@/data/cheeses';   // só tipos
+import type { Centavos } from './dinheiro';
+import type { MotivoDoContato } from './whatsapp';
+import type { RespostasDoQuiz } from './quiz';
+
+export type RespostaRapida = { id: string; rotulo: string; sugerida?: boolean };   // não muda
+
+/** Dados mínimos do cartão (antes em lib/cartaoDoChat.ts). Viajam dentro da mensagem: o painel não importa catálogo. */
+export type CartaoDoChat = {
+  nome: string; tag: string; linhaPequena: string; preco: Centavos;
+  ilustracao: { shape: Shape; side: string; top: string };   // A.6; o Canastra usa A.7
+};
+
+export type MensagemDoChat =
+  | { id: string; tipo: 'assistente'; texto: string }
+  | { id: string; tipo: 'cliente'; texto: string }
+  | { id: string; tipo: 'produto'; slug: SlugDoQueijo; cartao: CartaoDoChat }   // + cartao
+  | { id: string; tipo: 'respostas-rapidas'; opcoes: readonly RespostaRapida[] };
+
+export type EntradaDoCliente =
+  | { tipo: 'resposta-rapida'; id: string }
+  | { tipo: 'texto'; texto: string };            // até TAMANHO_MAXIMO_DA_MENSAGEM_DO_CLIENTE
+
+export type AcaoDoAssistente =
+  | { tipo: 'adicionar-a-sacola'; slug: SlugDoQueijo; formatoId: string; quantidade: 1; presente: boolean };   // conforme P46
+
+export type EtapaDoRoteiro =
+  | 'inicio' | 'quiz-sabor' | 'quiz-uso' | 'quiz-acompanhamento'
+  | 'harmonizar' | 'pedido-numero' | 'presente' | 'livre';
+
+export interface EstadoDaConversa {
+  etapa: EtapaDoRoteiro;
+  respostasDoQuiz: Partial<RespostasDoQuiz>;
+  /** Motivo usado pelos botões verdes enquanto a conversa estiver neste estado (P47). Começa em { tipo: 'geral' }. */
+  contato: MotivoDoContato;
+  /** Contador dos ids das mensagens: sem Math.random nem relógio, para testes estáveis. */
+  proximoId: number;
+}
+
+export interface RespostaDoAssistente {
+  mensagens: readonly MensagemDoChat[];          // já inclui o eco do cliente
+  acoes: readonly AcaoDoAssistente[];
+  /** Presente quando o assistente passa para humano (§8.2). */
+  transferirParaHumano?: MotivoDoContato;
+  estado: EstadoDaConversa;
+}
+
+export interface Assistente {
+  responder(estado: EstadoDaConversa, entrada: EntradaDoCliente): Promise<RespostaDoAssistente>;
+}
+
+/** §8.2, itens 1 e 2, literais. Estáticas: aparecem sem esperar o motor. */
+export const MENSAGENS_INICIAIS: readonly MensagemDoChat[];
+export const ESTADO_INICIAL: EstadoDaConversa;
+export const TAMANHO_MAXIMO_DA_MENSAGEM_DO_CLIENTE = 500;
+
+/** Hoje: import('./roteiro'). A IA futura troca só esta função (ADR-0010). */
+export function carregarAssistente(): Promise<Assistente>;
+```
+
+- `ROTEIRO_DO_PROTOTIPO` sai. Quem o usa hoje (`SupportPanel`, `components/Atendimento.test.tsx`, `e2e/atendimento.spec.ts`) passa a reproduzir o protótipo digitando a frase do item 3.
+
+#### `lib/roteiro.ts` (motor determinístico; carregado só por `carregarAssistente()`)
+
+```ts
+export const assistenteDeterministico: Assistente;
+/** Texto em minúsculas, sem acento (NFD), espaços normalizados. Exportada para teste. */
+export function normalizar(texto: string): string;
+/** Intenção do texto livre, pela tabela de palavras-chave (P48). Ordem de prioridade fixa. */
+export function reconhecerIntencao(texto: string): Intencao;
+```
+
+- **Ordem de prioridade do texto livre** (a primeira que casar vence): saúde (gravidez, leite cru e afins) → passagem para humano (pede pessoa, reclamação, problema com entrega, corporativo/empresa) → número de pedido (`lerNumeroDoPedido`) → presente + vinho tinto (roteiro do protótipo) → tábua → harmonização → sugestão → "não entendi".
+- **Saúde:** responde com o texto do dono (P52), que precisa recomendar consultar um médico e nada além (§8.2). Nunca recomenda um queijo nessa resposta.
+- **Nunca inventa queijo:** todo cartão sai de `lib/cartoesDoChat.ts`, indexado por `SlugDoQueijo`; o tipo impede slug fora do catálogo.
+- **Nunca promete prazo:** nenhuma resposta cita prazo de entrega; perguntas de entrega vão para a passagem para humano.
+- **Textos:** os literais da spec e os de `lib/quiz.ts` (`PERGUNTAS`, `textoPorQueCombina`, D11) são reaproveitados; os demais ficam num único objeto `TEXTOS_DO_ROTEIRO`, com `[A DEFINIR: …]` até o dono preencher (P52).
+- **Resposta rápida antiga:** só o último grupo de respostas rápidas aceita clique; o motor ignora (sem mensagem) um id que não pertence à etapa atual.
+
+#### `lib/cartoesDoChat.ts` (substitui `lib/cartaoDoChat.ts`)
+
+```ts
+export const CARTOES_DO_CHAT: Readonly<Record<SlugDoQueijo, CartaoDoChat>>;
+/** O que a pontuação do quiz precisa (slug + maior formato), na ordem do catálogo. */
+export const QUEIJOS_DO_QUIZ_NO_CHAT: readonly QueijoDoQuiz[];
+```
+
+- Cópia estática e mínima (o mesmo padrão do `cartaoDoChat`), importada só pelo motor. O teste confere os 10 cartões contra `dadosDoCartao(q, 'chat')` e `q.ilustracao`, e a lista do quiz contra `maiorFormatoEmGramas(q.formatos)`, na ordem de `QUEIJOS`.
+
+#### Atendimento (`components/Atendimento.tsx` e `components/LinkDoWhatsApp.tsx`, client)
+
+```ts
+export function AtendimentoProvider(props: {
+  children: ReactNode;
+  /** Resolvido no servidor (app/layout.tsx chama numeroDoWhatsApp()). null = esconder os links. */
+  numeroDoWhatsApp: string | null;
+}): JSX.Element;
+
+/** Acrescenta ao valor atual de useAtendimento(): */
+type ValorDoAtendimento = {
+  aberto: boolean; abrir: (origem?: HTMLElement) => void; fechar: (opcoes?: OpcoesDeFechamento) => void;
+  numeroDoWhatsApp: string | null;
+  conversa: { mensagens: readonly MensagemDoChat[]; estado: EstadoDaConversa };   // memória, conforme P51
+  enviar: (entrada: EntradaDoCliente) => Promise<void>;
+};
+
+/** <a href="https://wa.me/…"> com o ícone e o texto recebidos; null quando não há número. Comportamento de aba conforme P49. */
+export function LinkDoWhatsApp(props: { motivo: MotivoDoContato; className?: string; children: ReactNode }): JSX.Element | null;
+```
+
+- **Ninguém no cliente chama `numeroDoWhatsApp()`**: `VERCEL_ENV` não chega ao navegador, e a função cairia sempre no número fictício (ADR-0010, decisão 4). Um teste confere que nenhum arquivo com `'use client'` importa `numeroDoWhatsApp`.
+- `LinkDoQueijista` (produto) passa a usar `LinkDoWhatsApp` com `{ tipo: 'produto', nomeDoQueijo: q.nome }`; recebe o nome por prop do `PainelDeCompra`. Sem número, a linha inteira **Dúvidas sobre este queijo? Fale com um queijista** some.
+- `SemAcao` e os dois avisos "… disponível em breve" do `SupportPanel` saem. `BotaoEmBreve` continua só no **Avise-me** (P15).
+
+### Fronteiras Server/Client e carregamento
+
+| Peça | Tipo | Motivo |
+| --- | --- | --- |
+| `app/layout.tsx` | Server (continua) | Chama `numeroDoWhatsApp()` e passa o resultado ao provider |
+| `AtendimentoProvider`, `SupportPanel`, `LinkDoWhatsApp` | Client (continuam / novo) | Estado da conversa, diálogo, horário calculado no navegador |
+| `lib/whatsapp.ts`, `lib/assistant.ts` | Módulos leves no pacote global | Usados pelo painel e pelo link do produto |
+| `lib/roteiro.ts` + `lib/cartoesDoChat.ts` + `lib/quiz.ts` (no chat) | *Chunk* tardio por `import()` ao abrir o painel | Fora do JavaScript inicial de todas as rotas |
+| `CheeseIllustration` (A.6) dentro do cartão do chat | Importado pelo painel (client) | Sem `useId` e pequeno; se estourar o orçamento, vai para o *chunk* tardio |
+| Horário (`atendimentoHumanoAberto`) | Calculado ao abrir o painel e ao selecionar a aba do queijista | O conteúdo do painel só existe com ele aberto: sem HTML do servidor, sem erro de hidratação |
+
+### Acessibilidade
+
+- O `role="log"` da conversa já é região viva educada: cada resposta nova é anunciada. Não anunciar as respostas rápidas em separado.
+- Ao escolher uma resposta rápida, o grupo antigo sai e vira a mensagem do cliente; o foco vai para o **campo de mensagem** (estável e previsível). Validar com o `especialista-em-acessibilidade` antes de fechar a tarefa 4.
+- Enter no campo envia; campo vazio ou só com espaços não envia nada e não gera mensagem. `maxLength` = `TAMANHO_MAXIMO_DA_MENSAGEM_DO_CLIENTE`.
+- Links do WhatsApp são `<a>` reais (§13), com o mesmo visual de hoje; o aviso de nova aba segue o P49.
+- A troca da linha do horário pela mensagem de cave fechada acontece só ao abrir ou ao trocar de aba, nunca enquanto a pessoa lê.
+- A rolagem até a última mensagem (já existe ao abrir) passa a valer também a cada resposta nova, instantânea com `prefers-reduced-motion`.
+
+### Desempenho (orçamento)
+
+Medido com `npm run medir:pacote` (etapa 5).
+
+| Medida | Linha de base (fim da etapa 5) | Limite |
+| --- | --- | --- |
+| *First Load JS* compartilhado | 182,69 kB gzip | **+1,5 kB** (`lib/whatsapp`, `lib/assistant`, estado da conversa, `LinkDoWhatsApp`, A.6 no cartão) |
+| JavaScript inicial de `/queijos/[slug]` | 193,77 kB | Só o que o compartilhado somar (o link do produto não traz nada próprio) |
+| *Chunk* tardio do motor | — | **12 kB gzip**; nunca nos `<script>` do HTML de nenhuma página |
+
+### Segurança e privacidade
+
+- Nada sai do navegador além da navegação para `wa.me`, iniciada pela pessoa.
+- A URL do WhatsApp só contém dados fixos ou validados (ADR-0010, decisão 5). Teste: nenhum texto livre digitado aparece em nenhum `href`.
+- Mensagens renderizadas como texto do React (sem `dangerouslySetInnerHTML`); `rel="noopener noreferrer"` se o P49 mandar abrir em nova aba.
+- A conversa fica só em memória (P51); fechar a aba do navegador apaga tudo. Para a IA futura: registro de conversas e aviso de LGPD entram no ADR próprio.
+
+### Testes
+
+- **Unidade (`lib/`):** `mensagemDoWhatsApp` com os quatro textos literais; `linkDoWhatsApp` codifica acentos, `?`, `&`, `#` e espaços (comparar com `decodeURIComponent`), e lança com número inválido; `lerNumeroDoPedido` (válidos, minúsculas, sem hífen, com espaço, 5 e 7 dígitos, letras); `atendimentoHumanoAberto` em todas as fronteiras acima, com `agora` explícito e com `TZ=UTC` e `TZ=Asia/Tokyo` simulados (`process.env.TZ` no teste ou datas em UTC que caem em outro dia em São Paulo); motor: o caminho do protótipo produz literalmente os itens 4 a 7 da §8.2; cada resposta rápida; quiz no chat igual a `recomendarQueijo` para as 36 combinações; prioridade do texto livre; saúde nunca devolve cartão; id de resposta rápida antiga é ignorado; nenhuma resposta contém prazo; `CARTOES_DO_CHAT` igual ao catálogo.
+- **Componente:** painel abre com 2 mensagens (saudação e respostas); clique numa resposta rápida põe a mensagem do cliente e a resposta, e leva o foco ao campo; Enter envia; vazio não envia; com `numeroDoWhatsApp={null}` não há nenhum link `wa.me` no painel nem no `LinkDoQueijista`; `vi.setSystemTime` num domingo mostra a cave fechada e o botão continua; ação de sacola chama `adicionar` com os dados da ação (P46); nenhum arquivo client importa `numeroDoWhatsApp`.
+- **E2E (Playwright):** o fluxo do protótipo digitando a frase do item 3 (e é este estado que o `guardiao-do-design` compara com o protótipo); `href` dos três links (`decodeURIComponent` igual ao texto literal da §8.3, com o número fictício); `page.clock.setFixedTime` num sábado às 15h00 e num domingo → mensagem de cave fechada; numa terça às 10h → linha de horário; nenhuma requisição para outro domínio ao usar o chat; sem rolagem horizontal a 360 px com o painel aberto e a conversa longa; o *chunk* do motor não aparece no HTML.
+- Os testes atuais que esperam o roteiro estático (`components/Atendimento.test.tsx:216`, `:236`; `e2e/atendimento.spec.ts:154`, `:182`), os que esperam **Fale com um queijista** como botão (`e2e/produto-teclado.spec.ts:93`, `:105`; `PainelDeCompra.test.tsx:113`) e o da rolagem ao abrir (a conversa inicial é curta) são atualizados nas tarefas que mudam o comportamento.
+
+### Tarefas
+
+Cada tarefa termina com `lint`, `typecheck`, `format:check`, `test`, `modelos:validar`, `build` e `test:e2e` passando. Estimativa de linhas entre parênteses.
+
+**Bloco A — Regras sem interface (commit 1)**
+
+1. **[especialista-em-ia-conversacional] `lib/whatsapp.ts`** (~200 com testes)
+   - Contrato acima: mensagens literais da §8.3, link, `lerNumeroDoPedido`, horário, `TEXTO_DO_HORARIO` e `TEXTO_DA_CAVE_FECHADA` literais. Feriados conforme P50 (sem resposta, nenhum feriado).
+   - **Pronto quando:** os testes de unidade da seção de testes para `lib/whatsapp.ts` passam, inclusive com o fuso da máquina diferente de São Paulo; `linkDoWhatsApp('5520900000000', { tipo: 'geral' })` decodificado devolve exatamente **Olá! Vim pelo site do Ateliê do Queijo e queria ajuda para escolher.**
+
+2. **[especialista-em-ia-conversacional] Contratos de `lib/assistant.ts` e `lib/cartoesDoChat.ts`** (~250 com testes)
+   - Tipos, `MENSAGENS_INICIAIS`, `ESTADO_INICIAL`, `carregarAssistente()` (com `lib/roteiro.ts` ainda mínimo, só com o "não entendi"); `CARTOES_DO_CHAT` e `QUEIJOS_DO_QUIZ_NO_CHAT` com testes contra o catálogo. `lib/cartaoDoChat.ts` sai (o `SupportPanel` passa a ler `mensagem.cartao`, mudança de poucas linhas).
+   - **Pronto quando:** `typecheck` passa sem `any`; os 10 cartões batem com `dadosDoCartao(q, 'chat')`; `MENSAGENS_INICIAIS` tem exatamente os itens 1 e 2 da §8.2.
+
+3. **[especialista-em-ia-conversacional] Motor determinístico `lib/roteiro.ts`** (~400 com testes; se passar, dividir em 3a quiz e protótipo, 3b pedido, tábua, harmonização, humano e saúde) — **depende de P44 a P48**
+   - Árvore, prioridade do texto livre, ações, `contato` por estado (P47), textos em `TEXTOS_DO_ROTEIRO` com as lacunas do P52.
+   - **Pronto quando:** os testes do motor da seção de testes passam; uma busca em `lib/roteiro.ts` não encontra nenhum texto visível fora de `TEXTOS_DO_ROTEIRO`, de `lib/quiz.ts` e das constantes literais da spec.
+
+4. **Verificação do bloco A:** `testes-e-qualidade` (cobertura das fronteiras de horário e do motor), `auditor-de-seguranca` (montagem da URL, validação do número do pedido, nada de texto livre na URL) → `revisor-de-codigo` → commit `feat(atendimento): adiciona o roteiro do assistente e as regras do WhatsApp`.
+
+**Bloco B — Interface (commit 2)**
+
+5. **[frontend-nextjs] Número no servidor e `LinkDoWhatsApp`** (~200 com testes)
+   - `app/layout.tsx` passa `numeroDoWhatsApp()` ao provider; `LinkDoWhatsApp`; `LinkDoQueijista` vira link com a mensagem de produto (nome por prop do `PainelDeCompra`); testes de `PainelDeCompra` e `e2e/produto-teclado.spec.ts` atualizados (botão → link, mesma ordem de Tab).
+   - **Pronto quando:** na página do Canastra, o `href` de **Fale com um queijista**, decodificado, é `https://wa.me/5520900000000?text=Olá! Tenho uma dúvida sobre o Canastra curado.`; com o provider recebendo `null`, a linha não existe no DOM; teste confirma que nenhum arquivo `'use client'` importa `numeroDoWhatsApp`.
+
+6. **[frontend-nextjs + especialista-em-ia-conversacional] Conversa ligada ao motor** (~350 com testes)
+   - Estado da conversa no provider (P51), `enviar`, `import()` do motor ao abrir, respostas rápidas e campo com ação, cartões para os 10 queijos, execução das ações (P46) com o aviso da §7.5, foco e rolagem conforme a seção de acessibilidade. Saem `ROTEIRO_DO_PROTOTIPO` e `SemAcao`.
+   - **Pronto quando:** os testes de componente da seção de testes passam; o e2e do protótipo (frase do item 3) mostra os itens 4 a 7 literais; `npm run medir:pacote` dentro do orçamento e o *chunk* do motor ausente do HTML.
+
+7. **[frontend-nextjs + especialista-em-ia-conversacional] WhatsApp no painel e horário** (~200 com testes)
+   - Botão verde da faixa e da aba como `LinkDoWhatsApp` com `conversa.estado.contato`; passagem para humano mostra a mensagem literal da §8.2; aba do queijista com linha de horário ou cave fechada, calculada ao abrir e ao trocar de aba; comportamento de aba conforme P49.
+   - **Pronto quando:** e2e com `page.clock` (sábado 15h00, domingo, terça 10h) passa; depois de informar `AQ-123456` no chat, o `href` do botão verde decodificado termina em **Olá! Quero falar sobre o pedido nº AQ-123456.**; sem número, nenhum `wa.me` no painel.
+
+8. **Verificação do bloco B, em paralelo:** `guardiao-do-design` (painel a 1440 e 390 px no estado do protótipo; cave fechada; cartão A.6 de um queijo que não é o Canastra, a 84 px), `especialista-em-acessibilidade` (foco após resposta rápida, região viva, links, diálogo), `auditor-de-seguranca` (campo livre, links externos, nenhuma requisição), `performance-e-seo` (orçamento), `testes-e-qualidade` → `revisor-de-codigo` → commit `feat(atendimento): liga o assistente, o horário e os links do WhatsApp`.
+
+**Fechamento**
+
+9. **[documentador-tecnico] Fechamento da etapa 6**
+   - `docs/conteudo.md`: como editar `TEXTOS_DO_ROTEIRO`, o horário (e feriados, se o P50 pedir) e as palavras-chave; `docs/ambiente.md`: o número agora é usado, resolvido no servidor, e o que acontece sem ele; CHANGELOG e README; neste plano, a situação da etapa, a tabela de [controles sem ação](#controles-sem-ação-ao-fim-da-etapa-3) (linhas da etapa 6 resolvidas) e o item "Painel de atendimento" da §14.
+   - **Pronto quando:** commit `docs: fecha a etapa 6` publicado.
+
+### Commits da etapa 6
+
+| Bloco | Conteúdo | Mensagem | Situação |
+| --- | --- | --- | --- |
+| Docs | Este detalhamento e o ADR-0010 | `docs: detalha a etapa 6 e registra o ADR-0010` | A publicar (sessão principal) |
+| A | Tarefas 1 a 4 | `feat(atendimento): adiciona o roteiro do assistente e as regras do WhatsApp` | A fazer |
+| B | Tarefas 5 a 8 | `feat(atendimento): liga o assistente, o horário e os links do WhatsApp` | A fazer |
+| Docs | Tarefa 9 | `docs: fecha a etapa 6` | A fazer |
+
+### Critérios de pronto da etapa 6
+
+- §8.2 e §8.3 atendidas, com as lacunas do P52 visíveis enquanto o dono não preencher.
+- Item "Painel de atendimento" da §14: duas abas, roteiro do assistente, horário e botão verde do WhatsApp com mensagem pré-preenchida.
+- §10.5: **Fale com um queijista** abre o WhatsApp com a mensagem do produto.
+- Nenhum controle do painel ou do link do produto sem ação; `BotaoEmBreve` só no **Avise-me**.
+- Sem número em produção, nenhum link `wa.me` renderizado.
+- Nenhuma dependência nova, nenhuma requisição de rede, nada gravado; orçamento respeitado.
+
+### Riscos da etapa 6
+
+- **Número fictício vazando para produção pelo navegador** (`VERCEL_ENV` não existe no cliente) → número resolvido só no servidor e teste que barra `numeroDoWhatsApp` em arquivo client (ADR-0010).
+- **Horário errado por fuso da máquina** (CI em UTC, dono em outro fuso) → `Intl` com `timeZone` explícito e testes com datas em UTC que caem em outro dia em São Paulo.
+- **Erro de hidratação por relógio** → o horário só é calculado dentro do conteúdo do painel, que não vem do servidor.
+- **Texto livre reconhecido de forma errada** (ex.: "não quero tinto" casando com tinto) → prioridade fixa, saúde e humano primeiro, "não entendi" sempre devolve as respostas rápidas; lista de palavras-chave revisável pelo dono (P48). Não é IA e não deve parecer: nenhuma resposta finge entender o que não entendeu.
+- **Lacunas `[A DEFINIR: …]` visíveis na conversa** → é o comportamento pedido pelo `CLAUDE.md`; o site não é publicado antes da etapa 9, que não fecha com lacunas do P52 abertas.
+- **Promessa "já com o resumo desta conversa"** maior do que o que entregamos → P47.
+- **Tarefa 3 acima de 400 linhas** → divisão 3a/3b já prevista.
+- **Orçamento do pacote global** → motor em *chunk* tardio; A.6 no cartão pode ir para o mesmo *chunk* se passar do limite.
+- **Testes que dependem do roteiro estático** (lista na seção de testes) → atualizados nas tarefas 5 a 7, não removidos.
+
+### Perguntas ao dono (etapa 6)
+
+| # | Pergunta | Opções | Recomendação | Decisão do dono |
+| --- | --- | --- | --- | --- |
+| P44 | O que **Sugira um queijo** faz? | **A)** Faz no chat as três perguntas do quiz (textos e opções literais da §5.6), recomenda pela mesma pontuação da §10.4 e mostra o cartão com o texto aprovado no D11. **B)** Mostra direto os quatro destaques da semana (§5.4), sem perguntas. **C)** Leva para o quiz da Home e fecha o painel | **A**: reaproveita textos e regras já aprovados, sem texto novo além da transição (P52) | *Pendente* |
+| P45 | Que queijos **Montar uma tábua** sugere? | **A)** Os de "casca bonita" da §10.4: Brie francês, Canastra curado e Cabra com cinzas, em três cartões. **B)** Os quatro destaques da semana. **C)** Uma lista definida pelo dono | **A**, porque já está na spec | *Pendente* |
+| P46 | O que **Sim, com cartão** faz depois da sugestão do Canastra? | **A)** Põe na sacola 1 unidade do formato padrão (Peça inteira ~1 kg, R$ 136,00) marcada como presente. **B)** Põe o formato do preço do cartão (Fração ~250 g, R$ 49,00), marcada como presente. **C)** Pergunta o formato com respostas rápidas ("Peça inteira ~1 kg", "Meia peça ~500 g", "Fração ~250 g", da §9) e só então põe na sacola como presente. **D)** Não põe nada; leva à página do produto | **C**: a pessoa escolhe o que compra, e os rótulos vêm dos dados; o cartão com mensagem é escrito no checkout (§10.2) | *Pendente* |
+| P47 | A passagem para humano diz "já com o resumo desta conversa". O que vai na mensagem do WhatsApp? | **A)** A mensagem da §8.3 escolhida pelo contexto: pedido nº, se a pessoa informou; produto, se houve sugestão; corporativo, se pediu para empresa; geral nos demais casos. Nada do texto digitado. **B)** A mensagem da §8.3 + um resumo com o texto digitado (formato a definir pelo dono; leva texto livre e talvez dados pessoais para a URL). **C)** Sempre a mensagem geral | **A** (ADR-0010). Se o dono achar que "resumo" promete mais do que isso, ajustar o texto da §8.2 | *Pendente* |
+| P48 | O campo de mensagem aceita texto livre? | **A)** Sim, com reconhecimento por palavras-chave (lista revisável pelo dono) e "não entendi" com as respostas rápidas. **B)** Só reconhece número de pedido; qualquer outro texto recebe o "não entendi". **C)** Campo só aparece quando o roteiro pede o número do pedido (desvio da §8.2) | **A**: é o único jeito de o roteiro do protótipo (frase digitada no item 3) acontecer | *Pendente* |
+| P49 | O WhatsApp abre na mesma aba ou em outra? | **A)** Outra aba (`target="_blank"`), com um texto só para leitor de tela avisando a nova aba (texto a definir pelo dono, P52). **B)** Mesma aba, sem texto novo (a sacola não se perde: está no `localStorage`) | **A**, comum em lojas e mantém o site aberto; no celular o `wa.me` abre o aplicativo de qualquer forma | *Pendente* |
+| P50 | Feriados contam como cave fechada? | **A)** Não; vale só o dia da semana (a spec não cita feriados). **B)** Sim, com uma lista fixa de datas mantida pelo dono em `lib/whatsapp.ts` | **A** agora; B quando o dono quiser | *Pendente* |
+| P51 | Ao fechar e reabrir o painel, a conversa continua? | **A)** Continua enquanto a aba do navegador estiver aberta (só memória; fechar a aba apaga). **B)** Recomeça a cada abertura, como hoje | **A**: fechar sem querer não faz perder a conversa, e nada é gravado | *Pendente* |
+| P52 | Textos novos do assistente (a spec não os traz). Até o dono escrever, aparecem como lacuna. | Lista abaixo | O dono escreve cada um; o agente não propõe texto | *Pendente* |
+
+**Lista do P52 (textos que o dono precisa escrever).** Cada um aparece como `[A DEFINIR: <descrição>]` até ser preenchido em `TEXTOS_DO_ROTEIRO`:
+
+| Id | Onde aparece | Observação |
+| --- | --- | --- |
+| `transicao-sugestao` | Antes da primeira pergunta do quiz no chat (P44 = A) | — |
+| `tabua` | Antes dos cartões da tábua (P45) | — |
+| `pedido-pedir-numero` | Ao escolher **Onde está meu pedido?** | Pede o número no formato AQ-123456 |
+| `pedido-numero-invalido` | Número fora do formato | — |
+| `pedido-encaminhar` | Número válido: não há consulta real (pedidos simulados), então encaminha ao WhatsApp | Antes ou no lugar da mensagem de passagem da §8.2 |
+| `harmonizar` | Antes da pergunta "Vai acompanhar com…" e dos cartões | — |
+| `outras-opcoes` | Ao escolher **Ver outras opções** (Manchego DOP e Parmigiano Reggiano DOP, os outros curados de tinto na §10.4) | — |
+| `presente-formato` | Pergunta do formato (só se P46 = C) | — |
+| `depois-da-acao` | Depois de pôr na sacola, antes de novas respostas rápidas | O aviso **Adicionado à sacola. Boa escolha.** (§7.5) continua |
+| `continuar` | Depois de cada sugestão, com as respostas rápidas iniciais de novo | — |
+| `nao-entendi` | Texto livre sem intenção reconhecida | Devolve as três respostas rápidas iniciais |
+| `saude` | Perguntas de saúde (ex.: gravidez e leite cru) | **Obrigatório** recomendar consultar um médico e não dar outra orientação (§8.2) |
+| `aviso-nova-aba` | Só leitor de tela, nos links do WhatsApp (só se P49 = A) | — |
+
+Também para o checklist da etapa 9 (não é código): configurar no WhatsApp Business a mensagem de boas-vindas literal da §8.3.
+
+---
+
 ## Etapa 8 — Rodada de qualidade (herança da etapa 4)
 
 > A etapa 8 ainda será detalhada pelo `arquiteto-de-software`. Esta seção reúne o que a etapa 4 deixou para ela, copiado de [Fica para depois (segurança e LGPD)](#fica-para-depois-segurança-e-lgpd), de [Fica para depois (blocos C e D)](#fica-para-depois-blocos-c-e-d) e de [Fica para depois (bloco E)](#fica-para-depois-bloco-e). As tabelas originais continuam onde estão.
@@ -1716,7 +2057,7 @@ Continuam como lacuna, por decisão do dono: dados dos 9 queijos sem ficha (`[A 
 | Segurança herdada da etapa 4 (CSP, cabeçalhos, limite de taxa, CI, hospedagem, ADR do gateway) | Registrada em [Fica para depois](#fica-para-depois-segurança-e-lgpd); copiar para as etapas 8 e 9 e para o ADR do gateway. | `arquiteto-de-software` + `auditor-de-seguranca` |
 | Tabela de frete, prazos e área atendida | Simulados na etapa 4 (P27, P28). Os valores reais dependem da transportadora. | Dono do projeto |
 | Número do WhatsApp, CNPJ, endereço, `[PREÇO]` e demais lacunas | Ficam visíveis entre colchetes até o dono preencher. | Dono do projeto |
-| Provedor de IA para o assistente | Etapa 6 começa com roteiro determinístico; integração com IA real exigirá ADR. | Dono do projeto + `especialista-em-ia-conversacional` |
+| Provedor de IA para o assistente | Etapa 6 usa roteiro determinístico atrás da interface `Assistente` de `lib/assistant.ts` ([ADR-0010](adr/0010-assistente-deterministico-e-whatsapp.md)); a IA real troca só `carregarAssistente()` e exigirá ADR próprio (provedor, custo, Route Handler, limite de taxa, LGPD). | Dono do projeto + `especialista-em-ia-conversacional` |
 | Destino de "Entregas refrigeradas", "Trocas e devoluções" e "Perguntas frequentes" (rodapé) | A spec não define rotas. Ficam como texto não interativo até existir página. | Dono do projeto |
 | Contraste de `--placeholder` sobre `--carvao` (4,47:1, abaixo de 4,5:1) | **Aceito como provisório** pelo dono (2026-10-26): só aparece nos textos `[FOTO: …]`. Rever antes da publicação se ainda houver placeholders. | Dono do projeto |
 | Teste e2e do foco após navegar pelo menu mobile (`test.fixme` em `e2e/layout-global.spec.ts`) | **Resolvido na etapa 3** (tarefa 12): não há mais `test.fixme` em `e2e/`. | `testes-e-qualidade` |
