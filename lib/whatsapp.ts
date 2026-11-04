@@ -143,3 +143,12 @@ export const TEXTO_DO_HORARIO = 'Seg a sex, 9h às 18h · sáb, 9h às 15h';
 /** Mensagem de cave fechada (§8.3). */
 export const TEXTO_DA_CAVE_FECHADA =
   'Nossa cave está fechada agora. Atendemos de segunda a sexta, das 9h às 18h, e aos sábados, das 9h às 15h. Se preferir, o Assistente do Ateliê responde na hora pelo site.';
+
+/**
+ * Aviso só para leitor de tela: o link do WhatsApp abre em nova aba (P49 = A). Texto novo, que a
+ * spec não traz: lacuna do P52 até o dono escrever. Mora aqui (e não em `TEXTOS_DO_ROTEIRO`, que é
+ * carregado sob demanda) porque o link existe no pacote global; `TEXTOS_DO_ROTEIRO.avisoNovaAba`
+ * aponta para esta constante.
+ */
+export const AVISO_DE_NOVA_ABA =
+  '[A DEFINIR: aviso só para leitor de tela: o link do WhatsApp abre em nova aba]';

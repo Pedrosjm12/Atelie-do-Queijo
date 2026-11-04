@@ -102,16 +102,27 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
+  position: relative;
   min-width: 0;
-  height: 40px;
-  padding: 0 8px;
+  /* Altura mínima (não fixa): a 320 px o rótulo "Queijista (WhatsApp)" quebra em duas linhas. */
+  min-height: 40px;
+  padding: 4px 8px;
   border: 0;
   border-radius: var(--raio-pilula);
   background: transparent;
   color: var(--creme);
   font-size: 13px;
   font-weight: 500;
-  white-space: nowrap;
+  line-height: 1.2;
+  text-align: center;
+}
+
+/* Zona de toque de 44 px sem mudar o desenho (a barra tem 4 px de folga em cima e embaixo). */
+.aba::after,
+.botaoWhatsapp::after {
+  content: '';
+  position: absolute;
+  inset: -2px 0;
 }
 
 .aba:hover {
@@ -140,8 +151,8 @@
 }
 
 .painelDoAssistente {
-  /* Conversa (120) + faixa de passagem (~65) + campo (~79): abaixo disso o painel rola (reflow). */
-  min-height: 270px;
+  /* Conversa (120) + faixa de passagem (~90) + campo (~79): abaixo disso o painel rola (reflow). */
+  min-height: 290px;
 }
 
 .painelDoAssistente:not([hidden]),
@@ -223,6 +234,19 @@
   background: var(--carvao);
 }
 
+/* Miniatura dos queijos que não são o Canastra: gerador A.6 na largura da A.7 (84 px). */
+.miniatura {
+  display: block;
+  flex: none;
+  width: 84px;
+}
+
+/* Reserva o tamanho da A.6 (viewBox 300 x 190) enquanto o gerador é baixado: sem salto de layout. */
+.miniaturaVazia {
+  display: block;
+  aspect-ratio: 300 / 190;
+}
+
 .cartaoTexto {
   flex: 1;
   min-width: 0;
@@ -269,6 +293,7 @@
 .passagem {
   display: flex;
   flex: none;
+  flex-wrap: wrap; /* Reflow a 320 px: o botão desce para a linha de baixo em vez de estourar. */
   align-items: center;
   gap: 10px;
   padding: 12px 16px;
@@ -277,7 +302,7 @@
 }
 
 .passagemTexto {
-  flex: 1;
+  flex: 1 1 140px;
   min-width: 0;
   color: var(--palha);
   font-size: 13px;
@@ -295,15 +320,17 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  height: 40px;
-  padding: 0 14px;
+  position: relative;
+  min-height: 40px;
+  padding: 4px 14px;
   border: 0;
   border-radius: var(--raio-pilula);
   background: var(--whatsapp);
   color: var(--whatsapp-texto);
   font-size: 13px;
   font-weight: 600;
-  white-space: nowrap;
+  line-height: 1.2;
+  text-align: center;
 }
 
 .botaoWhatsapp:hover {

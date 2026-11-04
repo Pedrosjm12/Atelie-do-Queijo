@@ -46,7 +46,8 @@ export type EstadoDaSacola = {
 
 /** Ações estáveis (identidade fixa): quem só dispara ações não re-renderiza com a sacola. */
 export type AcoesDaSacola = {
-  adicionar: (item: ItemParaAdicionar) => void;
+  /** `true` quando TODA a quantidade pedida entrou na sacola. */
+  adicionar: (item: ItemParaAdicionar) => boolean;
   alterarQuantidade: (slug: SlugDoQueijo, formatoId: string, quantidade: number) => void;
   remover: (slug: SlugDoQueijo, formatoId: string) => void;
   definirPresente: (presente: boolean) => void;
@@ -145,9 +146,10 @@ export function SacolaProvider({ children }: { children: ReactNode }) {
           : depois === QUANTIDADE_MAXIMA_POR_ITEM
             ? TEXTO_LIMITE
             : null;
-      if (texto === null) return;
+      if (texto === null) return false;
       contadorDoAviso.current += 1;
       setAviso({ texto, id: contadorDoAviso.current });
+      return texto === TEXTO_ADICIONADO;
     },
     [despachar],
   );

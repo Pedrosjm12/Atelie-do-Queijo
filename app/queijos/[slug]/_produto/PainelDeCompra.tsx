@@ -15,6 +15,8 @@ import estilos from './Compra.module.css';
 
 type PainelDeCompraProps = {
   slug: SlugDoQueijo;
+  /** Nome do catálogo: entra na mensagem do WhatsApp (§8.3). */
+  nomeDoQueijo: string;
   formatos: readonly [Formato, ...Formato[]];
   estoque: Estoque;
   /** Calculadora de frete, renderizada no servidor. */
@@ -42,7 +44,13 @@ function avisoDeEstoque(estoque: Estoque): string | null {
  * sacola (P31: o segundo também marca o pedido como presente). "Avise-me" segue sem ação (P15).
  * No celular (P12) somem a quantidade e o preço inline e a barra fixa assume.
  */
-export function PainelDeCompra({ slug, formatos, estoque, frete }: PainelDeCompraProps) {
+export function PainelDeCompra({
+  slug,
+  nomeDoQueijo,
+  formatos,
+  estoque,
+  frete,
+}: PainelDeCompraProps) {
   const [formatoId, setFormatoId] = useState<string>(formatos[0].id);
   const [quantidade, setQuantidade] = useState(1);
   const { sacola, pronta } = useEstadoDaSacola();
@@ -118,11 +126,17 @@ export function PainelDeCompra({ slug, formatos, estoque, frete }: PainelDeCompr
       </div>
 
       {/* Duas posições, só uma visível: a ordem de Tab acompanha a ordem visual em cada largura. */}
-      <LinkDoQueijista className={`${estilos.secaoQueijista} ${estilos.queijistaCelular}`} />
+      <LinkDoQueijista
+        nomeDoQueijo={nomeDoQueijo}
+        className={`${estilos.secaoQueijista} ${estilos.queijistaCelular}`}
+      />
 
       <div className={estilos.secaoFrete}>{frete}</div>
 
-      <LinkDoQueijista className={`${estilos.secaoQueijista} ${estilos.queijistaDesktop}`} />
+      <LinkDoQueijista
+        nomeDoQueijo={nomeDoQueijo}
+        className={`${estilos.secaoQueijista} ${estilos.queijistaDesktop}`}
+      />
 
       <div className={estilos.barra} data-barra-compra>
         <div aria-live="polite">

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { AtendimentoProvider } from '@/components/Atendimento';
 import { LinkDaSacola } from '@/components/LinkDaSacola';
 import { SacolaProvider } from '@/components/SacolaProvider';
 import type { Estoque } from '@/data/cheeses';
@@ -10,21 +11,28 @@ import { PainelDeCompra } from './PainelDeCompra';
 const canastra = obterQueijo('canastra-curado');
 if (!canastra) throw new Error('canastra-curado');
 const formatos = canastra.formatos;
+const NOME_DO_CANASTRA = canastra.nome;
 
 /** O texto do preço usa U+00A0 depois de "R$"; o teste compara com espaço comum. */
 const semNbsp = (texto: string | null | undefined) => (texto ?? '').replace(/ /g, ' ');
 
-function renderizar(estoque: Estoque = { situacao: 'disponivel' }) {
+function renderizar(
+  estoque: Estoque = { situacao: 'disponivel' },
+  numero: string | null = '5520900000000',
+) {
   window.localStorage.clear();
   return render(
     <SacolaProvider>
-      <PainelDeCompra
-        slug="canastra-curado"
-        formatos={formatos}
-        estoque={estoque}
-        frete={<div>Frete fictício</div>}
-      />
-      <LinkDaSacola />
+      <AtendimentoProvider numeroDoWhatsApp={numero}>
+        <PainelDeCompra
+          slug="canastra-curado"
+          nomeDoQueijo={NOME_DO_CANASTRA}
+          formatos={formatos}
+          estoque={estoque}
+          frete={<div>Frete fictício</div>}
+        />
+        <LinkDaSacola />
+      </AtendimentoProvider>
     </SacolaProvider>,
   );
 }
@@ -101,7 +109,7 @@ describe('PainelDeCompra', () => {
     expect(menos).toHaveAttribute('aria-disabled', 'true');
   });
 
-  it('Adicionar e Embalar ficam focáveis e com ação; só o queijista segue sem ação', () => {
+  it('Adicionar e Embalar ficam focáveis e com ação; o queijista é um link do WhatsApp', () => {
     renderizar();
     const adicionar = screen.getAllByRole('button', { name: 'Adicionar à sacola' });
     expect(adicionar).toHaveLength(2); // inline e barra fixa
@@ -110,11 +118,25 @@ describe('PainelDeCompra', () => {
       'aria-disabled',
     );
     // Duas posições (celular antes do frete, desktop depois), alternadas por CSS.
-    const queijistas = screen.getAllByRole('button', { name: 'Fale com um queijista' });
+    const queijistas = screen.getAllByRole('link', { name: 'Fale com um queijista' });
     expect(queijistas).toHaveLength(2);
-    for (const botao of queijistas) expect(botao).toHaveAttribute('aria-disabled', 'true');
+    for (const link of queijistas) {
+      expect(link).not.toHaveAttribute('aria-disabled');
+      expect(decodeURIComponent(link.getAttribute('href') ?? '')).toBe(
+        'https://wa.me/5520900000000?text=Olá! Tenho uma dúvida sobre o Canastra curado.',
+      );
+      expect(link).toHaveAttribute('target', '_blank');
+      expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+    }
     expect(screen.getAllByText('Dúvidas sobre este queijo?')).toHaveLength(2);
     expect(screen.getByText('Frete fictício')).toBeInTheDocument();
+  });
+
+  it('sem número do WhatsApp, a linha inteira do queijista não existe', () => {
+    renderizar({ situacao: 'disponivel' }, null);
+    expect(screen.queryByText('Dúvidas sobre este queijo?')).not.toBeInTheDocument();
+    expect(screen.queryByText('Fale com um queijista')).not.toBeInTheDocument();
+    expect(document.querySelector('a[href*="wa.me"]')).toBeNull();
   });
 
   const aviso = () => document.querySelector<HTMLElement>('[data-aviso-da-sacola]');

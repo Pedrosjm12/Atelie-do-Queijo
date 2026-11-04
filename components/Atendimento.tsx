@@ -2,9 +2,7 @@
 
 import { usePathname } from 'next/navigation';
 import {
-  createContext,
   useCallback,
-  useContext,
   useEffect,
   useMemo,
   useRef,
@@ -12,47 +10,141 @@ import {
   type CSSProperties,
   type ReactNode,
 } from 'react';
+import {
+  carregarAssistente,
+  ESTADO_INICIAL,
+  MENSAGENS_INICIAIS,
+  type Assistente,
+  type EntradaDoCliente,
+  type MensagemDoChat,
+} from '@/lib/assistant';
+import {
+  ContextoDoAtendimento,
+  useAtendimento,
+  type ConversaDoChat,
+  type OpcoesDeFechamento,
+  type ValorDoAtendimento,
+} from './atendimento.contexto';
 import { Button } from './Button';
-import { SupportPanel } from './SupportPanel';
+import { TEXTO_ADICIONADO, useAcoesDaSacola } from './SacolaProvider';
+import { preaquecerIlustracao, SupportPanel } from './SupportPanel';
 
-export type OpcoesDeFechamento = {
-  /** `false` quando a ação já leva o foco a outro lugar (ex.: navegar para o produto). */
-  devolverFoco?: boolean;
-  /**
-   * Fechamento por mudança de rota: o foco vai para #conteudo depois do close() nativo, que
-   * senão o devolveria ao gatilho por cima do que o FocoNoConteudo fez com o diálogo ainda aberto.
-   */
-  focarConteudo?: boolean;
-};
+export { useAtendimento };
+export type { OpcoesDeFechamento };
 
 type DestinoDoFoco = 'gatilho' | 'conteudo' | 'nenhum';
 
-type ValorDoAtendimento = {
-  aberto: boolean;
-  /** `origem` é o gatilho que recebe o foco ao fechar; sem ela vale o elemento ativo. */
-  abrir: (origem?: HTMLElement) => void;
-  fechar: (opcoes?: OpcoesDeFechamento) => void;
+const CONVERSA_INICIAL: ConversaDoChat = {
+  mensagens: MENSAGENS_INICIAIS,
+  estado: ESTADO_INICIAL,
 };
-
-const ContextoDoAtendimento = createContext<ValorDoAtendimento | null>(null);
 
 /**
  * Estado do painel de atendimento (ADR-0005): envolve o conteúdo do <body> e renderiza o
  * <SupportPanel/> uma única vez. Guarda o gatilho que abriu o painel para devolver o foco a
  * ele ao fechar, inclusive onde o <dialog> nativo não faria isso sozinho.
+ *
+ * Também guarda a conversa (só em memória, P51) e a entrega ao assistente (ADR-0010). O número do
+ * WhatsApp chega pronto do servidor (`app/layout.tsx`); nenhum Client Component o resolve.
  */
-export function AtendimentoProvider({ children }: { children: ReactNode }) {
+export function AtendimentoProvider({
+  children,
+  numeroDoWhatsApp,
+}: {
+  children: ReactNode;
+  numeroDoWhatsApp: string | null;
+}) {
+  const { adicionar } = useAcoesDaSacola();
   const [aberto, setAberto] = useState(false);
+  const [conversa, setConversa] = useState<ConversaDoChat>(CONVERSA_INICIAL);
+  // Espelho síncrono da conversa: entradas em sequência rápida leem o estado mais recente.
+  const conversaAtual = useRef<ConversaDoChat>(CONVERSA_INICIAL);
+  const assistente = useRef<Promise<Assistente> | null>(null);
+  // Uma entrada por vez: a resposta de uma é aplicada antes de a seguinte ser calculada.
+  const fila = useRef<Promise<void>>(Promise.resolve());
   const gatilho = useRef<HTMLElement | null>(null);
   const destinoDoFoco = useRef<DestinoDoFoco>('gatilho');
 
-  const abrir = useCallback((origem?: HTMLElement) => {
-    // O Safari não foca o botão ao clicar: por isso o gatilho vem do evento, com o foco como reserva.
-    const ativo = document.activeElement;
-    gatilho.current = origem ?? (ativo instanceof HTMLElement ? ativo : null);
-    destinoDoFoco.current = 'gatilho';
-    setAberto(true);
+  /** Importa o motor uma só vez (chunk tardio). Se a importação falhar, a próxima tentativa refaz. */
+  const obterAssistente = useCallback((): Promise<Assistente> => {
+    const existente = assistente.current;
+    if (existente) return existente;
+    const nova = carregarAssistente();
+    assistente.current = nova;
+    nova.catch(() => {
+      if (assistente.current === nova) assistente.current = null;
+    });
+    return nova;
   }, []);
+
+  const abrir = useCallback(
+    (origem?: HTMLElement) => {
+      // O Safari não foca o botão ao clicar: por isso o gatilho vem do evento, com o foco como reserva.
+      const ativo = document.activeElement;
+      gatilho.current = origem ?? (ativo instanceof HTMLElement ? ativo : null);
+      destinoDoFoco.current = 'gatilho';
+      setAberto(true);
+      // Começa a baixar o motor e o gerador de ilustrações já ao abrir; um clique que chegue antes do fim espera a promessa.
+      obterAssistente().catch(() => undefined);
+      preaquecerIlustracao();
+    },
+    [obterAssistente],
+  );
+
+  const enviar = useCallback(
+    (entrada: EntradaDoCliente): Promise<boolean> => {
+      let entregue = false;
+      const tarefa = fila.current
+        .then(async () => {
+          const motor = await obterAssistente();
+          const resposta = await motor.responder(conversaAtual.current.estado, entrada);
+          // Entrada ignorada (resposta rápida antiga, texto vazio): nada muda, nada a reenviar.
+          if (resposta.mensagens.length === 0) {
+            entregue = true;
+            return;
+          }
+          // Só o último grupo de respostas rápidas aceita clique: os antigos saem da conversa.
+          let mensagens: readonly MensagemDoChat[] = [
+            ...conversaAtual.current.mensagens.filter((m) => m.tipo !== 'respostas-rapidas'),
+            ...resposta.mensagens,
+          ];
+          // Ações só nascem de uma resposta rápida escolhida pela pessoa (ADR-0010, decisão 2).
+          for (const acao of resposta.acoes) {
+            if (acao.tipo !== 'adicionar-a-sacola') continue;
+            const adicionado = adicionar({
+              slug: acao.slug,
+              formatoId: acao.formatoId,
+              quantidade: acao.quantidade,
+              presente: acao.presente,
+            });
+            // O aviso visual fica fora do <dialog> (inerte): quem usa leitor de tela o recebe aqui.
+            if (adicionado) {
+              mensagens = [
+                ...mensagens,
+                {
+                  id: `adicionado-${resposta.estado.proximoId}-${mensagens.length}`,
+                  tipo: 'assistente',
+                  texto: TEXTO_ADICIONADO,
+                },
+              ];
+            }
+          }
+          const proxima: ConversaDoChat = { mensagens, estado: resposta.estado };
+          conversaAtual.current = proxima;
+          setConversa(proxima);
+          entregue = true;
+        })
+        // Falha ao baixar o motor: a conversa fica como estava e a próxima entrada tenta de novo.
+        .catch((erro: unknown) => {
+          if (process.env.NODE_ENV !== 'production') console.error(erro);
+        })
+        .then(() => entregue);
+      // A fila segue por `Promise<void>`: uma falha nunca trava as entradas seguintes.
+      fila.current = tarefa.then(() => undefined);
+      return tarefa;
+    },
+    [adicionar, obterAssistente],
+  );
 
   const fechar = useCallback((opcoes?: OpcoesDeFechamento) => {
     destinoDoFoco.current = opcoes?.focarConteudo
@@ -84,7 +176,10 @@ export function AtendimentoProvider({ children }: { children: ReactNode }) {
     if (aberto) fechar({ focarConteudo: true });
   }, [caminho, aberto, fechar]);
 
-  const valor = useMemo(() => ({ aberto, abrir, fechar }), [aberto, abrir, fechar]);
+  const valor = useMemo<ValorDoAtendimento>(
+    () => ({ aberto, abrir, fechar, numeroDoWhatsApp, conversa, enviar }),
+    [aberto, abrir, fechar, numeroDoWhatsApp, conversa, enviar],
+  );
 
   return (
     <ContextoDoAtendimento value={valor}>
@@ -92,14 +187,6 @@ export function AtendimentoProvider({ children }: { children: ReactNode }) {
       <SupportPanel aberto={aberto} aoSolicitarFechamento={fechar} aoFechado={aoFechado} />
     </ContextoDoAtendimento>
   );
-}
-
-export function useAtendimento(): ValorDoAtendimento {
-  const valor = useContext(ContextoDoAtendimento);
-  if (valor === null) {
-    throw new Error('useAtendimento precisa estar dentro de <AtendimentoProvider>.');
-  }
-  return valor;
 }
 
 type BotaoAbrirAtendimentoProps = {

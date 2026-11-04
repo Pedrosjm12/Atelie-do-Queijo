@@ -222,8 +222,29 @@
   color: var(--whatsapp);
 }
 
-.queijista > button {
+/* Link do WhatsApp com o visual de Button variante="link" (spec 4.4), agora um <a>. */
+.linkDoQueijista {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 0 2px;
+  border-bottom: 1px solid var(--ouro);
+  color: var(--creme);
   font-size: 14px;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+/* Amplia a área de toque para 44 px sem alterar o sublinhado. */
+.linkDoQueijista::after {
+  content: '';
+  position: absolute;
+  inset: -12px 0;
+}
+
+.linkDoQueijista:hover {
+  color: var(--ouro);
 }
 
 /* Barra fixa: só no celular (§7.6) */

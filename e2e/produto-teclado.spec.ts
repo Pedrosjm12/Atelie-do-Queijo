@@ -90,7 +90,9 @@ test.describe('página de produto só com teclado', () => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto(rota);
     const cep = page.getByLabel('Calcule o frete e o prazo');
-    const queijista = page.getByRole('button', { name: 'Fale com um queijista' });
+    const queijista = page
+      .getByRole('link', { name: 'Fale com um queijista' })
+      .filter({ visible: true });
     await tabAte(page, cep);
     await page.keyboard.press('Tab');
     await expect(page.getByRole('button', { name: 'Calcular' })).toBeFocused();
@@ -102,7 +104,9 @@ test.describe('página de produto só com teclado', () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(rota);
     const cep = page.getByLabel('Calcule o frete e o prazo');
-    const queijista = page.getByRole('button', { name: 'Fale com um queijista' });
+    const queijista = page
+      .getByRole('link', { name: 'Fale com um queijista' })
+      .filter({ visible: true });
     await tabAte(page, queijista);
     await page.keyboard.press('Tab');
     await expect(cep).toBeFocused();

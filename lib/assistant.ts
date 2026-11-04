@@ -1,6 +1,5 @@
 import type { Shape, SlugDoQueijo } from '@/data/cheeses';
 import type { Centavos } from './dinheiro';
-import { CARTAO_DO_CHAT } from './cartaoDoChat';
 import type { RespostasDoQuiz } from './quiz';
 import type { MotivoDoContato } from './whatsapp';
 
@@ -122,46 +121,3 @@ export async function carregarAssistente(): Promise<Assistente> {
   const { assistenteDeterministico } = await import('./roteiro');
   return assistenteDeterministico;
 }
-
-/**
- * @deprecated Provisório até o bloco B da etapa 6, que troca o `SupportPanel` pela conversa
- * ligada ao motor e remove esta constante e `lib/cartaoDoChat.ts`. Spec §8.2, itens 1 a 7.
- */
-export const ROTEIRO_DO_PROTOTIPO: readonly MensagemDoChat[] = [
-  ...MENSAGENS_INICIAIS,
-  {
-    id: 'pedido-do-cliente',
-    tipo: 'cliente',
-    texto: 'Quero presentear alguém que adora vinho tinto.',
-  },
-  {
-    id: 'sugestao',
-    tipo: 'assistente',
-    texto: 'Ótima ocasião! Com tinto, um queijo curado e intenso costuma brilhar. Minha sugestão:',
-  },
-  {
-    id: 'produto-sugerido',
-    tipo: 'produto',
-    slug: CARTAO_DO_CHAT.slug,
-    cartao: {
-      nome: CARTAO_DO_CHAT.nome,
-      tag: CARTAO_DO_CHAT.tag,
-      linhaPequena: CARTAO_DO_CHAT.linhaPequena,
-      preco: CARTAO_DO_CHAT.preco,
-      ilustracao: { shape: 'wide', side: '#A8642A', top: '#D9A752' },
-    },
-  },
-  {
-    id: 'pergunta-do-presente',
-    tipo: 'assistente',
-    texto: 'Quer que eu inclua embalagem de presente e um cartão com mensagem?',
-  },
-  {
-    id: 'respostas-do-presente',
-    tipo: 'respostas-rapidas',
-    opcoes: [
-      { id: 'com-cartao', rotulo: 'Sim, com cartão', sugerida: true },
-      { id: 'outras-opcoes', rotulo: 'Ver outras opções' },
-    ],
-  },
-];

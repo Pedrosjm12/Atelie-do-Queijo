@@ -1,17 +1,65 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useId, useRef, type FormEvent, type ReactNode } from 'react';
-import { ROTEIRO_DO_PROTOTIPO, type MensagemDoChat } from '@/lib/assistant';
-import { CARTAO_DO_CHAT } from '@/lib/cartaoDoChat';
+import {
+  Component,
+  lazy,
+  Suspense,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type FormEvent,
+  type ReactNode,
+} from 'react';
+import type { SlugDoQueijo } from '@/data/cheeses';
+import {
+  TAMANHO_MAXIMO_DA_MENSAGEM_DO_CLIENTE,
+  type CartaoDoChat as DadosDoCartao,
+  type MensagemDoChat,
+} from '@/lib/assistant';
 import { formatarPreco } from '@/lib/format';
-import type { OpcoesDeFechamento } from './Atendimento';
+import { atendimentoHumanoAberto, TEXTO_DA_CAVE_FECHADA, TEXTO_DO_HORARIO } from '@/lib/whatsapp';
+import { useAtendimento, type OpcoesDeFechamento } from './atendimento.contexto';
 import { Icone } from './icons';
 import { MiniaturaDoChat } from './ilustracoes/MiniaturaDoChat';
+import { LinkDoWhatsApp } from './LinkDoWhatsApp';
 import { useAbas } from './useAbas';
 import estilos from './SupportPanel.module.css';
 
 const ABAS = ['assistente', 'queijista'] as const;
+
+// O gerador A.6 só é necessário para os cartões que não são o do Canastra (A.7): fica fora do
+// pacote global (orçamento da etapa 6) e é baixado na primeira vez que um deles aparece.
+const importarIlustracao = () => import('./CheeseIllustration');
+
+const IlustracaoDoQueijo = lazy(() =>
+  importarIlustracao().then((m) => ({ default: m.CheeseIllustration })),
+);
+
+/** Começa a baixar o gerador A.6 ao abrir o painel (sem entrar no HTML inicial). Nunca rejeita. */
+export function preaquecerIlustracao(): void {
+  importarIlustracao().catch(() => undefined);
+}
+
+/**
+ * Limite de erro mínimo: se o chunk da ilustração falhar (rede), o cartão mostra a reserva vazia
+ * em vez de derrubar o painel inteiro. A conversa e o link do produto continuam funcionando.
+ */
+class LimiteDaIlustracao extends Component<
+  { children: ReactNode; reserva: ReactNode },
+  { falhou: boolean }
+> {
+  state = { falhou: false };
+
+  static getDerivedStateFromError() {
+    return { falhou: true };
+  }
+
+  render() {
+    return this.state.falhou ? this.props.reserva : this.props.children;
+  }
+}
 
 type AoSolicitarFechamento = (opcoes?: OpcoesDeFechamento) => void;
 
@@ -25,9 +73,10 @@ type SupportPanelProps = {
 
 /**
  * Painel de atendimento (spec §8): <dialog> modal nativo (ADR-0005). O conteúdo só é montado
- * enquanto o painel está aberto, então a conversa recomeça a cada abertura e o DOM da página
- * não carrega a árvore do painel fechado. O código do painel está no pacote global (o provider
- * fica no layout); por isso o cartão do chat usa `lib/cartaoDoChat`, sem o catálogo inteiro.
+ * enquanto o painel está aberto, então o DOM da página não carrega a árvore do painel fechado
+ * (a conversa, essa, vive no provider e sobrevive ao fechamento, P51). O código do painel está
+ * no pacote global (o provider fica no layout); por isso o cartão do chat viaja dentro da
+ * mensagem (`mensagem.cartao`), sem o catálogo inteiro.
  */
 export function SupportPanel({ aberto, aoSolicitarFechamento, aoFechado }: SupportPanelProps) {
   const dialogo = useRef<HTMLDialogElement>(null);
@@ -40,7 +89,7 @@ export function SupportPanel({ aberto, aoSolicitarFechamento, aoFechado }: Suppo
     if (!el) return;
     if (aberto && !el.open) {
       el.showModal();
-      rolarConversaAteOFim(el);
+      rolarConversaAteOFim(el.querySelector<HTMLElement>('[role="log"]'));
     }
     if (!aberto && el.open) el.close();
   }, [aberto]);
@@ -71,11 +120,10 @@ export function SupportPanel({ aberto, aoSolicitarFechamento, aoFechado }: Suppo
 }
 
 /**
- * Leva a conversa à última mensagem ao abrir. Só a área do log rola: cabeçalho, abas e campo
- * continuam visíveis. Suave apenas se a pessoa não pediu menos movimento.
+ * Leva a conversa à última mensagem. Só a área do log rola: cabeçalho, abas e campo continuam
+ * visíveis. Suave apenas se a pessoa não pediu menos movimento.
  */
-function rolarConversaAteOFim(dialogo: HTMLDialogElement) {
-  const conversa = dialogo.querySelector<HTMLElement>('[role="log"]');
+function rolarConversaAteOFim(conversa: HTMLElement | null) {
   if (!conversa) return;
   const reduzir =
     typeof window.matchMedia === 'function' &&
@@ -103,36 +151,6 @@ function SimboloDoAvatar() {
   );
 }
 
-/** Botão cuja ação chega na etapa 6: focável, visual igual, anuncia aria-disabled e o aviso. */
-function SemAcao({
-  className,
-  idDoAviso,
-  children,
-  ...resto
-}: {
-  className?: string;
-  idDoAviso: string;
-  children: ReactNode;
-  'aria-label'?: string;
-}) {
-  return (
-    <button
-      type="button"
-      className={className}
-      aria-disabled="true"
-      aria-describedby={idDoAviso}
-      {...resto}
-    >
-      {children}
-    </button>
-  );
-}
-
-/** Sem ação até a etapa 6: o Enter no campo não pode recarregar a página. */
-function impedirEnvio(evento: FormEvent<HTMLFormElement>) {
-  evento.preventDefault();
-}
-
 function ConteudoDoPainel({
   idDoTitulo,
   aoSolicitarFechamento,
@@ -140,13 +158,63 @@ function ConteudoDoPainel({
   idDoTitulo: string;
   aoSolicitarFechamento: AoSolicitarFechamento;
 }) {
+  const { conversa, enviar, numeroDoWhatsApp } = useAtendimento();
   const abas = useAbas(ABAS, 'assistente');
-  const idDoAvisoDoChat = useId();
-  const idDoAvisoDoWhatsapp = useId();
   const idDoCampo = useId();
+  const log = useRef<HTMLDivElement>(null);
+  const campo = useRef<HTMLInputElement>(null);
+  const [texto, setTexto] = useState('');
+  const textoEmEnvio = useRef(false);
+
+  // O horário é calculado ao abrir (este componente só existe com o painel aberto, então não há
+  // HTML do servidor para divergir) e ao trocar de aba; nunca enquanto a pessoa lê.
+  const [horario, setHorario] = useState(() => ({
+    aba: abas.ativa,
+    humanoAberto: atendimentoHumanoAberto(),
+  }));
+  if (horario.aba !== abas.ativa) {
+    setHorario({ aba: abas.ativa, humanoAberto: atendimentoHumanoAberto() });
+  }
+
+  // Cada resposta nova leva a conversa ao fim. A abertura é rolada por SupportPanel (o diálogo
+  // ainda está fechado quando este efeito roda pela primeira vez).
+  const primeiraRolagem = useRef(true);
+  useEffect(() => {
+    if (primeiraRolagem.current) {
+      primeiraRolagem.current = false;
+      return;
+    }
+    rolarConversaAteOFim(log.current);
+  }, [conversa.mensagens]);
 
   const classeDaAba = (id: (typeof ABAS)[number]) =>
     abas.ativa === id ? `${estilos.aba} ${estilos.abaAtiva}` : estilos.aba;
+
+  function escolherResposta(id: string) {
+    // O foco vai para o campo (estável e previsível): o grupo clicado sai da conversa.
+    campo.current?.focus();
+    void enviar({ tipo: 'resposta-rapida', id });
+  }
+
+  async function enviarTexto(evento: FormEvent<HTMLFormElement>) {
+    evento.preventDefault();
+    const digitado = texto.trim();
+    if (digitado === '' || textoEmEnvio.current) return;
+    textoEmEnvio.current = true;
+    campo.current?.focus();
+    const entregue = await enviar({ tipo: 'texto', texto: digitado });
+    textoEmEnvio.current = false;
+    // Só limpa no sucesso, e só se a pessoa não mexeu no campo enquanto esperava: o que ela
+    // digitou nunca se perde (falha ao baixar o motor deixa o texto para tentar de novo).
+    if (entregue) setTexto((atual) => (atual === texto ? '' : atual));
+  }
+
+  const botaoDoWhatsapp = (
+    <LinkDoWhatsApp motivo={conversa.estado.contato} className={estilos.botaoWhatsapp}>
+      <Icone nome="conversa" tamanho={16} espessura={1.8} />
+      Falar com um queijista
+    </LinkDoWhatsApp>
+  );
 
   return (
     <>
@@ -190,42 +258,48 @@ function ConteudoDoPainel({
         tabIndex={undefined}
         className={estilos.painelDoAssistente}
       >
-        <div className={estilos.mensagens} role="log" aria-label="Conversa">
-          {ROTEIRO_DO_PROTOTIPO.map((mensagem) => (
+        {/* Região rolável: precisa de foco para rolar por teclado (WCAG 2.1.1) quando sem botões. */}
+        {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex */}
+        <div ref={log} className={estilos.mensagens} role="log" aria-label="Conversa" tabIndex={0}>
+          {conversa.mensagens.map((mensagem) => (
             <Mensagem
               key={mensagem.id}
               mensagem={mensagem}
-              idDoAviso={idDoAvisoDoChat}
+              aoEscolher={escolherResposta}
               aoIrParaOProduto={() => aoSolicitarFechamento({ devolverFoco: false })}
             />
           ))}
         </div>
 
-        <div className={estilos.passagem}>
-          <p className={estilos.passagemTexto}>
-            Prefere falar com uma pessoa?
-            <span className={estilos.horarioPequeno}>Seg a sex, 9h às 18h · sáb, 9h às 15h</span>
-          </p>
-          <SemAcao className={estilos.botaoWhatsapp} idDoAviso={idDoAvisoDoWhatsapp}>
-            <Icone nome="conversa" tamanho={16} espessura={1.8} />
-            Falar com um queijista
-          </SemAcao>
-        </div>
+        {/* Sem número do WhatsApp não há para onde passar a conversa: a faixa inteira sai. */}
+        {numeroDoWhatsApp !== null && (
+          <div className={estilos.passagem}>
+            <p className={estilos.passagemTexto}>
+              Prefere falar com uma pessoa?
+              <span className={estilos.horarioPequeno}>{TEXTO_DO_HORARIO}</span>
+            </p>
+            {botaoDoWhatsapp}
+          </div>
+        )}
 
-        <form className={estilos.formulario} onSubmit={impedirEnvio}>
+        <form className={estilos.formulario} onSubmit={(evento) => void enviarTexto(evento)}>
           <label htmlFor={idDoCampo} className="sr-only">
             Escreva sua mensagem
           </label>
           <input
+            ref={campo}
             id={idDoCampo}
             type="text"
             className={estilos.campo}
             placeholder="Escreva sua mensagem…"
             autoComplete="off"
+            maxLength={TAMANHO_MAXIMO_DA_MENSAGEM_DO_CLIENTE}
+            value={texto}
+            onChange={(evento) => setTexto(evento.target.value)}
           />
-          <SemAcao className={estilos.enviar} idDoAviso={idDoAvisoDoChat} aria-label="Enviar">
+          <button type="submit" className={estilos.enviar} aria-label="Enviar">
             <Icone nome="enviar" tamanho={18} espessura={1.75} />
-          </SemAcao>
+          </button>
         </form>
       </div>
 
@@ -234,32 +308,25 @@ function ConteudoDoPainel({
         tabIndex={undefined}
         className={estilos.painelDoQueijista}
       >
-        <p className={estilos.horario}>Seg a sex, 9h às 18h · sáb, 9h às 15h</p>
-        <SemAcao className={estilos.botaoWhatsapp} idDoAviso={idDoAvisoDoWhatsapp}>
-          <Icone nome="conversa" tamanho={16} espessura={1.8} />
-          Falar com um queijista
-        </SemAcao>
+        <p className={estilos.horario}>
+          {horario.humanoAberto ? TEXTO_DO_HORARIO : TEXTO_DA_CAVE_FECHADA}
+        </p>
+        {botaoDoWhatsapp}
       </div>
-
-      <span id={idDoAvisoDoChat} hidden>
-        Atendimento disponível em breve
-      </span>
-      <span id={idDoAvisoDoWhatsapp} hidden>
-        Atendimento por WhatsApp disponível em breve
-      </span>
     </>
   );
 }
 
 function Mensagem({
   mensagem,
-  idDoAviso,
+  aoEscolher,
   aoIrParaOProduto,
 }: {
   mensagem: MensagemDoChat;
-  idDoAviso: string;
+  aoEscolher: (id: string) => void;
   aoIrParaOProduto: () => void;
 }) {
+  // Todo texto entra como filho do React (escapado): nada de innerHTML, nem para o texto digitado.
   switch (mensagem.tipo) {
     case 'assistente':
       return (
@@ -279,30 +346,55 @@ function Mensagem({
       return (
         <div className={estilos.respostas} role="group" aria-label="Respostas sugeridas">
           {mensagem.opcoes.map((opcao) => (
-            <SemAcao
+            <button
               key={opcao.id}
-              idDoAviso={idDoAviso}
+              type="button"
               className={
                 opcao.sugerida ? `${estilos.resposta} ${estilos.sugerida}` : estilos.resposta
               }
+              onClick={() => aoEscolher(opcao.id)}
             >
               {opcao.rotulo}
-            </SemAcao>
+            </button>
           ))}
         </div>
       );
     case 'produto':
-      if (mensagem.slug !== CARTAO_DO_CHAT.slug) return null;
-      return <CartaoDoChat aoIrParaOProduto={aoIrParaOProduto} />;
+      return (
+        <CartaoDoChat
+          slug={mensagem.slug}
+          cartao={mensagem.cartao}
+          aoIrParaOProduto={aoIrParaOProduto}
+        />
+      );
   }
 }
 
-function CartaoDoChat({ aoIrParaOProduto }: { aoIrParaOProduto: () => void }) {
-  const { slug, nome, tag, linhaPequena, preco } = CARTAO_DO_CHAT;
+function CartaoDoChat({
+  slug,
+  cartao,
+  aoIrParaOProduto,
+}: {
+  slug: SlugDoQueijo;
+  cartao: DadosDoCartao;
+  aoIrParaOProduto: () => void;
+}) {
+  const { nome, tag, linhaPequena, preco, ilustracao } = cartao;
 
   return (
     <article className={estilos.cartao}>
-      <MiniaturaDoChat />
+      {/* A.7 só para o Canastra curado; os demais usam o gerador A.6 a 84 px (decisão da etapa 3). */}
+      {slug === 'canastra-curado' ? (
+        <MiniaturaDoChat />
+      ) : (
+        <span className={estilos.miniatura}>
+          <LimiteDaIlustracao reserva={<span className={estilos.miniaturaVazia} />}>
+            <Suspense fallback={<span className={estilos.miniaturaVazia} />}>
+              <IlustracaoDoQueijo {...ilustracao} label={nome} decorativa />
+            </Suspense>
+          </LimiteDaIlustracao>
+        </span>
+      )}
       <div className={estilos.cartaoTexto}>
         <p className={estilos.cartaoTag}>{tag}</p>
         <h3 className={estilos.cartaoNome}>{nome}</h3>

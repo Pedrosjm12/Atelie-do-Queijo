@@ -23,7 +23,7 @@ import {
   textoPorQueCombina,
   type RespostasDoQuiz,
 } from './quiz';
-import { lerNumeroDoPedido, type MotivoDoContato } from './whatsapp';
+import { AVISO_DE_NOVA_ABA, lerNumeroDoPedido, type MotivoDoContato } from './whatsapp';
 
 /**
  * Motor determinístico do assistente (spec §8.2; ADR-0010): máquina de estados pura, sem React,
@@ -64,7 +64,8 @@ export const TEXTOS_DO_ROTEIRO = {
   saude: A_DEFINIR(
     'resposta a perguntas de saúde (só o dono escreve; precisa recomendar consultar um médico e nada além)',
   ),
-  avisoNovaAba: A_DEFINIR('aviso só para leitor de tela: o link do WhatsApp abre em nova aba'),
+  /** Definido em `lib/whatsapp.ts` (o link fica no pacote global); aqui para o dono achar todos os textos. */
+  avisoNovaAba: AVISO_DE_NOVA_ABA,
 } as const;
 
 // --- Texto livre -------------------------------------------------------------------------------

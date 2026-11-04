@@ -44,6 +44,7 @@ export default async function PaginaDoProduto({ params }: PageProps<'/queijos/[s
           <PainelDeCompra
             key={queijo.slug}
             slug={queijo.slug}
+            nomeDoQueijo={queijo.nome}
             formatos={queijo.formatos}
             estoque={queijo.estoque}
             frete={<ShippingCalculator />}

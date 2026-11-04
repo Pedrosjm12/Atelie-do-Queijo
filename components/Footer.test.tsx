@@ -2,12 +2,15 @@ import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { AtendimentoProvider } from './Atendimento';
 import { Footer } from './Footer';
+import { SacolaProvider } from './SacolaProvider';
 
 const renderizar = () =>
   render(
-    <AtendimentoProvider>
-      <Footer />
-    </AtendimentoProvider>,
+    <SacolaProvider>
+      <AtendimentoProvider numeroDoWhatsApp={null}>
+        <Footer />
+      </AtendimentoProvider>
+    </SacolaProvider>,
   );
 
 describe('Footer', () => {

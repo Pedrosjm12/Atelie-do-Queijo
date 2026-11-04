@@ -37,11 +37,12 @@ export const NUMERO_WHATSAPP_FICTICIO = '5520900000000';
 const FORMATO_DO_NUMERO = /^55\d{10,11}$/;
 
 /**
- * Número do WhatsApp da loja, só dígitos. Usa `NEXT_PUBLIC_WHATSAPP_NUMBER` quando definida e no
- * formato `55` + DDD + número (`^55\d{10,11}$`). Fora de produção, cai no fictício. Com
- * `VERCEL_ENV === 'production'` e variável ausente ou inválida, devolve `null`: a interface deverá
- * esconder os links do WhatsApp (tratado na etapa 6). A referência a `process.env.NEXT_PUBLIC_*` é
- * direta de propósito: o Next só a substitui no pacote do navegador assim.
+ * Número do WhatsApp da loja, só dígitos. Roda SÓ NO SERVIDOR (`app/layout.tsx` o chama e passa o
+ * resultado por prop; ADR-0010, decisão 4): `VERCEL_ENV` não chega ao navegador. Usa
+ * `NEXT_PUBLIC_WHATSAPP_NUMBER` quando definida e no formato `55` + DDD + número
+ * (`^55\d{10,11}$`). Fora de produção, cai no fictício. Com `VERCEL_ENV === 'production'` e
+ * variável ausente ou inválida, devolve `null`: a interface esconde os links do WhatsApp.
+ * Publicar fora da Vercel exige garantir `VERCEL_ENV` (ver docs/ambiente.md).
  */
 export function numeroDoWhatsApp(): string | null {
   const definido = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER?.replace(/\D/g, '') ?? '';

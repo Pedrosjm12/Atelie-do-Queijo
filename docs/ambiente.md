@@ -15,6 +15,8 @@ A leitura é feita por `numeroDoWhatsApp()` em `data/ficticio.ts`:
 - Se estiver vazia ou inválida **fora de produção**, vale o número **fictício** `5520900000000`.
 - Se estiver vazia ou inválida **em produção** (`VERCEL_ENV=production`), o resultado é `null` e a interface deve **esconder** os links do WhatsApp.
 
+`numeroDoWhatsApp()` roda **só no servidor** (`app/layout.tsx`) e entrega o número ao navegador por prop, porque `VERCEL_ENV` não existe no navegador. Consequência: **publique somente na Vercel** ou garanta que `VERCEL_ENV=production` esteja definida no ambiente de produção; sem ela, o site publicaria o número fictício. Depois do build de produção, confira que `5520900000000` não aparece em `.next/static` (`grep -r 5520900000000 .next/static` não deve achar nada). Sem número em produção, a faixa "Prefere falar com uma pessoa?" do painel e os botões do WhatsApp somem.
+
 ## Trava de produção (`VERCEL_ENV`)
 
 `VERCEL_ENV` é definida pela Vercel, não por nós. Com `VERCEL_ENV=production` e `DADOS_FICTICIOS_ATIVOS = true` em `data/ficticio.ts`, o `next.config.ts` **faz o build falhar** com a mensagem "Build de produção bloqueado". Isso impede publicar dados fictícios por engano. O build local não é afetado (a trava não usa `NODE_ENV`).

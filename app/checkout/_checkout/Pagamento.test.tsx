@@ -47,7 +47,7 @@ function semearBarata() {
 function renderizar() {
   return render(
     <SacolaProvider>
-      <AtendimentoProvider>
+      <AtendimentoProvider numeroDoWhatsApp={null}>
         <FluxoDoCheckout queijos={resumoParaSacola()} />
       </AtendimentoProvider>
     </SacolaProvider>,

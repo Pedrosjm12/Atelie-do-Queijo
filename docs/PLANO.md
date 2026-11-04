@@ -1,7 +1,7 @@
 # Plano de implementação — Ateliê do Queijo
 
 > Fonte da verdade: `ATELIE-DO-QUEIJO-SPEC.md`. Decisões técnicas: `docs/adr/`.
-> Última atualização: 2026-11-03 (fechamento da etapa 5 e detalhamento da etapa 6). Etapas 1, 2, 3, 4 e 5 **concluídas**; etapa 6 **detalhada**. A loja segue **simulada**.
+> Última atualização: 2026-11-03 (fechamento da etapa 5; etapa 6 em andamento, bloco B corrigido após a verificação). Etapas 1, 2, 3, 4 e 5 **concluídas**; etapa 6 **detalhada**. A loja segue **simulada**.
 >
 > **AVISO: dados de negócio fictícios** (WhatsApp, CNPJ, endereço, frete, parcelas, produtor) estão em `data/ficticio.ts` e **precisam ser trocados antes da publicação**; o build de produção na Vercel falha enquanto a trava existir. Ver [Decisões do dono de 2026-11-03](#decisões-do-dono-de-2026-11-03-d1-a-d34).
 >
@@ -1038,6 +1038,14 @@ Cada tarefa termina com `lint`, `typecheck`, `format:check`, `test`, `build` e `
    - `ProductCard` (formato do P24, quantidade 1), `Quiz` (mesma regra), `PainelDeCompra` e barra fixa (formato e quantidade escolhidos), **Embalar para presente** (P31: adiciona o formato e a quantidade escolhidos com `presente: true`). Esgotado continua com **Avise-me** sem ação. `QuantityStepper` vai para `components/` com `maximo={10}`. `formatoDeVitrine` (P24) fica em `lib/catalogo.ts` e alimenta `ProductCard` e `Quiz`. **Embalar para presente** não usa `aria-pressed` (adiciona a cada clique, não alterna): o contêiner ganha `data-presente` e aparece o texto visível **Pedido marcado como presente**. Apagar `BotaoDaSacola.tsx` e o aviso "Sacola disponível em breve".
    - **Pronto quando:** não sobra `aria-disabled` em nenhum Adicionar (busca no código); teste do `PainelDeCompra`: "Meia peça" × 2 → `adicionar({ slug: 'canastra-curado', formatoId: 'meia', quantidade: 2 })`; e2e (tarefa 8).
 
+**Status do bloco B (tarefas 5 a 7), implementado em 2026-11-03:**
+
+- **Feito:** `app/layout.tsx` resolve `numeroDoWhatsApp()` e passa ao `AtendimentoProvider`; `LinkDoWhatsApp` (nada com `null` ou número inválido; `target="_blank"`, `rel="noopener noreferrer"`); `LinkDoQueijista` vira link (a linha inteira some sem número); conversa no provider (memória, P51), motor por `carregarAssistente()` ao abrir, fila de entradas, ações de sacola, só o último grupo de respostas rápidas, foco no campo, rolagem a cada resposta, horário calculado ao abrir e ao trocar de aba. Saíram `ROTEIRO_DO_PROTOTIPO`, `SemAcao`, `lib/cartaoDoChat.ts` (+ teste) e os avisos "… disponível em breve" do painel.
+- **Desvios técnicos (a registrar no fechamento):** (1) o contexto foi para `components/atendimento.contexto.ts` (evita ciclo `Atendimento` → `SupportPanel` → `LinkDoWhatsApp` → `Atendimento`); (2) a lacuna `avisoNovaAba` mora em `lib/whatsapp.ts` (`AVISO_DE_NOVA_ABA`), porque o link está no pacote global e `TEXTOS_DO_ROTEIRO` é do *chunk* tardio; `TEXTOS_DO_ROTEIRO.avisoNovaAba` aponta para ela; o aviso é a descrição acessível do link (`aria-describedby` para um `<span hidden>`), sem texto visível; (3) o gerador A.6 do cartão é `React.lazy` (fora do pacote global, para caber no orçamento), com reserva de tamanho; (4) `AtendimentoProvider` agora exige `SacolaProvider` acima (executa as ações da sacola), e os testes foram ajustados.
+- **Testes:** novos `components/SupportPanel.test.tsx`, `components/LinkDoWhatsApp.test.tsx`, `data/numeroDoWhatsApp.cliente.test.ts` (barra `'use client'` importando `numeroDoWhatsApp`), `e2e/whatsapp.spec.ts` (`page.clock`, hrefs, chunk do motor, rede, 360 e 390 px); atualizados `Atendimento.test.tsx`, `PainelDeCompra.test.tsx`, `e2e/atendimento.spec.ts`, `e2e/produto-teclado.spec.ts`.
+- **Orçamento (`npm run medir:pacote`, agora com a medição do motor):** compartilhado 184,11 kB (limite 184,19; +1,42 sobre 182,69); Home 188,50 (limite 188,53); `/queijos` 184,11; produto 193,99 (limite 195,27); motor 4,61 kB gzip (limite 12), ausente do HTML. Folga mínima: qualquer código novo no pacote global estoura.
+- **Pendências para a tarefa 8 / decisão do dono:** (a) o aviso de nova aba é só lacuna para leitor de tela (não há como exibi-la visível sem quebrar o botão verde); (b) o aviso **Adicionado à sacola. Boa escolha.** (§7.5) é renderizado fora do diálogo modal, então a confirmação visível no chat é o texto `depoisDaAcao` (lacuna do P52); validar com o `especialista-em-acessibilidade` se o anúncio chega ao leitor de tela; (c) falha ao baixar o *chunk* do motor deixa a conversa como estava, sem mensagem (não há texto aprovado para erro); (d) o gerador A.6 baixa um *chunk* na primeira vez que um cartão que não é o do Canastra aparece.
+
 8. **Verificação do bloco B, em paralelo:**
    - **[testes-e-qualidade]** e2e: Adicionar no catálogo → contador 1 e aviso visível; recarregar → contador 1; `localStorage` com lixo (via `page.addInitScript`) → página abre com 0 e sem erro no console; duas abas (dois `page` no mesmo `context`) → a segunda reflete a primeira; a 390 px na página de produto, o aviso não sobrepõe a barra fixa nem o FAB.
    - **[especialista-em-acessibilidade]** anúncio do aviso (NVDA/VoiceOver), foco que não se move, nome do link da sacola.
@@ -1577,7 +1585,7 @@ Ordem: A → B → fechamento; C espera o primeiro GLB (P40 = B).
 
 **Objetivo:** dar ação a todos os controles do painel de atendimento e ao **Fale com um queijista** do produto (spec §8.2, §8.3, §10.5 e item "Painel de atendimento" da §14): a conversa começa só com a saudação e as respostas rápidas (P4), segue uma árvore de opções determinística, passa para humano pelo WhatsApp com a mensagem da §8.3 e mostra o horário ou a mensagem de cave fechada conforme a hora em `America/Sao_Paulo`.
 
-**Situação: detalhada em 2026-11-03; bloco A (tarefas 1 a 3) implementado em 2026-11-03, aguardando a verificação da tarefa 4.** O dono aceitou todas as recomendações das [perguntas P44 a P52](#perguntas-ao-dono-etapa-6) em 2026-11-03. Os 13 textos do P52 seguem como `[A DEFINIR: …]` até o dono escrevê-los.
+**Situação: detalhada em 2026-11-03; bloco A (tarefas 1 a 4) publicado (`a744972`); bloco B (tarefas 5 a 7) implementado em 2026-11-03, aguardando a verificação da tarefa 8.** O dono aceitou todas as recomendações das [perguntas P44 a P52](#perguntas-ao-dono-etapa-6) em 2026-11-03. Os 13 textos do P52 seguem como `[A DEFINIR: …]` até o dono escrevê-los.
 
 **Pré-requisito:** etapa 5 concluída (`a990e3a`, `5794996`); `data/ficticio.ts` com `numeroDoWhatsApp()` (`39fd9e0`).
 
@@ -1853,7 +1861,7 @@ Cada tarefa termina com `lint`, `typecheck`, `format:check`, `test`, `modelos:va
 | --- | --- | --- | --- |
 | Docs | Este detalhamento e o ADR-0010 | `docs: detalha a etapa 6 e registra o ADR-0010` | A publicar (sessão principal) |
 | A | Tarefas 1 a 4 | `feat(atendimento): adiciona o roteiro do assistente e as regras do WhatsApp` | Tarefas 1 a 3 feitas (sem commit); falta a verificação da tarefa 4 |
-| B | Tarefas 5 a 8 | `feat(atendimento): liga o assistente, o horário e os links do WhatsApp` | A fazer |
+| B | Tarefas 5 a 8 | `feat(atendimento): liga o assistente, o horário e os links do WhatsApp` | Tarefas 5 a 7 feitas (sem commit); falta a verificação da tarefa 8 |
 | Docs | Tarefa 9 | `docs: fecha a etapa 6` | A fazer |
 
 ### Critérios de pronto da etapa 6
@@ -1886,6 +1894,33 @@ Cada tarefa termina com `lint`, `typecheck`, `format:check`, `test`, `modelos:va
 - **Decisão de produto aberta (b):** mensagem com sinal de saúde **e** pedido ou produto estragado deveria também passar para humano? Hoje saúde vence e só mostra o texto de saúde.
 - **(c)** "presente sem tinto" e "tábua de frios para o presente com tinto" seguem a prioridade documentada (hoje o segundo vira `presente-tinto`).
 - **(d)** Se o motor for ao servidor (IA, versão 2), validar `EstadoDaConversa` com Zod na entrada.
+
+### Verificação do bloco B (etapa 6): correções aplicadas e pendências
+
+**Corrigido (2026-11-03):**
+
+- **Texto digitado não se perde:** `enviar` devolve `Promise<boolean>` e nunca rejeita (o erro vai a `console.error` só fora de produção); o `SupportPanel` limpa o campo só no sucesso e só se a pessoa não mexeu nele no meio do caminho. A fila interna segue `Promise<void>`. Testes: promessa adiada (respostas em ordem) e motor que falha (texto fica, reenvio funciona).
+- **Ilustração do cartão:** limite de erro mínimo (classe, sem dependência) em volta do `Suspense`, com a mesma reserva `.miniaturaVazia`; o `import()` do gerador A.6 é pré-aquecido ao abrir o painel, junto com o motor, sem entrar no HTML inicial.
+- **Marca do motor** em `scripts/medir-pacote.mjs` e `e2e/whatsapp.spec.ts`: agora o literal da §8.2 "Vou chamar um queijista da nossa equipe" (não depende de lacunas `[A DEFINIR]`). O `medir:pacote` também **falha** se o código de `CheeseIllustration` voltar ao pacote compartilhado.
+- **Confirmação da sacola para leitor de tela:** `adicionar` devolve `boolean`; ao entrar a ação do assistente com sucesso, o provider acrescenta à conversa uma mensagem do assistente com **Adicionado à sacola. Boa escolha.** (dentro do `role="log"`, porque o toast fica fora do `<dialog>` modal, inerte). O toast visual continua. O e2e exige `toBeVisible()` dentro do painel. Quando o limite de unidades corta a quantidade, só o toast avisa (o texto do limite não vai ao log): se o dono quiser, a mesma regra vale para `TEXTO_LIMITE`.
+- **Acessibilidade e reflow:** `tabIndex={0}` no `role="log"` rolável; aba e botão do WhatsApp com altura **mínima** de 40 px (o texto quebra a 320 px em vez de estourar) e faixa com `flex-wrap`; e2e a 320, 360 e 390 px sem corte nem rolagem horizontal. Zonas de toque de 44 px por `::after` invisível na aba e no botão verde.
+- **Sem número do WhatsApp:** a faixa "Prefere falar com uma pessoa?" (texto, horário e botão) não é renderizada; o horário continua na aba Queijista.
+- **Orçamento:** a folga do pacote compartilhado, da Home e de `/queijos` subiu de +1,5 para **+2,0 kB** (as correções acima somam ~0,2 kB gzip); o produto segue em +1,5 kB.
+- **Segurança:** `numeroDoWhatsApp()` só roda no servidor (comentário atualizado). Busca feita após o build de produção: `5520900000000` **não aparece em `.next/static`** (aparece só no HTML/RSC do servidor, como esperado, por ser o número entregue ao provider).
+
+**Pendências do dono (nada bloqueia a etapa):**
+
+1. **Aviso de nova aba** ("abre em nova aba") hoje só para leitor de tela; decidir se também aparece para quem enxerga.
+2. **`depoisDaAcao`:** o que dizer logo depois que a ação do assistente adiciona o queijo à sacola (texto novo; hoje só a confirmação literal da §7.5).
+3. **Texto de erro do chunk:** quando o motor não carrega, o painel não mostra mensagem (o texto digitado fica no campo). Escrever o texto, se desejado.
+4. **Borda do campo de mensagem:** `--pedra-clara` sobre `--cave` tem contraste ≈ 1,9:1, abaixo de 3:1 (WCAG 1.4.11). **Não alterada** (cores da spec exigem aprovação do dono).
+5. **Faixa e aba sem número:** a faixa some; a aba Queijista mantém só o horário, sem botão. Confirmar se o texto da aba deve mudar nesse caso.
+
+**Exceção de zona de toque:** as respostas rápidas (`.resposta`, 36 px) **não** ganham zona de 44 px: o espaçamento de 6 px entre linhas da spec faria as zonas se sobreporem. Têm mais de 24 px (WCAG 2.5.8 AA atendido); revisar se o dono aceitar mais respiro entre elas.
+
+**Para a etapa 8:** dividir o contexto da conversa em dois contextos (estado e ações) e instalar `axe-core` nos testes de acessibilidade.
+
+**Para a etapa 9 (checklist):** publicar **somente na Vercel** ou garantir `VERCEL_ENV=production` no ambiente de produção (sem ela, `numeroDoWhatsApp()` cai no número fictício); depois do build de produção, conferir que `5520900000000` não aparece em `.next/static` (`grep -r 5520900000000 .next/static`).
 
 ### Perguntas ao dono (etapa 6)
 
@@ -1948,6 +1983,8 @@ Também para o checklist da etapa 9 (não é código): configurar no WhatsApp Bu
 | JSON-LD `Product` e sitemap (sacola e checkout fora do sitemap)                                                                                                                                       | `performance-e-seo`                                          |
 
 ## Etapa 9 — CI completo, ambientes e aceite (herança da etapa 4)
+
+> **Herança da etapa 6 (bloco B):** publicar só na Vercel ou garantir `VERCEL_ENV`; conferir que `5520900000000` não aparece em `.next/static` após o build de produção ([detalhes](#verificação-do-bloco-b-etapa-6-correções-aplicadas-e-pendências)).
 
 > **Herança da etapa 6:** trava de build ou teste de CI que falhe em produção com `[A DEFINIR` em `TEXTOS_DO_ROTEIRO`; texto de saúde validado por profissional ([detalhes](#pendências-da-verificação-do-bloco-a-etapa-6)).
 

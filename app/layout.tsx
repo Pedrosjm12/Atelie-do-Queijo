@@ -7,6 +7,7 @@ import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
 import { SacolaProvider } from '@/components/SacolaProvider';
 import { SupportFab } from '@/components/SupportFab';
+import { numeroDoWhatsApp } from '@/data/ficticio';
 import './globals.css';
 
 const cormorant = Cormorant_Garamond({
@@ -34,7 +35,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="pt-BR" className={`${cormorant.variable} ${manrope.variable}`}>
       <body>
         <SacolaProvider>
-          <AtendimentoProvider>
+          <AtendimentoProvider numeroDoWhatsApp={numeroDoWhatsApp()}>
             <a href="#conteudo" className="pular-conteudo">
               Pular para o conteúdo
             </a>

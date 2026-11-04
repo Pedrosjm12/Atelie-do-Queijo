@@ -22,13 +22,17 @@ import { fileURLToPath } from 'node:url';
 const raiz = fileURLToPath(new URL('../', import.meta.url));
 const pastaApp = `${raiz}.next/server/app`;
 const pastaEstatica = `${raiz}.next`;
-// Linha de base (cdae7aa) + folga da etapa 5: compartilhado +0,5; produto +4; Home e /queijos +0.
+// Linha de base do fim da etapa 5 (a990e3a) + folga da etapa 6 (plano: +1,5 kB; ampliada para
+// +2,0 kB na correção do bloco B: limite de erro da ilustração, confirmação no log e retorno
+// booleano do envio; o produto mantém +1,5 kB porque não ganha nada próprio).
 const ORCAMENTO = {
-  compartilhado: 182.69 + 0.5,
-  '/': 187.03,
-  '/queijos': 182.69,
-  '/queijos/canastra-curado': 189.88 + 4,
+  compartilhado: 182.69 + 2.0,
+  '/': 187.03 + 2.0,
+  '/queijos': 182.69 + 2.0,
+  '/queijos/canastra-curado': 193.77 + 1.5,
   chunkTardio: 350,
+  // Motor do assistente (lib/roteiro + cartões + quiz), carregado ao abrir o painel (ADR-0010).
+  chunkDoMotor: 12,
 };
 const IGNORADAS = new Set(['_not-found.html', '_global-error.html']);
 
@@ -145,8 +149,58 @@ async function medirPacote() {
   );
   if (citam.length > 0) process.exitCode = 1;
 
-  // Chunk tardio: arquivos que não são scripts iniciais de página alguma e trazem o 3D.
+  // O gerador A.6 (CheeseIllustration) é baixado sob demanda pelo painel: não pode voltar ao
+  // pacote compartilhado (orçamento da etapa 6). Marcas: o viewBox da A.6 e o rótulo acessível.
+  const MARCAS_DA_ILUSTRACAO = [/0 0 300 190/, /, ilustração do queijo/];
+  const comIlustracao = [];
+  for (const script of compartilhado) {
+    const conteudo = await readFile(`${pastaEstatica}${script.replace('/_next', '')}`, 'utf8');
+    if (MARCAS_DA_ILUSTRACAO.every((m) => m.test(conteudo))) comIlustracao.push(script);
+  }
+  if (comIlustracao.length > 0) {
+    console.log(
+      `${NL}ATENÇÃO: o código de CheeseIllustration voltou ao pacote compartilhado:${NL}  ${comIlustracao.join(`${NL}  `)}`,
+    );
+    process.exitCode = 1;
+  } else {
+    console.log(`${NL}CheeseIllustration ausente do pacote compartilhado.`);
+  }
+
+  // Chunk tardio do motor do assistente: não pode ser script inicial nem estar citado no HTML.
   const iniciais = new Set([...jaLidos.keys()]);
+  // Literal da §8.2 (passagem para humano) que só existe em lib/roteiro.ts: não depende de lacunas.
+  const MARCA_DO_MOTOR = /Vou chamar um queijista da nossa equipe/;
+  const doMotor = [];
+  for (const arquivo of await listarJs(`${pastaEstatica}/static/chunks`)) {
+    const noSite = `/_next/static/chunks/${arquivo}`;
+    const conteudo = await readFile(`${pastaEstatica}/static/chunks/${arquivo}`, 'utf8');
+    if (!MARCA_DO_MOTOR.test(conteudo)) continue;
+    if (iniciais.has(noSite)) {
+      console.log(`${NL}ATENÇÃO: o motor do assistente está num script inicial: ${noSite}`);
+      process.exitCode = 1;
+    } else {
+      doMotor.push(noSite);
+    }
+  }
+  if (doMotor.length === 0) {
+    console.log(
+      `${NL}Chunk tardio do motor: nenhum encontrado (o roteiro está no pacote inicial?).`,
+    );
+    process.exitCode = 1;
+  } else {
+    const totalMotor = await soma(doMotor);
+    const okMotor = kbDe(totalMotor) <= ORCAMENTO.chunkDoMotor;
+    if (!okMotor) process.exitCode = 1;
+    const citadosMotor = [...paginas].filter(([, pagina]) =>
+      doMotor.some((t) => pagina.html.includes(t.replace('/_next/static/chunks/', ''))),
+    );
+    if (citadosMotor.length > 0) process.exitCode = 1;
+    console.log(
+      `${NL}Chunk tardio do motor do assistente: ${kb(totalMotor)} gzip em ${doMotor.length} arquivo(s) (limite ${ORCAMENTO.chunkDoMotor} kB) ${okMotor ? 'ok' : 'ACIMA'}; ${citadosMotor.length === 0 ? 'ausente do HTML de todas as páginas' : 'ATENÇÃO: citado no HTML de ' + citadosMotor.map(([r]) => r).join(', ')}`,
+    );
+  }
+
+  // Chunk tardio: arquivos que não são scripts iniciais de página alguma e trazem o 3D.
   const tardios = [];
   for (const arquivo of await listarJs(`${pastaEstatica}/static/chunks`)) {
     const noSite = `/_next/static/chunks/${arquivo}`;
