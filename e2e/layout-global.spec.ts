@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 
 const larguras = [360, 390, 768, 1440, 1920];
 
@@ -6,7 +6,14 @@ test.describe('componentes globais', () => {
   for (const largura of larguras) {
     test(`sem rolagem horizontal a ${largura} px`, async ({ page }) => {
       await page.setViewportSize({ width: largura, height: 900 });
-      for (const rota of ['/', '/queijos', '/presentes', '/aprenda', '/aprenda/queijo-e-vinho']) {
+      for (const rota of [
+        '/',
+        '/queijos',
+        '/presentes',
+        '/aprenda',
+        '/aprenda/queijo-e-vinho',
+        '/produtores',
+      ]) {
         await page.goto(rota);
         const cabe = await page.evaluate(
           () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
@@ -89,6 +96,57 @@ test.describe('componentes globais', () => {
 
     await page.setViewportSize({ width: 1440, height: 900 });
     expect((await botao.boundingBox())?.width).toBe(60);
+  });
+
+  const hrefsInternos = (page: Page) =>
+    page
+      .locator('header a[href^="/"], footer a[href^="/"], main a[href^="/"]')
+      .evaluateAll((links) =>
+        links.map((a) => (a.getAttribute('href') ?? '').split('#')[0] || '/'),
+      );
+
+  async function conferirQueNenhumLinkLevaA404(page: Page, hrefs: string[]) {
+    const unicos = [...new Set(hrefs)];
+    expect(unicos.length).toBeGreaterThan(0);
+    for (const href of unicos) {
+      const resposta = await page.request.get(href);
+      expect(resposta.status(), href).toBe(200);
+      // O payload RSC de toda página carrega o texto da 404; só o <title> distingue.
+      expect(await resposta.text(), href).not.toMatch(
+        /<title>Esta página foi maturar em outro lugar\.<\/title>/,
+      );
+    }
+  }
+
+  test('na Home, nenhum link interno do cabeçalho, conteúdo e rodapé leva à 404', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto('/');
+    await conferirQueNenhumLinkLevaA404(page, await hrefsInternos(page));
+  });
+
+  test('na Home com o menu mobile aberto (390 px), nenhum link interno leva à 404', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/');
+    await page.getByRole('button', { name: 'Menu' }).click();
+    const nav = page.getByRole('navigation', { name: 'Principal' });
+    await expect(nav.getByRole('link', { name: 'Presentes' })).toHaveAttribute(
+      'href',
+      '/presentes',
+    );
+    await expect(nav.getByRole('link', { name: 'Aprenda' })).toHaveAttribute('href', '/aprenda');
+    await expect(nav.getByRole('link', { name: 'Nossos produtores' })).toHaveAttribute(
+      'href',
+      '/produtores',
+    );
+    const hrefs = await hrefsInternos(page);
+    for (const destino of ['/presentes', '/aprenda', '/produtores']) {
+      expect(hrefs).toContain(destino);
+    }
+    await conferirQueNenhumLinkLevaA404(page, hrefs);
   });
 
   test('navegar pelo menu mobile leva o foco para #conteudo', async ({ page }) => {

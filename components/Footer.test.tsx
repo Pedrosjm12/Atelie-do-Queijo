@@ -30,6 +30,13 @@ describe('Footer', () => {
     expect(screen.getByRole('link', { name: 'Presentes' })).toHaveAttribute('href', '/presentes');
   });
 
+  it('"Sobre" e "Nossos produtores" levam a /produtores', () => {
+    renderizar();
+    for (const nome of ['Sobre', 'Nossos produtores']) {
+      expect(screen.getByRole('link', { name: nome })).toHaveAttribute('href', '/produtores');
+    }
+  });
+
   it('itens sem destino não são links', () => {
     renderizar();
     for (const nome of ['Entregas refrigeradas', 'Trocas e devoluções', 'Perguntas frequentes']) {
