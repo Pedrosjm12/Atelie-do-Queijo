@@ -2218,7 +2218,7 @@ Cada tarefa termina com `lint`, `typecheck`, `format:check`, `test`, `modelos:va
 | --- | --- | --- | --- |
 | Docs | Este detalhamento e o ADR-0011 | `docs: detalha a etapa 7 e registra o ADR-0011` | Publicado (`4e94cd4`) |
 | A | Tarefas 1 a 4 | `feat(paginas): extrai os dados de kits e artigos e adiciona a página 404` | Publicado (`0589676`) |
-| B | Tarefas 5 a 7 | `feat(presentes): adiciona a página de presentes com o pedido de orçamento` | Publicado (hash na linha de retomada) |
+| B | Tarefas 5 a 7 | `feat(presentes): adiciona a página de presentes com o pedido de orçamento` | Publicado (`eca43a5`) |
 | C | Tarefas 8 a 10 | `feat(aprenda): adiciona a escola do ateliê e as páginas de artigo` | A fazer |
 | D | Tarefas 11 e 12 | `feat(produtores): adiciona a página de produtores` | A fazer |
 | Docs | Tarefa 13 | `docs: fecha a etapa 7` | A fazer |
