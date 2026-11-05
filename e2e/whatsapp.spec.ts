@@ -1,4 +1,5 @@
-import { expect, test, type Page } from '@playwright/test';
+import { aguardarHidratacao, expect, test } from './_apoio/teste';
+import type { Page } from '@playwright/test';
 
 // Links do WhatsApp, horário do atendimento e carregamento tardio do motor (etapa 6; spec §8.2, §8.3
 // e §10.5). O número é o fictício de `data/ficticio.ts` (sem variável de ambiente no e2e).
@@ -137,6 +138,7 @@ test.describe('horário do atendimento (America/Sao_Paulo)', () => {
     const pagina = await contexto.newPage();
     await pagina.clock.setFixedTime(new Date('2026-11-09T02:00:00Z'));
     await pagina.goto('/');
+    await aguardarHidratacao(pagina);
     await abrirPainel(pagina);
     await painel(pagina).getByRole('tab', { name: 'Queijista (WhatsApp)' }).click();
     await expect(painel(pagina).getByText(TEXTO_DA_CAVE_FECHADA, { exact: true })).toBeVisible();

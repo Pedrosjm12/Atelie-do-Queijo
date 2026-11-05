@@ -88,7 +88,7 @@ As etapas 8 e 9 serão detalhadas pelo `arquiteto-de-software` no início de cad
 
 7. **[devops-e-deploy] `.gitignore` e `.env.example`**
    - `.gitignore` cobrindo `node_modules/`, `.next/`, `out/`, `coverage/`, `test-results/`, `playwright-report/`, `.env*` (exceto `.env.example`), `*.tsbuildinfo`, `next-env.d.ts` conforme o padrão do Next.
-   - `.env.example` documentando as variáveis previstas, sem valores reais. Previsto por ora: `NEXT_PUBLIC_SITE_URL`, `NEXT_PUBLIC_WHATSAPP_NUMBER` (comentada, usada na etapa 6).
+   - `.env.example` documentando as variáveis previstas, sem valores reais. Previsto por ora: `NEXT_PUBLIC_SITE_URL`, `NEXT_PUBLIC_WHATSAPP_NUMBER` (comentada, usada na etapa 6; renomeada depois para `WHATSAPP_NUMBER`, [ADR-0013](adr/0013-numero-do-whatsapp-so-no-servidor.md)).
    - **Pronto quando:** `git status` após `npm ci`, `npm run build` e `npm run test:e2e` não mostra arquivos gerados.
 
 8. **[devops-e-deploy] CI mínimo no GitHub Actions**
@@ -2316,7 +2316,7 @@ Registrada aqui, **sem implementar**. O `arquiteto-de-software` distribui estes 
 
 **Segurança e configuração**
 
-- Renomear `NEXT_PUBLIC_WHATSAPP_NUMBER` para uma variável **sem** o prefixo `NEXT_PUBLIC_` e marcar o módulo com `server-only` (hoje o número é resolvido no servidor, mas o nome sugere variável pública).
+- [x] Renomear `NEXT_PUBLIC_WHATSAPP_NUMBER` para `WHATSAPP_NUMBER` (sem o prefixo `NEXT_PUBLIC_`) e marcar o módulo com `server-only`: feito, ver [ADR-0013](adr/0013-numero-do-whatsapp-so-no-servidor.md).
 
 **Qualidade e testes (`testes-e-qualidade`)**
 
@@ -2381,7 +2381,7 @@ Tokenização (nenhum dado de cartão no nosso servidor); webhooks com assinatur
 
 **Documentação (`documentador-tecnico`)**
 
-- Ampliar `docs/conteudo.md` (guia do dono da loja) e `docs/ambiente.md` (variáveis de ambiente), criados no fechamento da etapa 5 com o que existia (queijos, modelos 3D, `NEXT_PUBLIC_SITE_URL`, `NEXT_PUBLIC_WHATSAPP_NUMBER` e a trava `VERCEL_ENV`). Faltam gateway, hospedagem, frete, Pix e horário.
+- Ampliar `docs/conteudo.md` (guia do dono da loja) e `docs/ambiente.md` (variáveis de ambiente), criados no fechamento da etapa 5 com o que existia (queijos, modelos 3D, `NEXT_PUBLIC_SITE_URL`, `NEXT_PUBLIC_WHATSAPP_NUMBER` (hoje `WHATSAPP_NUMBER`, ADR-0013) e a trava `VERCEL_ENV`). Faltam gateway, hospedagem, frete, Pix e horário.
 - Atualizar o `CHANGELOG.md` e o README com hospedagem, gateway e ambientes.
 - Checklist de aceite da §14 da spec, com os desvios aprovados (P21 e os textos novos da [lista do dono](#decisões-e-textos-que-aguardam-o-dono-fim-da-etapa-4)).
 
@@ -2397,7 +2397,7 @@ O dono aprovou **todas as opções recomendadas** da rodada de pendências (nume
 
 | Dado | Valor fictício | Onde é usado |
 | --- | --- | --- |
-| WhatsApp (D26) | `5520900000000` (DDD 20 inexistente). `numeroDoWhatsApp()` usa `NEXT_PUBLIC_WHATSAPP_NUMBER` se for `^55\d{10,11}$`; senão cai no fictício fora de produção e devolve `null` com `VERCEL_ENV=production` (a interface esconde os links) | Etapa 6: `app/layout.tsx` (servidor) → `AtendimentoProvider` → `LinkDoWhatsApp` (faixa, aba Queijista e produto) |
+| WhatsApp (D26) | `5520900000000` (DDD 20 inexistente). `numeroDoWhatsApp()` usava `NEXT_PUBLIC_WHATSAPP_NUMBER` (hoje `WHATSAPP_NUMBER`, ADR-0013) se for `^55\d{10,11}$`; senão cai no fictício fora de produção e devolve `null` com `VERCEL_ENV=production` (a interface esconde os links) | Etapa 6: `app/layout.tsx` (servidor) → `AtendimentoProvider` → `LinkDoWhatsApp` (faixa, aba Queijista e produto) |
 | CNPJ (D27) | `00.000.000/0001-00` | `components/Footer.tsx` |
 | Endereço (D27) | `Rua Exemplo, 123, São Paulo, SP` | `components/Footer.tsx` |
 | Frete e prazo (D28) | CEP 01000-000 a 19999-999: R$ 24,90, 3 dias úteis; 20000-000 a 39999-999: R$ 32,90, 4 dias úteis; 40000-000 a 99999-999: R$ 45,90, 5 dias úteis (grátis a partir de R$ 180; 00000-000 a 00999-999 segue fora de área) | `lib/pedido.server.ts` (`calcularFrete`) |

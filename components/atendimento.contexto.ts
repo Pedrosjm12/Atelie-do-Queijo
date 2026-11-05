@@ -29,6 +29,13 @@ export type ValorDoAtendimento = {
   fechar: (opcoes?: OpcoesDeFechamento) => void;
   /** Resolvido no servidor (ADR-0010, decisão 4). `null`: os links do WhatsApp não existem. */
   numeroDoWhatsApp: string | null;
+};
+
+/**
+ * Conversa e entrega ao assistente (ADR-0012): vivem no módulo do painel, carregado sob demanda,
+ * e não no provider do layout. Só o painel os lê.
+ */
+export type ValorDaConversa = {
   conversa: ConversaDoChat;
   /**
    * Entrega a entrada ao assistente e acrescenta a resposta à conversa. Nunca rejeita: devolve
@@ -44,5 +51,13 @@ export function useAtendimento(): ValorDoAtendimento {
   if (valor === null) {
     throw new Error('useAtendimento precisa estar dentro de <AtendimentoProvider>.');
   }
+  return valor;
+}
+
+export const ContextoDaConversa = createContext<ValorDaConversa | null>(null);
+
+export function useConversa(): ValorDaConversa {
+  const valor = useContext(ContextoDaConversa);
+  if (valor === null) throw new Error('useConversa precisa estar dentro do painel de atendimento.');
   return valor;
 }

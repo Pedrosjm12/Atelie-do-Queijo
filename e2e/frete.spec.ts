@@ -1,4 +1,5 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, semAguardarHidratacao, test } from './_apoio/teste';
+import type { Page } from '@playwright/test';
 import { vigiarConsole } from './_apoio/console';
 
 const ROTA = '/queijos/canastra-curado';
@@ -77,6 +78,7 @@ test.describe('calculadora de frete do produto', () => {
   });
 
   test('envio antes de hidratar não põe o CEP na URL (POST, nunca GET)', async ({ page }) => {
+    semAguardarHidratacao(page); // sem JavaScript a página nunca hidrata, de propósito
     await page.route('**/_next/static/**/*.js', (rota) => rota.abort());
     await page.goto(ROTA);
     await campo(page).fill('01310-100');

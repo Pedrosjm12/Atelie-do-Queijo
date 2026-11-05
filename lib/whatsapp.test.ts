@@ -4,6 +4,8 @@ import {
   TEXTO_DA_CAVE_FECHADA,
   TEXTO_DO_HORARIO,
   atendimentoHumanoAberto,
+} from './horario';
+import {
   lerNumeroDoPedido,
   linkDoWhatsApp,
   mensagemDoWhatsApp,

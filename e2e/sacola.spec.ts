@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { aguardarHidratacao, expect, test } from './_apoio/teste';
 import { vigiarConsole } from './_apoio/console';
 
 const CHAVE = 'atelie:sacola:v1';
@@ -58,6 +58,8 @@ test.describe('sacola salva', () => {
     const b = await context.newPage();
     await a.goto('/queijos');
     await b.goto('/queijos');
+    await aguardarHidratacao(a);
+    await aguardarHidratacao(b);
     await expect(b.getByRole('link', { name: 'Sacola 0 itens' }).first()).toBeVisible();
     await a.getByRole('button', { name: 'Adicionar Canastra curado à sacola' }).click();
     await expect(a.getByRole('link', { name: 'Sacola 1 item' }).first()).toBeVisible();

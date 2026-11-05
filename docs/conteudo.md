@@ -181,7 +181,7 @@ As listas estão em `lib/roteiro.ts` (`PALAVRAS_DE_SAUDE`, `PALAVRAS_DE_HUMANO`,
 
 ### Número do WhatsApp
 
-O número aparece nos botões verdes e em **Fale com um queijista**. Hoje é **fictício** (`data/ficticio.ts`). O número real se configura pela variável de ambiente descrita em [`docs/ambiente.md`](ambiente.md). Sem número em produção, os botões e a linha **Dúvidas sobre este queijo? Fale com um queijista** não aparecem.
+O número aparece nos botões verdes e em **Fale com um queijista**. Hoje é **fictício** (`data/ficticio.ts`). O número real se configura pela variável de ambiente `WHATSAPP_NUMBER` (sem `NEXT_PUBLIC_`), descrita em [`docs/ambiente.md`](ambiente.md): crie-a no `.env.local` e na Vercel. Sem número em produção, os botões e a linha **Dúvidas sobre este queijo? Fale com um queijista** não aparecem.
 
 O que vai na mensagem do WhatsApp é sempre um texto fixo da especificação (geral, de um queijo, de um pedido ou de empresa). **O que a pessoa digitou no chat nunca vai para o link.**
 

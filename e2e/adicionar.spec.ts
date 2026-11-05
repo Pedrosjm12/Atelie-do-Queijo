@@ -1,4 +1,5 @@
-import { expect, test, type Locator, type Page } from '@playwright/test';
+import { expect, test } from './_apoio/teste';
+import type { Locator, Page } from '@playwright/test';
 import { vigiarConsole } from './_apoio/console';
 
 const CHAVE = 'atelie:sacola:v1';

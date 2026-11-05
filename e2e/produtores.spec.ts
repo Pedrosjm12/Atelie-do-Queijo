@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './_apoio/teste';
 import { vigiarConsole } from './_apoio/console';
 
 test.describe('página /produtores (§12)', () => {

@@ -1,4 +1,5 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test } from './_apoio/teste';
+import type { Page } from '@playwright/test';
 import { CHAVE_DA_SACOLA, DADOS, campo, semearSacola } from './_apoio/checkout';
 import { vigiarConsole } from './_apoio/console';
 

@@ -108,7 +108,7 @@ A etapa 6 ligou o painel de atendimento, decidida no [ADR-0010](docs/adr/0010-as
 
 - **Textos:** os que a spec traz são literais; os demais ficam em `TEXTOS_DO_ROTEIRO` como `[A DEFINIR: …]` até o dono escrever (P52). Ver [`docs/conteudo.md`](docs/conteudo.md#assistente-horário-e-whatsapp).
 - **Horário:** `lib/whatsapp.ts` (`HORARIO_DO_ATENDIMENTO`), sempre em `America/Sao_Paulo`. Feriados não contam.
-- **Número do WhatsApp:** resolvido no servidor (`app/layout.tsx`) e passado ao `AtendimentoProvider`. Sem número em produção, nenhum link `wa.me` é renderizado. Ver [`docs/ambiente.md`](docs/ambiente.md).
+- **Número do WhatsApp:** variável `WHATSAPP_NUMBER` (sem `NEXT_PUBLIC_`), lida só no servidor por `lib/whatsapp.server.ts` (`app/layout.tsx`) e passado ao `AtendimentoProvider`. Sem número em produção, nenhum link `wa.me` é renderizado. Ver [`docs/ambiente.md`](docs/ambiente.md).
 - **Privacidade:** a conversa fica só em memória; o texto digitado nunca entra na URL do WhatsApp; nenhuma requisição de rede. O motor é um *chunk* tardio, fora do JavaScript inicial.
 
 ## Estrutura de pastas

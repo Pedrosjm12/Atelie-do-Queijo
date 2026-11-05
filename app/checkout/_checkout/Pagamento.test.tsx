@@ -424,7 +424,7 @@ describe('confirmar pedido', () => {
     const alerta = alertaDaFalha();
     expect(screen.queryByRole('dialog', { name: 'Assistente do Ateliê' })).not.toBeInTheDocument();
     await usuario.click(within(alerta).getByRole('button', { name: 'fale com a gente' }));
-    expect(screen.getByRole('dialog', { name: 'Assistente do Ateliê' })).toBeInTheDocument();
+    expect(await screen.findByRole('dialog', { name: 'Assistente do Ateliê' })).toBeInTheDocument();
   });
 
   it('sacola inválida: mostra o erro e oferece voltar para a /sacola (sacola intacta)', async () => {

@@ -8,7 +8,8 @@ import {
 } from './assistant';
 import { CARTOES_DO_CHAT } from './cartoesDoChat';
 import { TEXTOS_DO_ROTEIRO, assistenteDeterministico, reconhecerIntencao } from './roteiro';
-import { atendimentoHumanoAberto, linkDoWhatsApp, mensagemDoWhatsApp } from './whatsapp';
+import { atendimentoHumanoAberto } from './horario';
+import { linkDoWhatsApp, mensagemDoWhatsApp } from './whatsapp';
 
 const texto = (t: string): EntradaDoCliente => ({ tipo: 'texto', texto: t });
 const clique = (id: string): EntradaDoCliente => ({ tipo: 'resposta-rapida', id });

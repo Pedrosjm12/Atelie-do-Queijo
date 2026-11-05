@@ -7,7 +7,7 @@ import { QuantityStepper } from '@/components/QuantityStepper';
 import { SacolaVazia } from '@/components/SacolaVazia';
 import { useAcoesDaSacola, useEstadoDaSacola } from '@/components/SacolaProvider';
 import { formatarPreco } from '@/lib/format';
-import { precificarSacola, type ResumoParaSacola } from '@/lib/sacola';
+import { precificarSacola, type ResumoParaSacola } from '@/lib/precificarSacola';
 import { ID_DO_TITULO_DA_SACOLA } from './ids';
 import { ResumoDaSacola } from './ResumoDaSacola';
 import estilos from './Sacola.module.css';

@@ -27,12 +27,12 @@ function ehClient(fonte: string): boolean {
   return /^\s*(['"])use client\1/.test(semComentarios);
 }
 
-/** Importa o nome `numeroDoWhatsApp` (estático ou dinâmico) ou o módulo `data/ficticio` inteiro. */
+/** Importa o nome `numeroDoWhatsApp` (estático ou dinâmico) ou o módulo `lib/whatsapp.server` (onde ele mora) inteiro. */
 const IMPORTA_O_NUMERO = [
   /import\s+(?:type\s+)?\{[^}]*\bnumeroDoWhatsApp\b[^}]*\}\s*from/,
-  /import\s+\*\s+as\s+\w+\s+from\s*['"][^'"]*\/ficticio['"]/,
-  /\bimport\(\s*['"][^'"]*\/ficticio['"]\s*\)/,
-  /\brequire\(\s*['"][^'"]*\/ficticio['"]\s*\)/,
+  /import\s+\*\s+as\s+\w+\s+from\s*['"][^'"]*\/whatsapp\.server['"]/,
+  /\bimport\(\s*['"][^'"]*\/whatsapp\.server['"]\s*\)/,
+  /\brequire\(\s*['"][^'"]*\/whatsapp\.server['"]\s*\)/,
 ];
 
 describe('número do WhatsApp só no servidor', () => {

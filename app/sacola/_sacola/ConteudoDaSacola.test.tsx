@@ -5,7 +5,8 @@ import { renderToString } from 'react-dom/server';
 import { LinkDaSacola } from '@/components/LinkDaSacola';
 import { SacolaProvider } from '@/components/SacolaProvider';
 import { resumoParaSacola } from '@/lib/catalogo';
-import { CHAVE_DA_SACOLA, type ResumoParaSacola } from '@/lib/sacola';
+import { CHAVE_DA_SACOLA } from '@/lib/sacola';
+import type { ResumoParaSacola } from '@/lib/precificarSacola';
 import { ConteudoDaSacola } from './ConteudoDaSacola';
 import { ID_DO_TITULO_DA_SACOLA } from './ids';
 

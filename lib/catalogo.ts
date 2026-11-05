@@ -1,7 +1,7 @@
 import { QUEIJOS } from '@/data/cheeses';
 import type { Cheese, Formato, Origem, SlugDoQueijo } from '@/data/cheeses';
 import type { Centavos } from './dinheiro';
-import type { ResumoParaSacola } from './sacola';
+import type { ResumoParaSacola } from './precificarSacola';
 
 const CATALOGO: readonly Cheese[] = QUEIJOS;
 

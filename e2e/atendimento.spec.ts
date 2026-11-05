@@ -1,4 +1,5 @@
-import { expect, test, type Locator, type Page } from '@playwright/test';
+import { expect, test } from './_apoio/teste';
+import type { Locator, Page } from '@playwright/test';
 
 const painel = (page: Page) => page.getByRole('dialog', { name: 'Assistente do Ateliê' });
 
@@ -68,6 +69,8 @@ test.describe('painel de atendimento', () => {
   }) => {
     await page.goto('/');
     await page.getByRole('button', { name: 'Abrir atendimento' }).click();
+    // O painel é um módulo tardio (ADR-0012): espera o diálogo montar antes de percorrer o foco.
+    await expect(painel(page)).toBeVisible();
     for (let i = 0; i < 25; i++) {
       await page.keyboard.press('Tab');
       // No Chromium o Tab pode sair do documento para a interface do navegador (activeElement

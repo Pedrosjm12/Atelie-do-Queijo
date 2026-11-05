@@ -1,7 +1,7 @@
 import { useId } from 'react';
 import type { TotaisDoPedido } from '@/lib/commerce';
 import { formatarPreco, formatarPrecoOuLacuna } from '@/lib/format';
-import type { LinhaPrecificada } from '@/lib/sacola';
+import type { LinhaPrecificada } from '@/lib/precificarSacola';
 import estilos from './Checkout.module.css';
 
 /** Frete grátis aparece como "Grátis" (P25); `null` é a lacuna visível R$ [PREÇO]. */

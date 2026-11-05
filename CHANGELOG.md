@@ -58,6 +58,10 @@ O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 
 ### Alterado
 
+- Variável `NEXT_PUBLIC_WHATSAPP_NUMBER` renomeada para `WHATSAPP_NUMBER` e lida só no servidor (`lib/whatsapp.server.ts`, com `server-only`; ADR-0013). **O dono precisa criá-la no `.env.local` e na Vercel.** `numeroDoWhatsApp()` saiu de `data/ficticio.ts`.
+- `scripts/medir-pacote.mjs` ignora os scripts `noModule` (polyfills) e os limites foram recalibrados (ADR-0012, atualização).
+- A foto do produtor em `/produtores` usa raio 12 e borda `--pedra`, como as fotos de artigo de `/aprenda`.
+
 - Etapa 5: Tela cheia, Aproximar e Girar passam a funcionar. Girar sem GLB fica `aria-disabled` com "Giro disponível com o modelo 3D" (só leitor de tela).
 - **Desvios aprovados da spec** (para o checklist da §14): dica do palco sem GLB mostra só "Toque duas vezes para aproximar" (§7.2); Girar aparece no celular quando há GLB (§7.6); borda dos campos mantida em `--pedra-clara` (D2); rótulo fixo "Ver por dentro" com `aria-pressed` (P21); tipografia do checkout fora da §3.2 (D5).
 - **Ver na mesa** (realidade aumentada) permanece oculto até haver GLB real (D23).

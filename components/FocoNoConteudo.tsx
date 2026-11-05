@@ -37,6 +37,12 @@ export function FocoNoConteudo() {
     }
   }, [caminho]);
 
+  // Sinal de "hidratou" para os testes ponta a ponta esperarem por uma condição real, em vez de
+  // adivinhar com tempo: efeitos só rodam depois da hidratação.
+  useEffect(() => {
+    document.documentElement.dataset.hidratado = '';
+  }, []);
+
   useEffect(() => {
     let adiado: ReturnType<typeof setTimeout>;
 

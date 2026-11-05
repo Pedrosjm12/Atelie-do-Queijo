@@ -24,7 +24,7 @@ export default function PaginaDeProdutores() {
         {PRODUTORES.map((produtor) => (
           <li key={produtor.id}>
             <article aria-labelledby={`produtor-${produtor.id}`}>
-              <PhotoPlaceholder descricao={produtor.foto} altura={240} />
+              <PhotoPlaceholder descricao={produtor.foto} altura={240} artigo />
               <Overline pequeno tom="mofo" as="span" className={estilos.regiao}>
                 {produtor.regiao}
               </Overline>

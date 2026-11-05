@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { aguardarHidratacao, expect, test } from './_apoio/teste';
 import {
   DADOS,
   CHAVE_DA_SACOLA,
@@ -129,6 +129,7 @@ test.describe('checkout, etapa 1 (Entrega)', () => {
       const problemas = vigiarConsole(page);
       await semearSacola(page, presente);
       await page.goto('/checkout');
+      await aguardarHidratacao(page);
       await expect(page.getByRole('heading', { level: 2, name: 'Entrega' })).toBeVisible();
       const quantidade = presente ? 1 : 0;
       await expect(campo(page, 'Mensagem do cartão')).toHaveCount(quantidade);

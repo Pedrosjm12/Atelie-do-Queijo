@@ -1,7 +1,7 @@
 import { exigirCentavos } from './dinheiro';
 import type { Centavos } from './dinheiro';
 import type { Entrega } from './pedido';
-import type { LinhaPrecificada } from './sacola';
+import type { LinhaPrecificada } from './precificarSacola';
 
 // Só tipos vêm de `pedido` e `sacola` (sem ciclo em tempo de execução): este módulo é importável
 // no cliente (`precoNoPix`, `mascararCep`, `faltaParaFreteGratis`, `valorDoFrete`,

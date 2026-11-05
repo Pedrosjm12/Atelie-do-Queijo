@@ -1,4 +1,5 @@
-import { expect, test, type Page, type Route } from '@playwright/test';
+import { expect, test } from './_apoio/teste';
+import type { Page, Route } from '@playwright/test';
 import { MODELOS_3D } from '../data/modelos3d';
 import { ILUSTRACOES_DE_PRODUTO } from '../components/ilustracoes/CanastraProduto';
 import { glbSintetico } from './_apoio/glbSintetico';

@@ -1,4 +1,5 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test } from './_apoio/teste';
+import type { Page } from '@playwright/test';
 
 const cartoes = (page: Page) => page.locator('main ul > li article');
 const chip = (page: Page, nome: string) => page.getByRole('button', { name: nome });

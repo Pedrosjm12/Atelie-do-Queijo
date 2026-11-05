@@ -9,7 +9,8 @@ import { calcularTotais, type FormaDePagamento, type TotaisDoPedido } from '@/li
 import { formatarPreco, formatarPrecoOuLacuna } from '@/lib/format';
 import { MENSAGENS_DE_ERRO } from '@/lib/pedido';
 import { MENSAGEM_FORA_DE_AREA } from '@/lib/freteNaTela';
-import type { ItemDaSacola, LinhaPrecificada } from '@/lib/sacola';
+import type { ItemDaSacola } from '@/lib/sacola';
+import type { LinhaPrecificada } from '@/lib/precificarSacola';
 import type { PedidoConfirmado } from './Confirmacao';
 import { montarEntrada, type DadosDaEntrega, type ErrosDoCheckout } from './dados';
 import { ID_DO_TITULO_DA_ETAPA } from './ids';

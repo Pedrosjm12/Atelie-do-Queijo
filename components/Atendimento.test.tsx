@@ -51,6 +51,7 @@ async function abrirPainel() {
   const usuario = userEvent.setup();
   renderizar();
   await usuario.click(screen.getByRole('button', { name: 'Abrir atendimento' }));
+  await screen.findByRole('dialog', { name: 'Assistente do Ateliê' });
   return usuario;
 }
 
@@ -72,6 +73,7 @@ describe('Atendimento', () => {
       expect(gatilho).toHaveAttribute('type', 'button');
 
       await usuario.click(gatilho);
+      await screen.findByRole('dialog', { name: 'Assistente do Ateliê' });
       expect(painel()).toBeInTheDocument();
       expect(screen.getByText('estado: aberto')).toBeInTheDocument();
 
@@ -87,7 +89,7 @@ describe('Atendimento', () => {
     for (const nome of ['Fale conosco', 'Pedir ajuda', 'Abrir atendimento']) {
       const gatilho = screen.getByRole('button', { name: nome });
       await usuario.click(gatilho);
-      await usuario.click(screen.getByRole('button', { name: 'Fechar atendimento' }));
+      await usuario.click(await screen.findByRole('button', { name: 'Fechar atendimento' }));
       expect(gatilho).toHaveFocus();
     }
   });
@@ -97,6 +99,7 @@ describe('Atendimento', () => {
     renderizar();
     const gatilho = screen.getByRole('button', { name: 'Fale conosco' });
     await usuario.click(gatilho);
+    await screen.findByRole('dialog', { name: 'Assistente do Ateliê' });
 
     // No navegador o Esc fecha o <dialog> e dispara "close"; o e2e cobre a tecla de verdade.
     (screen.getByRole('dialog') as HTMLDialogElement).close();
@@ -110,6 +113,7 @@ describe('Atendimento', () => {
     renderizar();
     const gatilho = screen.getByRole('button', { name: 'Pedir ajuda' });
     await usuario.click(gatilho);
+    await screen.findByRole('dialog', { name: 'Assistente do Ateliê' });
     await digitar(usuario, FRASE_DO_PROTOTIPO);
 
     const link = await screen.findByRole('link', { name: 'Ver Canastra curado em 3D' });
@@ -150,6 +154,7 @@ describe('Atendimento', () => {
     );
     const gatilho = screen.getByRole('button', { name: 'Fale conosco' });
     await usuario.click(gatilho);
+    await screen.findByRole('dialog', { name: 'Assistente do Ateliê' });
     expect(painel()).toBeInTheDocument();
     // O jsdom não move o foco para o <dialog>; o navegador move (o e2e cobre).
     screen.getByRole('button', { name: 'Fechar atendimento' }).focus();

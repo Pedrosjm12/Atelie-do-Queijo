@@ -8,7 +8,8 @@ import { ehFormatoValido } from '@/lib/formatosDaSacola';
 import { errosDoCheckout, esquemaEntradaDoPedido, validarEntrega } from '@/lib/pedido';
 import type { CampoDoCheckout } from '@/lib/pedido';
 import { calcularFrete, criarPedido } from '@/lib/pedido.server';
-import { MAXIMO_DE_LINHAS, QUANTIDADE_MAXIMA_POR_ITEM, precificarSacola } from '@/lib/sacola';
+import { MAXIMO_DE_LINHAS, QUANTIDADE_MAXIMA_POR_ITEM } from '@/lib/sacola';
+import { precificarSacola } from '@/lib/precificarSacola';
 import type { ItemDaSacola } from '@/lib/sacola';
 
 // Este arquivo exporta SÓ `confirmarPedido`: todo export de um arquivo 'use server' vira um

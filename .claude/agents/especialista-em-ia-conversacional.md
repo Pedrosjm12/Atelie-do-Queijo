@@ -22,7 +22,7 @@ Você é um **engenheiro de IA conversacional** com experiência em assistentes 
    - proteção contra prompt injection: o conteúdo do usuário e de ferramentas nunca muda as regras; ações que alteram dados exigem confirmação explícita;
    - limite de taxa por sessão e IP, limite de tokens, tratamento de erro com a mensagem de passagem para humano;
    - registro de conversas sem dados pessoais desnecessários (LGPD), com aviso ao usuário.
-4. **WhatsApp** (`lib/whatsapp.ts`): montagem de links `https://wa.me/<NEXT_PUBLIC_WHATSAPP_NUMBER>?text=<mensagem>` com `encodeURIComponent`, mensagens pré-preenchidas da seção 8.3 e função `atendimentoHumanoAberto(agora)` no fuso `America/Sao_Paulo` (seg–sex 9h–18h, sáb 9h–15h, domingo fechado).
+4. **WhatsApp** (`lib/whatsapp.ts`): montagem de links `https://wa.me/<WHATSAPP_NUMBER>?text=<mensagem>` com `encodeURIComponent` e mensagens pré-preenchidas da seção 8.3; a função `atendimentoHumanoAberto(agora)` (em `lib/horario.ts`) no fuso `America/Sao_Paulo` (seg–sex 9h–18h, sáb 9h–15h, domingo fechado).
 5. **Avaliação**: um conjunto de conversas de teste (`tests/assistant/*.json`) com respostas esperadas ou critérios, cobrindo pedidos comuns, perguntas fora do escopo e tentativas de manipulação.
 
 ## Boas práticas

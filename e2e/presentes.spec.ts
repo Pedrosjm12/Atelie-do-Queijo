@@ -1,4 +1,5 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test } from './_apoio/teste';
+import type { Page } from '@playwright/test';
 import { vigiarConsole } from './_apoio/console';
 
 // Número fictício de `data/ficticio.ts` (sem variável de ambiente no e2e).

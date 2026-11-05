@@ -22,3 +22,5 @@ Cada decisão técnica relevante do Ateliê do Queijo fica registrada aqui, em `
 | [0009](0009-visualizador-3d-com-model-viewer.md) | Visualizador 3D com `@google/model-viewer`, carregamento tardio e fallback em SVG | Aceito (aprovado pelo dono em 2026-11-03) | 2026-11-03 |
 | [0010](0010-assistente-deterministico-e-whatsapp.md) | Assistente com roteiro determinístico, horário e links do WhatsApp | Aceito | 2026-11-03 |
 | [0011](0011-paginas-de-conteudo-e-404.md) | Páginas de conteúdo (Presentes, Aprenda, Produtores) e página 404 | Aceito | 2026-11-05 |
+| [0012](0012-folga-do-orcamento-de-js.md) | Folga no orçamento de JavaScript: painel de atendimento sob demanda | Aceito | 2026-11-05 |
+| [0013](0013-numero-do-whatsapp-so-no-servidor.md) | Número do WhatsApp só no servidor: `WHATSAPP_NUMBER` e `server-only` | Aceito | 2026-11-05 |

@@ -6,7 +6,8 @@
 //
 // O Next 16 (Turbopack) não imprime a tabela "First Load JS". Por isso a medição lê os arquivos
 // gerados: cada HTML pré-renderizado em `.next/server/app` (exceto `_not-found` e `_global-error`)
-// lista seus `<script src="/_next/static/...js">`; cada arquivo é comprimido com gzip (padrão do
+// lista seus `<script src="/_next/static/...js">` (menos os marcados `noModule`: polyfills que só
+// navegadores sem módulos ES baixam, fora da medição desde 2026-11-05); cada arquivo é comprimido com gzip (padrão do
 // Node) e o "compartilhado" é a interseção dos arquivos presentes em todas as páginas.
 // `/queijos` é dinâmica e não tem HTML pré-renderizado: usa os mesmos arquivos do layout.
 //
@@ -22,14 +23,15 @@ import { fileURLToPath } from 'node:url';
 const raiz = fileURLToPath(new URL('../', import.meta.url));
 const pastaApp = `${raiz}.next/server/app`;
 const pastaEstatica = `${raiz}.next`;
-// Linha de base do fim da etapa 5 (a990e3a) + folga da etapa 6 (plano: +1,5 kB; ampliada para
-// +2,0 kB na correção do bloco B: limite de erro da ilustração, confirmação no log e retorno
-// booleano do envio; o produto mantém +1,5 kB porque não ganha nada próprio).
+// Limites recalibrados em 2026-11-05 (ADR-0012, atualização): o método passou a IGNORAR os
+// `<script noModule>` (polyfills que navegadores modernos não baixam; ~38,7 kB gzip). Cada limite =
+// valor medido por esse método (após o painel de atendimento virar chunk tardio) + folga de 3 kB
+// gzip por rota. Medidos: compartilhado 140,88; `/` 145,34; produto 151,99 (kB gzip).
 const ORCAMENTO = {
-  compartilhado: 182.69 + 2.0,
-  '/': 187.03 + 2.0,
-  '/queijos': 182.69 + 2.0,
-  '/queijos/canastra-curado': 193.77 + 1.5,
+  compartilhado: 140.88 + 3.0,
+  '/': 145.34 + 3.0,
+  '/queijos': 140.88 + 3.0,
+  '/queijos/canastra-curado': 151.99 + 3.0,
   chunkTardio: 350,
   // Motor do assistente (lib/roteiro + cartões + quiz), carregado ao abrir o painel (ADR-0010).
   chunkDoMotor: 12,
@@ -73,8 +75,11 @@ async function medirPacote() {
   for (const arquivo of await listarHtml(pastaApp)) {
     const html = await readFile(`${pastaApp}/${arquivo}`, 'utf8');
     const scripts = new Set();
-    for (const m of html.matchAll(/<script[^>]+src="(\/_next\/static\/[^"?]+\.js)(?:\?[^"]*)?"/g)) {
-      scripts.add(m[1]);
+    for (const tag of html.matchAll(/<script\b[^>]*>/g)) {
+      // Polyfills `noModule` não são baixados por navegadores modernos: ficam fora da medição.
+      if (/\snoModule\b/i.test(tag[0])) continue;
+      const src = tag[0].match(/\ssrc="(\/_next\/static\/[^"?]+\.js)(?:\?[^"]*)?"/);
+      if (src) scripts.add(src[1]);
     }
     paginas.set(rotaDoHtml(arquivo), { scripts, html });
   }
@@ -164,6 +169,25 @@ async function medirPacote() {
     process.exitCode = 1;
   } else {
     console.log(`${NL}CheeseIllustration ausente do pacote compartilhado.`);
+  }
+
+  // ADR-0012: o painel de atendimento (SupportPanel + conversa) é um chunk tardio, montado na
+  // primeira abertura. Marcas: o título do painel e a linha de status, que só ele contém.
+  const MARCAS_DO_PAINEL = [/Assistente do Ateli/, /Responde na hora, 24 horas/];
+  const comPainel = [];
+  for (const script of new Set([...paginas.values()].flatMap((p) => [...p.scripts]))) {
+    const conteudo = await readFile(`${pastaEstatica}${script.replace('/_next', '')}`, 'utf8');
+    if (MARCAS_DO_PAINEL.every((m) => m.test(conteudo))) comPainel.push(script);
+  }
+  if (comPainel.length > 0) {
+    console.log(
+      `${NL}ATENÇÃO: o painel de atendimento voltou ao pacote inicial:${NL}  ${comPainel.join(`${NL}  `)}`,
+    );
+    process.exitCode = 1;
+  } else {
+    console.log(
+      `${NL}Painel de atendimento ausente dos scripts iniciais (chunk tardio, ADR-0012).`,
+    );
   }
 
   // Chunk tardio do motor do assistente: não pode ser script inicial nem estar citado no HTML.

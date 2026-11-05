@@ -19,8 +19,8 @@ import {
   type MensagemDoChat,
 } from '@/lib/assistant';
 import { formatarPreco } from '@/lib/format';
-import { atendimentoHumanoAberto, TEXTO_DA_CAVE_FECHADA, TEXTO_DO_HORARIO } from '@/lib/whatsapp';
-import { useAtendimento, type OpcoesDeFechamento } from './atendimento.contexto';
+import { atendimentoHumanoAberto, TEXTO_DA_CAVE_FECHADA, TEXTO_DO_HORARIO } from '@/lib/horario';
+import { useConversa, useAtendimento, type OpcoesDeFechamento } from './atendimento.contexto';
 import { Icone } from './icons';
 import { MiniaturaDoChat } from './ilustracoes/MiniaturaDoChat';
 import { LinkDoWhatsApp } from './LinkDoWhatsApp';
@@ -158,7 +158,8 @@ function ConteudoDoPainel({
   idDoTitulo: string;
   aoSolicitarFechamento: AoSolicitarFechamento;
 }) {
-  const { conversa, enviar, numeroDoWhatsApp } = useAtendimento();
+  const { numeroDoWhatsApp } = useAtendimento();
+  const { conversa, enviar } = useConversa();
   const abas = useAbas(ABAS, 'assistente');
   const idDoCampo = useId();
   const log = useRef<HTMLDivElement>(null);

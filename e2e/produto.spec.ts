@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './_apoio/teste';
 
 const larguras = [360, 390, 768, 1440, 1920];
 const rotas = ['/queijos/canastra-curado', '/queijos/brie-frances'];

@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './_apoio/teste';
 
 const TEXTO = 'Esta página foi maturar em outro lugar.';
 

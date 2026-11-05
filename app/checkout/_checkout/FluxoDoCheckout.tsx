@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { SacolaVazia } from '@/components/SacolaVazia';
 import { useAcoesDaSacola, useEstadoDaSacola } from '@/components/SacolaProvider';
 import { calcularTotais, valorDoFrete, type FormaDePagamento } from '@/lib/commerce';
-import { precificarSacola, type ResumoParaSacola } from '@/lib/sacola';
+import { precificarSacola, type ResumoParaSacola } from '@/lib/precificarSacola';
 import { Confirmacao, type PedidoConfirmado } from './Confirmacao';
 import {
   DADOS_INICIAIS,

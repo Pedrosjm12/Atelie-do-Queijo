@@ -7,7 +7,8 @@ import {
   type Assistente,
 } from '@/lib/assistant';
 import { FORMATOS_DO_CANASTRA_NO_CHAT } from '@/lib/cartoesDoChat';
-import { AVISO_DE_NOVA_ABA, TEXTO_DA_CAVE_FECHADA, TEXTO_DO_HORARIO } from '@/lib/whatsapp';
+import { TEXTO_DA_CAVE_FECHADA, TEXTO_DO_HORARIO } from '@/lib/horario';
+import { AVISO_DE_NOVA_ABA } from '@/lib/whatsapp';
 import { AtendimentoProvider } from './Atendimento';
 import { SacolaProvider, TEXTO_ADICIONADO, useEstadoDaSacola } from './SacolaProvider';
 import { SupportFab } from './SupportFab';
@@ -57,6 +58,7 @@ async function abrir(numero: string | null = NUMERO): Promise<Usuario> {
     </SacolaProvider>,
   );
   await usuario.click(screen.getByRole('button', { name: 'Abrir atendimento' }));
+  await screen.findByRole('dialog', { name: 'Assistente do Ateliê' });
   return usuario;
 }
 

@@ -65,14 +65,16 @@ describe('SupportFab', () => {
     expect(screen.queryByText('Posso ajudar a escolher?')).not.toBeInTheDocument();
   });
 
-  it('esconde a bolha e abre o painel ao clicar', () => {
+  it('esconde a bolha e abre o painel ao clicar', async () => {
     renderizar();
     act(() => {
       vi.advanceTimersByTime(ATRASO_DA_BOLHA_MS);
     });
 
     fireEvent.click(screen.getByRole('button', { name: 'Abrir atendimento' }));
-    expect(screen.getByRole('dialog', { name: 'Assistente do Ateliê' })).toBeInTheDocument();
+    // O painel é um módulo tardio (ADR-0012): com o relógio real, espera a importação.
+    vi.useRealTimers();
+    expect(await screen.findByRole('dialog', { name: 'Assistente do Ateliê' })).toBeInTheDocument();
     expect(screen.queryByText('Posso ajudar a escolher?')).not.toBeInTheDocument();
   });
 

@@ -7,7 +7,7 @@ import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
 import { SacolaProvider } from '@/components/SacolaProvider';
 import { SupportFab } from '@/components/SupportFab';
-import { numeroDoWhatsApp } from '@/data/ficticio';
+import { numeroDoWhatsApp } from '@/lib/whatsapp.server';
 import './globals.css';
 
 const cormorant = Cormorant_Garamond({

@@ -2,6 +2,9 @@
 
 import { usePathname } from 'next/navigation';
 import {
+  Component,
+  lazy,
+  Suspense,
   useCallback,
   useEffect,
   useMemo,
@@ -11,41 +14,52 @@ import {
   type ReactNode,
 } from 'react';
 import {
-  carregarAssistente,
-  ESTADO_INICIAL,
-  MENSAGENS_INICIAIS,
-  type Assistente,
-  type EntradaDoCliente,
-  type MensagemDoChat,
-} from '@/lib/assistant';
-import {
   ContextoDoAtendimento,
   useAtendimento,
-  type ConversaDoChat,
   type OpcoesDeFechamento,
   type ValorDoAtendimento,
 } from './atendimento.contexto';
 import { Button } from './Button';
-import { TEXTO_ADICIONADO, useAcoesDaSacola } from './SacolaProvider';
-import { preaquecerIlustracao, SupportPanel } from './SupportPanel';
 
 export { useAtendimento };
 export type { OpcoesDeFechamento };
 
 type DestinoDoFoco = 'gatilho' | 'conteudo' | 'nenhum';
 
-const CONVERSA_INICIAL: ConversaDoChat = {
-  mensagens: MENSAGENS_INICIAIS,
-  estado: ESTADO_INICIAL,
-};
+// O painel (conversa, fila de entradas e <SupportPanel/>) é um chunk tardio (ADR-0012): sai do
+// pacote global e só monta na primeira abertura. O chunk é baixado em tempo ocioso, para o painel
+// aparecer na hora; nada disso entra nos <script> do HTML.
+const importarPainel = () => import('./PainelDoAtendimento');
+const criarPainel = () => lazy(importarPainel);
 
 /**
- * Estado do painel de atendimento (ADR-0005): envolve o conteúdo do <body> e renderiza o
- * <SupportPanel/> uma única vez. Guarda o gatilho que abriu o painel para devolver o foco a
- * ele ao fechar, inclusive onde o <dialog> nativo não faria isso sozinho.
- *
- * Também guarda a conversa (só em memória, P51) e a entrega ao assistente (ADR-0010). O número do
- * WhatsApp chega pronto do servidor (`app/layout.tsx`); nenhum Client Component o resolve.
+ * Borda de erro mínima: se o chunk do painel não carregar (sem rede, deploy novo), o lazy lança no
+ * render. Sem ela o erro derrubaria o site; com ela, só o painel desiste (ADR-0012).
+ */
+class BordaDoPainel extends Component<
+  { aoFalhar: () => void; children: ReactNode },
+  { falhou: boolean }
+> {
+  state = { falhou: false };
+
+  static getDerivedStateFromError() {
+    return { falhou: true };
+  }
+
+  componentDidCatch() {
+    this.props.aoFalhar();
+  }
+
+  render() {
+    return this.state.falhou ? null : this.props.children;
+  }
+}
+
+/**
+ * Estado do painel de atendimento (ADR-0005): envolve o conteúdo do <body>. Guarda se está aberto
+ * e o gatilho que o abriu, para devolver o foco a ele ao fechar, inclusive onde o <dialog> nativo
+ * não faria isso sozinho. A conversa e o painel vivem em `PainelDoAtendimento` (ADR-0012). O
+ * número do WhatsApp chega pronto do servidor (`app/layout.tsx`); nenhum Client Component o resolve.
  */
 export function AtendimentoProvider({
   children,
@@ -54,97 +68,34 @@ export function AtendimentoProvider({
   children: ReactNode;
   numeroDoWhatsApp: string | null;
 }) {
-  const { adicionar } = useAcoesDaSacola();
   const [aberto, setAberto] = useState(false);
-  const [conversa, setConversa] = useState<ConversaDoChat>(CONVERSA_INICIAL);
-  // Espelho síncrono da conversa: entradas em sequência rápida leem o estado mais recente.
-  const conversaAtual = useRef<ConversaDoChat>(CONVERSA_INICIAL);
-  const assistente = useRef<Promise<Assistente> | null>(null);
-  // Uma entrada por vez: a resposta de uma é aplicada antes de a seguinte ser calculada.
-  const fila = useRef<Promise<void>>(Promise.resolve());
+  // Vira `true` na primeira abertura e não volta: o painel segue montado, com a conversa.
+  const [painelPedido, setPainelPedido] = useState(false);
+  // Cada tentativa recria o lazy: um import que rejeitou fica rejeitado para sempre no mesmo lazy.
+  const [tentativa, setTentativa] = useState(0);
+  const [PainelDoAtendimento, setPainelDoAtendimento] = useState(criarPainel);
   const gatilho = useRef<HTMLElement | null>(null);
   const destinoDoFoco = useRef<DestinoDoFoco>('gatilho');
 
-  /** Importa o motor uma só vez (chunk tardio). Se a importação falhar, a próxima tentativa refaz. */
-  const obterAssistente = useCallback((): Promise<Assistente> => {
-    const existente = assistente.current;
-    if (existente) return existente;
-    const nova = carregarAssistente();
-    assistente.current = nova;
-    nova.catch(() => {
-      if (assistente.current === nova) assistente.current = null;
-    });
-    return nova;
+  // Baixa o painel quando o navegador estiver ocioso (depois do carregamento da página).
+  useEffect(() => {
+    const baixar = () => void importarPainel().catch(() => undefined);
+    if (typeof requestIdleCallback === 'function') {
+      const id = requestIdleCallback(baixar, { timeout: 4000 });
+      return () => cancelIdleCallback(id);
+    }
+    const id = setTimeout(baixar, 2000);
+    return () => clearTimeout(id);
   }, []);
 
-  const abrir = useCallback(
-    (origem?: HTMLElement) => {
-      // O Safari não foca o botão ao clicar: por isso o gatilho vem do evento, com o foco como reserva.
-      const ativo = document.activeElement;
-      gatilho.current = origem ?? (ativo instanceof HTMLElement ? ativo : null);
-      destinoDoFoco.current = 'gatilho';
-      setAberto(true);
-      // Começa a baixar o motor e o gerador de ilustrações já ao abrir; um clique que chegue antes do fim espera a promessa.
-      obterAssistente().catch(() => undefined);
-      preaquecerIlustracao();
-    },
-    [obterAssistente],
-  );
-
-  const enviar = useCallback(
-    (entrada: EntradaDoCliente): Promise<boolean> => {
-      let entregue = false;
-      const tarefa = fila.current
-        .then(async () => {
-          const motor = await obterAssistente();
-          const resposta = await motor.responder(conversaAtual.current.estado, entrada);
-          // Entrada ignorada (resposta rápida antiga, texto vazio): nada muda, nada a reenviar.
-          if (resposta.mensagens.length === 0) {
-            entregue = true;
-            return;
-          }
-          // Só o último grupo de respostas rápidas aceita clique: os antigos saem da conversa.
-          let mensagens: readonly MensagemDoChat[] = [
-            ...conversaAtual.current.mensagens.filter((m) => m.tipo !== 'respostas-rapidas'),
-            ...resposta.mensagens,
-          ];
-          // Ações só nascem de uma resposta rápida escolhida pela pessoa (ADR-0010, decisão 2).
-          for (const acao of resposta.acoes) {
-            if (acao.tipo !== 'adicionar-a-sacola') continue;
-            const adicionado = adicionar({
-              slug: acao.slug,
-              formatoId: acao.formatoId,
-              quantidade: acao.quantidade,
-              presente: acao.presente,
-            });
-            // O aviso visual fica fora do <dialog> (inerte): quem usa leitor de tela o recebe aqui.
-            if (adicionado) {
-              mensagens = [
-                ...mensagens,
-                {
-                  id: `adicionado-${resposta.estado.proximoId}-${mensagens.length}`,
-                  tipo: 'assistente',
-                  texto: TEXTO_ADICIONADO,
-                },
-              ];
-            }
-          }
-          const proxima: ConversaDoChat = { mensagens, estado: resposta.estado };
-          conversaAtual.current = proxima;
-          setConversa(proxima);
-          entregue = true;
-        })
-        // Falha ao baixar o motor: a conversa fica como estava e a próxima entrada tenta de novo.
-        .catch((erro: unknown) => {
-          if (process.env.NODE_ENV !== 'production') console.error(erro);
-        })
-        .then(() => entregue);
-      // A fila segue por `Promise<void>`: uma falha nunca trava as entradas seguintes.
-      fila.current = tarefa.then(() => undefined);
-      return tarefa;
-    },
-    [adicionar, obterAssistente],
-  );
+  const abrir = useCallback((origem?: HTMLElement) => {
+    // O Safari não foca o botão ao clicar: por isso o gatilho vem do evento, com o foco como reserva.
+    const ativo = document.activeElement;
+    gatilho.current = origem ?? (ativo instanceof HTMLElement ? ativo : null);
+    destinoDoFoco.current = 'gatilho';
+    setAberto(true);
+    setPainelPedido(true);
+  }, []);
 
   const fechar = useCallback((opcoes?: OpcoesDeFechamento) => {
     destinoDoFoco.current = opcoes?.focarConteudo
@@ -165,6 +116,18 @@ export function AtendimentoProvider({
     if (destino === 'conteudo') document.getElementById('conteudo')?.focus({ preventScroll: true });
   }, []);
 
+  // O chunk do painel não carregou: fecha, devolve o foco ao gatilho e deixa a próxima abertura
+  // tentar de novo com um lazy novo.
+  const aoFalharOPainel = useCallback(() => {
+    const alvo = gatilho.current;
+    gatilho.current = null;
+    setAberto(false);
+    setPainelPedido(false);
+    setTentativa((t) => t + 1);
+    setPainelDoAtendimento(criarPainel);
+    if (alvo?.isConnected) alvo.focus();
+  }, []);
+
   // Fecha ao mudar de rota (inclusive voltar/avançar). Só o caminho conta: searchParams não.
   const caminho = usePathname();
   const caminhoAnterior = useRef(caminho);
@@ -172,19 +135,43 @@ export function AtendimentoProvider({
     if (caminhoAnterior.current === caminho) return;
     caminhoAnterior.current = caminho;
     // Sincroniza com o roteador (sistema externo): fechar() é a única saída do painel.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    if (aberto) fechar({ focarConteudo: true });
+    if (aberto) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      fechar({ focarConteudo: true });
+      // Com o chunk ainda baixando não há <dialog> para chamar aoFechado: não guarda o gatilho.
+      gatilho.current = null;
+    }
   }, [caminho, aberto, fechar]);
 
   const valor = useMemo<ValorDoAtendimento>(
-    () => ({ aberto, abrir, fechar, numeroDoWhatsApp, conversa, enviar }),
-    [aberto, abrir, fechar, numeroDoWhatsApp, conversa, enviar],
+    () => ({ aberto, abrir, fechar, numeroDoWhatsApp }),
+    [aberto, abrir, fechar, numeroDoWhatsApp],
   );
 
   return (
     <ContextoDoAtendimento value={valor}>
       {children}
-      <SupportPanel aberto={aberto} aoSolicitarFechamento={fechar} aoFechado={aoFechado} />
+      {painelPedido && (
+        // Abriu antes do chunk chegar: avisa por leitor de tela (sem mudar o visual). O foco segue
+        // no gatilho até o diálogo montar e o showModal() levá-lo para dentro.
+        <BordaDoPainel key={tentativa} aoFalhar={aoFalharOPainel}>
+          <Suspense
+            fallback={
+              aberto ? (
+                <p role="status" className="sr-only">
+                  Abrindo o atendimento…
+                </p>
+              ) : null
+            }
+          >
+            <PainelDoAtendimento
+              aberto={aberto}
+              aoSolicitarFechamento={fechar}
+              aoFechado={aoFechado}
+            />
+          </Suspense>
+        </BordaDoPainel>
+      )}
     </ContextoDoAtendimento>
   );
 }

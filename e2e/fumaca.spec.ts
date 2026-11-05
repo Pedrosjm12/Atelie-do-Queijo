@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './_apoio/teste';
 
 test.describe('fumaça', () => {
   test('home responde com lang pt-BR', async ({ page }) => {

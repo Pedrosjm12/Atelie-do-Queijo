@@ -7,12 +7,12 @@ import {
   SACOLA_VAZIA,
   TAMANHO_MAXIMO_SALVO,
   lerSacolaSalva,
-  precificarSacola,
   reduzirSacola,
   serializarSacola,
   totalDeItens,
 } from './sacola';
-import type { ResumoParaSacola, Sacola } from './sacola';
+import { precificarSacola, type ResumoParaSacola } from './precificarSacola';
+import type { Sacola } from './sacola';
 
 const salvo = (itens: unknown[], extra: Record<string, unknown> = {}) =>
   JSON.stringify({ v: 1, itens, presente: false, ...extra });
