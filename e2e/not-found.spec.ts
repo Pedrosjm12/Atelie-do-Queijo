@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 
 const TEXTO = 'Esta página foi maturar em outro lugar.';
 
-for (const caminho of ['/nao-existe', '/queijos/nao-existe']) {
+for (const caminho of ['/nao-existe', '/queijos/nao-existe', '/aprenda/nao-existe']) {
   test.describe(`404 em ${caminho}`, () => {
     test('responde 404 com o texto da spec, noindex e título', async ({ page }) => {
       const resposta = await page.goto(caminho);

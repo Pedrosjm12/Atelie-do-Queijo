@@ -14,8 +14,7 @@ export function Escola() {
       <ul className={estilos.grade}>
         {ARTIGOS.map((artigo) => (
           <li key={artigo.slug}>
-            {/* Até existirem as páginas de artigo (bloco C), todos levam a /aprenda. */}
-            <CartaoDeArtigo artigo={artigo} href="/aprenda" nivelDoTitulo="h3" />
+            <CartaoDeArtigo artigo={artigo} href={`/aprenda/${artigo.slug}`} nivelDoTitulo="h3" />
           </li>
         ))}
       </ul>

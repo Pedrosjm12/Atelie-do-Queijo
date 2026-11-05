@@ -6,7 +6,7 @@ test.describe('componentes globais', () => {
   for (const largura of larguras) {
     test(`sem rolagem horizontal a ${largura} px`, async ({ page }) => {
       await page.setViewportSize({ width: largura, height: 900 });
-      for (const rota of ['/', '/queijos', '/presentes']) {
+      for (const rota of ['/', '/queijos', '/presentes', '/aprenda', '/aprenda/queijo-e-vinho']) {
         await page.goto(rota);
         const cabe = await page.evaluate(
           () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,

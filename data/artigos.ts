@@ -23,7 +23,7 @@ export interface Artigo {
   /** Descrição do `[FOTO: …]` da spec §5.8. */
   foto: string;
   /** `null` = lacuna "[TEXTO DO ARTIGO]". */
-  corpo: readonly string[] | null;
+  corpo: readonly [string, ...string[]] | null;
   /** `null` = lacuna (P60). Lista não vazia quando o dono definir. */
   queijosCitados: readonly [SlugDoQueijo, ...SlugDoQueijo[]] | null;
 }

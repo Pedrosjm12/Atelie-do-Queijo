@@ -1,0 +1,53 @@
+.pagina {
+  padding-block: 64px 112px;
+}
+
+.categoria {
+  margin-top: 56px;
+}
+
+.tituloDaCategoria {
+  margin: 0 0 24px;
+}
+
+.grade {
+  display: grid;
+  /* Mesma largura de cartão da grade da Home (3 colunas em 1200 px), mesmo com 1 item na seção. */
+  grid-template-columns: repeat(
+    auto-fill,
+    minmax(min(100%, 280px), max(min(100%, 280px), calc((100% - 64px) / 3)))
+  );
+  gap: 32px;
+}
+
+@media (max-width: 640px) {
+  .grade {
+    grid-template-columns: 1fr;
+  }
+}
+
+.lacuna {
+  font-size: 15px;
+  color: var(--palha);
+}
+
+.foto {
+  margin-top: 40px;
+}
+
+.corpo {
+  display: grid;
+  gap: 16px;
+  max-width: 680px;
+  margin-top: 40px;
+  font-size: 16px;
+  color: var(--palha);
+}
+
+.citados {
+  margin-top: 56px;
+}
+
+.tituloDosCitados {
+  margin: 0 0 24px;
+}
