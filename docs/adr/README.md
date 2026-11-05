@@ -24,3 +24,5 @@ Cada decisão técnica relevante do Ateliê do Queijo fica registrada aqui, em `
 | [0011](0011-paginas-de-conteudo-e-404.md) | Páginas de conteúdo (Presentes, Aprenda, Produtores) e página 404 | Aceito | 2026-11-05 |
 | [0012](0012-folga-do-orcamento-de-js.md) | Folga no orçamento de JavaScript: painel de atendimento sob demanda | Aceito | 2026-11-05 |
 | [0013](0013-numero-do-whatsapp-so-no-servidor.md) | Número do WhatsApp só no servidor: `WHATSAPP_NUMBER` e `server-only` | Aceito | 2026-11-05 |
+| [0014](0014-dependencias-da-rodada-de-qualidade.md) | Dependências da rodada de qualidade: `@axe-core/playwright` e cobertura do Vitest | Proposto | 2026-11-05 |
+| [0015](0015-cabecalhos-http-e-csp.md) | Cabeçalhos HTTP de segurança e política de conteúdo (CSP) | Proposto | 2026-11-05 |
