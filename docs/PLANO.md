@@ -1,19 +1,20 @@
 # Plano de implementação — Ateliê do Queijo
 
 > Fonte da verdade: `ATELIE-DO-QUEIJO-SPEC.md`. Decisões técnicas: `docs/adr/`.
-> Última atualização: 2026-11-03 (fechamento da etapa 5; etapa 6 em andamento, bloco B corrigido após a verificação). Etapas 1, 2, 3, 4 e 5 **concluídas**; etapa 6 **detalhada**. A loja segue **simulada**.
+> Última atualização: 2026-11-05 (fechamento da etapa 6). Etapas 1, 2, 3, 4, 5 e 6 **concluídas**; etapa 7 **a detalhar**. A loja segue **simulada**.
 >
 > **AVISO: dados de negócio fictícios** (WhatsApp, CNPJ, endereço, frete, parcelas, produtor) estão em `data/ficticio.ts` e **precisam ser trocados antes da publicação**; o build de produção na Vercel falha enquanto a trava existir. Ver [Decisões do dono de 2026-11-03](#decisões-do-dono-de-2026-11-03-d1-a-d34).
 >
-> **RETOMADA (2026-11-03): a etapa 5 está concluída e a etapa 6 (assistente com roteiro determinístico, horários e links do WhatsApp) está detalhada** em [Etapa 6](#etapa-6--assistente-com-roteiro-determinístico-horário-e-links-do-whatsapp), com o [ADR-0010](adr/0010-assistente-deterministico-e-whatsapp.md) (Aceito, sem dependência nova).
+> **RETOMADA (2026-11-05): a etapa 6 está concluída e a próxima é a etapa 7 (Presentes, Aprenda, Produtores e 404, textos da §12), ainda a detalhar** pelo `arquiteto-de-software`. O painel de atendimento tem assistente determinístico, horário em `America/Sao_Paulo` e links do WhatsApp ([ADR-0010](adr/0010-assistente-deterministico-e-whatsapp.md)); ver [Etapa 6](#etapa-6--assistente-com-roteiro-determinístico-horário-e-links-do-whatsapp).
 >
-> - **Próximo passo:** o dono responde às [perguntas P44 a P52](#perguntas-ao-dono-etapa-6) (o que fazem **Sugira um queijo**, **Montar uma tábua** e **Sim, com cartão**; resumo na mensagem do WhatsApp; texto livre; nova aba; feriados; conversa ao reabrir; e os textos novos do assistente, que ficam como `[A DEFINIR: …]` até ele escrever). As tarefas 1 e 2 (`lib/whatsapp.ts` e contratos de `lib/assistant.ts`, `especialista-em-ia-conversacional`) podem começar antes; a tarefa 3 (motor) depende de P44 a P48.
-> - **Estado:** etapa 5 publicada nos commits `92fb989` (bloco A) e `a990e3a` (bloco B); ver [Commits da etapa 5](#commits-da-etapa-5). **Nenhum queijo tem GLB**: o visitante vê o SVG, com Tela cheia, Aproximar e Girar funcionando sobre ele, e a biblioteca 3D nunca é baixada. O **bloco C** (hero da Home e giro no cartão) está **pendente, só com o 1º GLB** (P40 = B). Detalhes e pendências da etapa em [Etapa 5](#etapa-5--visualizador-3d-com-fallback-svg) e em [O que a etapa 5 deixou para a frente](#o-que-a-etapa-5-deixou-para-a-frente).
-> - **Para a etapa 6:** o número do WhatsApp vem de `numeroDoWhatsApp()` (`data/ficticio.ts`); com `VERCEL_ENV=production` e variável ausente ou inválida, ele devolve `null` e a interface deve esconder os links. Ver [`docs/ambiente.md`](ambiente.md). **Atenção (ADR-0010):** `VERCEL_ENV` não chega ao navegador, então a função só pode ser chamada no servidor (`app/layout.tsx`), que passa o número ao `AtendimentoProvider`.
-> - **Tudo o que aguarda o dono** (textos novos, contrastes, comportamentos, LGPD) está em [Decisões e textos que aguardam o dono (fim da etapa 4)](#decisões-e-textos-que-aguardam-o-dono-fim-da-etapa-4), com as decisões D1 a D34 já aplicadas por cima. Nada ali bloqueia a etapa 6.
+> - **Próximo passo:** o `arquiteto-de-software` detalha a etapa 7 (tarefas, contratos, perguntas ao dono). **Pedir orçamento** de `/presentes` usa `LinkDoWhatsApp` com `{ tipo: 'corporativo' }` (já existe em `lib/whatsapp.ts`).
+> - **Estado:** etapa 6 publicada nos commits `a744972` (bloco A) e `a37640c` (bloco B); ver [Commits da etapa 6](#commits-da-etapa-6). A etapa 5 está nos commits `92fb989` e `a990e3a`. **Nenhum queijo tem GLB**: o bloco C da etapa 5 (hero da Home e giro no cartão) segue **pendente, só com o 1º GLB** (P40 = B).
+> - **Lacunas do dono que seguem visíveis:** os 12 textos do assistente e o aviso de nova aba (`[A DEFINIR: …]`, P52) em `TEXTOS_DO_ROTEIRO` (`lib/roteiro.ts`) e `AVISO_DE_NOVA_ABA` (`lib/whatsapp.ts`). Como editar: [`docs/conteudo.md`](conteudo.md#assistente-horário-e-whatsapp). Pendências do bloco B (nova aba para quem enxerga, `depoisDaAcao`, erro do chunk, contraste da borda do campo, aba sem número) em [Verificação do bloco B](#verificação-do-bloco-b-etapa-6-correções-aplicadas-e-pendências).
+> - **Publicação (etapa 9):** o número do WhatsApp é resolvido só no servidor; publicar **somente na Vercel** ou garantir `VERCEL_ENV=production`, e conferir que `5520900000000` não aparece em `.next/static`. A etapa 9 também precisa de trava de build ou teste de CI que falhe em produção com `[A DEFINIR` em `TEXTOS_DO_ROTEIRO`, e de validação profissional do texto de saúde. Ver [`docs/ambiente.md`](ambiente.md).
+> - **Tudo o que aguarda o dono** (textos novos, contrastes, comportamentos, LGPD) está em [Decisões e textos que aguardam o dono (fim da etapa 4)](#decisões-e-textos-que-aguardam-o-dono-fim-da-etapa-4), com as decisões D1 a D34 já aplicadas por cima. Nada ali bloqueia a etapa 7.
 > - **Como retomar:** abra o Claude Code na pasta do projeto, peça "continue de onde paramos" e ele lerá esta nota. Rode `git status` e `npm run lint && npm run typecheck && npm run format:check && npm test && npm run modelos:validar && npm run build && npm run test:e2e` para confirmar o estado antes de seguir.
-> - **Para a etapa 8 (teste instável):** `e2e/pagina-sacola.spec.ts:23` falhou uma vez, sob carga, e passou isolado e nas reexecuções (suspeita: corrida de hidratação). Dois testes do vitest também falharam uma vez na primeira execução; os limites de tempo de `lib/pedido.test.ts` foram relaxados por precaução. Investigar se voltarem.
-> - **Guias:** [`docs/conteudo.md`](conteudo.md) (cadastro de queijos e "Como entregar um modelo 3D") e [`docs/ambiente.md`](ambiente.md) existem desde o fechamento da etapa 5. Eles serão ampliados (frete, Pix, horário, textos das páginas, gateway) nas etapas 6, 7 e 9. O `CHANGELOG.md` registra as etapas 4 e 5.
+> - **Para a etapa 8 (teste instável):** `e2e/pagina-sacola.spec.ts:23` falhou uma vez, sob carga, e passou isolado e nas reexecuções (suspeita: corrida de hidratação). Dois testes do vitest também falharam uma vez na primeira execução; os limites de tempo de `lib/pedido.test.ts` foram relaxados por precaução. Investigar se voltarem. Também na etapa 8: dividir o contexto da conversa em dois (estado e ações) e instalar `axe-core` nos testes de acessibilidade.
+> - **Guias:** [`docs/conteudo.md`](conteudo.md) (queijos, modelos 3D, assistente, horário e WhatsApp) e [`docs/ambiente.md`](ambiente.md). Serão ampliados (frete, Pix, textos das páginas, gateway) nas etapas 7 e 9. O `CHANGELOG.md` registra as etapas 4, 5 e 6.
 >
 > Fluxo usado em cada bloco: `frontend-nextjs` (ou o especialista da tarefa) implementa → `guardiao-do-design` (porta 3000, build), `especialista-em-acessibilidade` (`next dev -p 3001`, sem build) e `revisor-de-codigo` conferem em paralelo, sem editar → correções pelo implementador → lint, typecheck, format:check, test, build e test:e2e → commit e push. Na etapa 4, o `auditor-de-seguranca` entrou nos blocos B, C e E. Reaproveitar `BotaoEmBreve` para controles sem ação (Avise-me, WhatsApp, 3D) e o token `--largura-conteiner` nos contêineres.
 
@@ -34,8 +35,8 @@ Convenções deste plano:
 | 3 | Home → Catálogo → Produto (com `ProductCard`, `data/cheeses.ts` e ilustrações do Apêndice A) → interface do painel de Atendimento (§8). Sem sacola real, frete, 3D real nem roteiro do assistente | `frontend-nextjs`, `especialista-3d-webgl`, `engenheiro-de-ecommerce`, `guardiao-do-design` | Concluída ([detalhe](#etapa-3--home--catálogo--produto--painel-de-atendimento)) |
 | 4 | Sacola (contexto + `localStorage`), frete simulado e checkout simulado em `lib/commerce.ts` | `engenheiro-de-ecommerce`, `frontend-nextjs`, `auditor-de-seguranca` | **Concluída** ([detalhe](#etapa-4--sacola-frete-simulado-e-checkout-simulado)); P24 a P38 decididos em 2026-10-27 e implementados; commits `48e6ebe` a `b06c604` |
 | 5 | Visualizador 3D (`CheeseViewer` com `@google/model-viewer`) e fallback SVG do Apêndice A | `especialista-3d-webgl` | **Concluída** ([detalhe](#etapa-5--visualizador-3d-com-fallback-svg)); blocos A e B publicados (`92fb989`, `a990e3a`), [ADR-0009](adr/0009-visualizador-3d-com-model-viewer.md) Aceito. **Bloco C pendente, só com o 1º GLB** |
-| 6 | Assistente com roteiro determinístico, horários e links do WhatsApp no painel de atendimento | `especialista-em-ia-conversacional`, `frontend-nextjs` | **Próxima. Detalhada** ([detalhe](#etapa-6--assistente-com-roteiro-determinístico-horário-e-links-do-whatsapp)); [ADR-0010](adr/0010-assistente-deterministico-e-whatsapp.md) Aceito. Aguarda as respostas do dono a [P44 a P52](#perguntas-ao-dono-etapa-6) (tarefas 1 e 2 podem começar antes) |
-| 7 | Páginas restantes: Presentes, Aprenda, Produtores, 404 (textos da §12) | `frontend-nextjs` | A detalhar |
+| 6 | Assistente com roteiro determinístico, horários e links do WhatsApp no painel de atendimento | `especialista-em-ia-conversacional`, `frontend-nextjs` | **Concluída** ([detalhe](#etapa-6--assistente-com-roteiro-determinístico-horário-e-links-do-whatsapp)); blocos A e B publicados (`a744972`, `a37640c`), [ADR-0010](adr/0010-assistente-deterministico-e-whatsapp.md) Aceito; P44 a P52 decididos em 2026-11-03. Os textos do P52 seguem como `[A DEFINIR: …]` até o dono escrever |
+| 7 | Páginas restantes: Presentes, Aprenda, Produtores, 404 (textos da §12) | `frontend-nextjs` | **Próxima.** A detalhar |
 | 8 | Rodada de qualidade: testes, acessibilidade, performance e SEO, segurança | `testes-e-qualidade`, `especialista-em-acessibilidade`, `performance-e-seo`, `auditor-de-seguranca` | A detalhar; herda itens da etapa 4 ([seção](#etapa-8--rodada-de-qualidade-herança-da-etapa-4) e [lista](#fica-para-depois-segurança-e-lgpd)) |
 | 9 | CI completo, ambientes e checklist de aceite da §14 | `devops-e-deploy`, `documentador-tecnico` | A detalhar; herda itens da etapa 4 ([seção](#etapa-9--ci-completo-ambientes-e-aceite-herança-da-etapa-4) e [lista](#fica-para-depois-segurança-e-lgpd)) |
 
@@ -585,8 +586,8 @@ Cada commit só sai depois do veredito ✅ (ou ⚠️ resolvido) do `revisor-de-
 | Embalar para presente | Produto | Etapa 4, tarefa 7 (P31) |
 | Avise-me (esgotado) | Produto | Pendência P15 |
 | Girar, Aproximar (efeito visual), Tela cheia | Produto | Etapa 5 |
-| Fale com um queijista, Falar com um queijista (verde) | Produto e painel | Etapa 6 |
-| Respostas rápidas, campo de mensagem, Enviar | Painel | Etapa 6 |
+| Fale com um queijista, Falar com um queijista (verde) | Produto e painel | **Resolvido na etapa 6** (tarefas 5 e 7): `<a href="https://wa.me/…">` via `LinkDoWhatsApp`; somem sem número |
+| Respostas rápidas, campo de mensagem, Enviar | Painel | **Resolvido na etapa 6** (tarefa 6): ligados ao motor `lib/roteiro.ts` |
 | Buscar, Minha conta | Cabeçalho | Já pendente (ver tabela geral) |
 
 ### Verificação (vale para cada bloco)
@@ -600,7 +601,7 @@ Cada commit só sai depois do veredito ✅ (ou ⚠️ resolvido) do `revisor-de-
 ### Critérios de pronto da etapa 3
 
 - Itens da §14 atendidos: Home com as seções na ordem e os espaçamentos exatos; hero; faixa de confiança; catálogo com 10 queijos e filtro na URL; produto com alternador, formatos que mudam preço e Pix, e abas; barra fixa no celular com o FAB acima dela; textos idênticos à spec, com lacunas.
-- Item "Painel de atendimento" da §14 **parcialmente** atendido: duas abas, horário e botão verde visíveis. O roteiro real e a mensagem pré-preenchida do WhatsApp são da etapa 6.
+- Item "Painel de atendimento" da §14 **parcialmente** atendido: duas abas, horário e botão verde visíveis. O roteiro real e a mensagem pré-preenchida do WhatsApp são da etapa 6. **Atendido por inteiro na etapa 6** (ver [Critérios de pronto da etapa 6](#critérios-de-pronto-da-etapa-6)).
 - Sem rolagem horizontal de 360 a 1920 px em `/`, `/queijos`, `/queijos/canastra-curado` e `/queijos/brie-frances`.
 - `test.fixme` de `e2e/layout-global.spec.ts` ativado e passando.
 - Nenhuma dependência nova.
@@ -1130,8 +1131,8 @@ Ordem seguida: A → B → C → D → E. O E depende de C (reusa `consultarFret
 | Avise-me (esgotado) | Produto | Sem ação (P15) |
 | "Deixe seu e-mail e avisamos" (frete fora de área) | Produto | Só texto, sem campo (P9/P15) |
 | Girar, Aproximar (efeito visual), Tela cheia | Produto | Etapa 5 |
-| Fale com um queijista, Falar com um queijista (verde) | Produto e painel | Etapa 6 |
-| Respostas rápidas, campo de mensagem, Enviar | Painel | Etapa 6 |
+| Fale com um queijista, Falar com um queijista (verde) | Produto e painel | **Resolvido na etapa 6** (tarefas 5 e 7): `<a href="https://wa.me/…">` via `LinkDoWhatsApp`; somem sem número |
+| Respostas rápidas, campo de mensagem, Enviar | Painel | **Resolvido na etapa 6** (tarefa 6): ligados ao motor `lib/roteiro.ts` |
 | Buscar, Minha conta | Cabeçalho | Pendente (ver tabela geral) |
 
 ### Verificação (vale para cada bloco)
@@ -1585,7 +1586,7 @@ Ordem: A → B → fechamento; C espera o primeiro GLB (P40 = B).
 
 **Objetivo:** dar ação a todos os controles do painel de atendimento e ao **Fale com um queijista** do produto (spec §8.2, §8.3, §10.5 e item "Painel de atendimento" da §14): a conversa começa só com a saudação e as respostas rápidas (P4), segue uma árvore de opções determinística, passa para humano pelo WhatsApp com a mensagem da §8.3 e mostra o horário ou a mensagem de cave fechada conforme a hora em `America/Sao_Paulo`.
 
-**Situação: detalhada em 2026-11-03; bloco A (tarefas 1 a 4) publicado (`a744972`); bloco B (tarefas 5 a 7) implementado em 2026-11-03, aguardando a verificação da tarefa 8.** O dono aceitou todas as recomendações das [perguntas P44 a P52](#perguntas-ao-dono-etapa-6) em 2026-11-03. Os 13 textos do P52 seguem como `[A DEFINIR: …]` até o dono escrevê-los.
+**Situação: concluída em 2026-11-05.** Bloco A (tarefas 1 a 4) publicado em `a744972`; bloco B (tarefas 5 a 8) publicado em `a37640c`; tarefa 9 (documentação) fechada com `docs: fecha a etapa 6`. O dono aceitou todas as recomendações das [perguntas P44 a P52](#perguntas-ao-dono-etapa-6) em 2026-11-03. Os 13 textos do P52 seguem como `[A DEFINIR: …]` até o dono escrevê-los.
 
 **Pré-requisito:** etapa 5 concluída (`a990e3a`, `5794996`); `data/ficticio.ts` com `numeroDoWhatsApp()` (`39fd9e0`).
 
@@ -1853,18 +1854,21 @@ Cada tarefa termina com `lint`, `typecheck`, `format:check`, `test`, `modelos:va
 
 9. **[documentador-tecnico] Fechamento da etapa 6**
    - `docs/conteudo.md`: como editar `TEXTOS_DO_ROTEIRO`, o horário (e feriados, se o P50 pedir) e as palavras-chave; `docs/ambiente.md`: o número agora é usado, resolvido no servidor, e o que acontece sem ele; CHANGELOG e README; neste plano, a situação da etapa, a tabela de [controles sem ação](#controles-sem-ação-ao-fim-da-etapa-3) (linhas da etapa 6 resolvidas) e o item "Painel de atendimento" da §14.
+   - **Feito em 2026-11-05.** `docs/conteudo.md` ganhou a seção "Assistente, horário e WhatsApp" (textos do P52, `HORARIO_DO_ATENDIMENTO`, palavras-chave do P48); `docs/ambiente.md`, CHANGELOG e README foram atualizados; as linhas da etapa 6 das duas tabelas de controles sem ação foram marcadas como resolvidas.
    - **Pronto quando:** commit `docs: fecha a etapa 6` publicado.
 
 ### Commits da etapa 6
 
 | Bloco | Conteúdo | Mensagem | Situação |
 | --- | --- | --- | --- |
-| Docs | Este detalhamento e o ADR-0010 | `docs: detalha a etapa 6 e registra o ADR-0010` | A publicar (sessão principal) |
-| A | Tarefas 1 a 4 | `feat(atendimento): adiciona o roteiro do assistente e as regras do WhatsApp` | Tarefas 1 a 3 feitas (sem commit); falta a verificação da tarefa 4 |
-| B | Tarefas 5 a 8 | `feat(atendimento): liga o assistente, o horário e os links do WhatsApp` | Tarefas 5 a 7 feitas (sem commit); falta a verificação da tarefa 8 |
-| Docs | Tarefa 9 | `docs: fecha a etapa 6` | A fazer |
+| Docs | Este detalhamento e o ADR-0010 | `docs: detalha a etapa 6 e registra o ADR-0010` | **Publicado** (`3da1c16`) |
+| A | Tarefas 1 a 4 | `feat(atendimento): adiciona o roteiro do assistente e as regras do WhatsApp` | **Publicado** (`a744972`) |
+| B | Tarefas 5 a 8 | `feat(atendimento): liga o assistente, o horário e os links do WhatsApp` | **Publicado** (`a37640c`) |
+| Docs | Tarefa 9 | `docs: fecha a etapa 6` | Escrito em 2026-11-05; a publicar (sessão principal) |
 
 ### Critérios de pronto da etapa 6
+
+**Todos atendidos em 2026-11-05** (lacunas do P52 ainda visíveis, como previsto).
 
 - §8.2 e §8.3 atendidas, com as lacunas do P52 visíveis enquanto o dono não preencher.
 - Item "Painel de atendimento" da §14: duas abas, roteiro do assistente, horário e botão verde do WhatsApp com mensagem pré-preenchida.
@@ -2028,7 +2032,7 @@ O dono aprovou **todas as opções recomendadas** da rodada de pendências (nume
 
 | Dado | Valor fictício | Onde é usado |
 | --- | --- | --- |
-| WhatsApp (D26) | `5520900000000` (DDD 20 inexistente). `numeroDoWhatsApp()` usa `NEXT_PUBLIC_WHATSAPP_NUMBER` se for `^55\d{10,11}$`; senão cai no fictício fora de produção e devolve `null` com `VERCEL_ENV=production` (a interface deve esconder os links; etapa 6) | Ainda sem uso na interface; os links `wa.me` vêm na etapa 6 |
+| WhatsApp (D26) | `5520900000000` (DDD 20 inexistente). `numeroDoWhatsApp()` usa `NEXT_PUBLIC_WHATSAPP_NUMBER` se for `^55\d{10,11}$`; senão cai no fictício fora de produção e devolve `null` com `VERCEL_ENV=production` (a interface esconde os links) | Etapa 6: `app/layout.tsx` (servidor) → `AtendimentoProvider` → `LinkDoWhatsApp` (faixa, aba Queijista e produto) |
 | CNPJ (D27) | `00.000.000/0001-00` | `components/Footer.tsx` |
 | Endereço (D27) | `Rua Exemplo, 123, São Paulo, SP` | `components/Footer.tsx` |
 | Frete e prazo (D28) | CEP 01000-000 a 19999-999: R$ 24,90, 3 dias úteis; 20000-000 a 39999-999: R$ 32,90, 4 dias úteis; 40000-000 a 99999-999: R$ 45,90, 5 dias úteis (grátis a partir de R$ 180; 00000-000 a 00999-999 segue fora de área) | `lib/pedido.server.ts` (`calcularFrete`) |
@@ -2106,7 +2110,7 @@ Continuam como lacuna, por decisão do dono: dados dos 9 queijos sem ficha (`[A 
 | Segurança herdada da etapa 4 (CSP, cabeçalhos, limite de taxa, CI, hospedagem, ADR do gateway) | Registrada em [Fica para depois](#fica-para-depois-segurança-e-lgpd); copiar para as etapas 8 e 9 e para o ADR do gateway. | `arquiteto-de-software` + `auditor-de-seguranca` |
 | Tabela de frete, prazos e área atendida | Simulados na etapa 4 (P27, P28). Os valores reais dependem da transportadora. | Dono do projeto |
 | Número do WhatsApp, CNPJ, endereço, `[PREÇO]` e demais lacunas | Ficam visíveis entre colchetes até o dono preencher. | Dono do projeto |
-| Provedor de IA para o assistente | Etapa 6 usa roteiro determinístico atrás da interface `Assistente` de `lib/assistant.ts` ([ADR-0010](adr/0010-assistente-deterministico-e-whatsapp.md)); a IA real troca só `carregarAssistente()` e exigirá ADR próprio (provedor, custo, Route Handler, limite de taxa, LGPD). | Dono do projeto + `especialista-em-ia-conversacional` |
+| Provedor de IA para o assistente | A etapa 6 (concluída) usa roteiro determinístico atrás da interface `Assistente` de `lib/assistant.ts` ([ADR-0010](adr/0010-assistente-deterministico-e-whatsapp.md)); a IA real troca só `carregarAssistente()` e exigirá ADR próprio (provedor, custo, Route Handler, limite de taxa, LGPD). | Dono do projeto + `especialista-em-ia-conversacional` |
 | Destino de "Entregas refrigeradas", "Trocas e devoluções" e "Perguntas frequentes" (rodapé) | A spec não define rotas. Ficam como texto não interativo até existir página. | Dono do projeto |
 | Contraste de `--placeholder` sobre `--carvao` (4,47:1, abaixo de 4,5:1) | **Aceito como provisório** pelo dono (2026-10-26): só aparece nos textos `[FOTO: …]`. Rever antes da publicação se ainda houver placeholders. | Dono do projeto |
 | Teste e2e do foco após navegar pelo menu mobile (`test.fixme` em `e2e/layout-global.spec.ts`) | **Resolvido na etapa 3** (tarefa 12): não há mais `test.fixme` em `e2e/`. | `testes-e-qualidade` |

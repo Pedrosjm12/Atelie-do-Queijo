@@ -41,6 +41,13 @@ O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 - Botões **Girar à esquerda** e **Girar à direita** (passo de 30°) e Girar também no celular, só quando o queijo tem GLB (WCAG 2.2.2 e 2.5.7).
 - `docs/conteudo.md` (guia do dono, com "Como entregar um modelo 3D") e `docs/ambiente.md` (variáveis de ambiente e trava de produção).
 - ADR-0009 (visualizador 3D com `model-viewer`).
+- Etapa 6, bloco A (`a744972`): regras do assistente e do WhatsApp sem interface. `lib/whatsapp.ts` (mensagens literais da §8.3, `linkDoWhatsApp`, `lerNumeroDoPedido`, `HORARIO_DO_ATENDIMENTO` e `atendimentoHumanoAberto` no fuso de São Paulo), `lib/assistant.ts` (contratos e interface `Assistente`), `lib/cartoesDoChat.ts` (cartões dos 10 queijos) e o motor `lib/roteiro.ts`, com textos em `TEXTOS_DO_ROTEIRO`.
+- Etapa 6, bloco B (`a37640c`): o assistente do painel de atendimento responde de verdade (Sugira um queijo, Montar uma tábua, Onde está meu pedido?, harmonização, presente com a conversa do protótipo, saúde e "não entendi"), com texto livre por palavras-chave, cartões de produto de qualquer queijo e **Sim, com cartão** adicionando à sacola. A conversa fica só em memória.
+- Links do WhatsApp (`components/LinkDoWhatsApp.tsx`): faixa de passagem para humano, aba **Queijista (WhatsApp)** e **Fale com um queijista** do produto viram `<a href="https://wa.me/…">` em nova aba, com a mensagem fixa da §8.3. Sem número em produção, nenhum link é renderizado.
+- Horário de atendimento em `America/Sao_Paulo`: linha do horário quando a cave está aberta e a mensagem de cave fechada fora do horário. Feriados não contam (P50).
+- ADR-0010 (assistente determinístico e WhatsApp, sem dependência nova). Motor em *chunk* tardio, fora do JavaScript inicial.
+- Guia do dono ampliado com o assistente, o horário e as palavras-chave (`docs/conteudo.md`).
+- Aviso: 12 textos do assistente e o aviso de nova aba seguem como `[A DEFINIR: …]` até o dono escrever (P52).
 
 ### Alterado
 
@@ -48,6 +55,8 @@ O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 - **Desvios aprovados da spec** (para o checklist da §14): dica do palco sem GLB mostra só "Toque duas vezes para aproximar" (§7.2); Girar aparece no celular quando há GLB (§7.6); borda dos campos mantida em `--pedra-clara` (D2); rótulo fixo "Ver por dentro" com `aria-pressed` (P21); tipografia do checkout fora da §3.2 (D5).
 - **Ver na mesa** (realidade aumentada) permanece oculto até haver GLB real (D23).
 - Hero da Home e giro no cartão ficam para o primeiro GLB (bloco C, P40).
+- Etapa 6: **Fale com um queijista**, os botões verdes do WhatsApp, as respostas rápidas, o campo de mensagem e Enviar deixam de ser controles sem ação. Só o **Avise-me** segue sem ação (P15). A conversa do painel começa só com a saudação e as três respostas rápidas (P4); o roteiro estático do protótipo é reproduzido digitando a frase do item 3 da §8.2.
+- Orçamento do pacote: folga do compartilhado, da Home e de `/queijos` subiu de +1,5 para +2,0 kB gzip.
 - Luz de ~3200 K e ambiente HDR próprio (§11) ficam para o primeiro GLB real.
 
 - Os controles Adicionar, Calcular e Embalar para presente deixam de ser controles sem ação (`aria-disabled` fixo) e passam a funcionar. Avise-me, Falar com um queijista, Girar, Aproximar e Tela cheia seguem sem ação até as etapas 5 e 6.

@@ -88,10 +88,20 @@ Como entregar um modelo: [`docs/conteudo.md`](docs/conteudo.md#como-entregar-um-
 | `ProductTabs` e `useAbas` | Abas do produto. O hook `components/useAbas.ts` cuida do teclado (setas, Home, End) e também serve ao painel de atendimento |
 | `SacolaProvider`, `LinkDaSacola`, `BotaoAdicionar`, `QuantityStepper`, `AvisoDaSacola` | Sacola no layout: estado e `localStorage`, contador do cabeçalho, botão Adicionar, seletor de quantidade e aviso **Adicionado à sacola. Boa escolha.** `SacolaVazia` é o estado vazio de `/sacola` e `/checkout` |
 | `ShippingCalculator` (em `app/queijos/[slug]/_produto/`) | Calculadora de frete do produto, ligada à Server Action `consultarFrete` |
-| `AtendimentoProvider` e `SupportPanel` | Painel de atendimento em `<dialog>` modal, aberto pelo botão flutuante, por "Fale conosco" (rodapé) e por "Pedir ajuda" (catálogo). A conversa é um roteiro fixo de `lib/assistant.ts` até a etapa 6 |
+| `AtendimentoProvider` e `SupportPanel` | Painel de atendimento em `<dialog>` modal, aberto pelo botão flutuante, por "Fale conosco" (rodapé) e por "Pedir ajuda" (catálogo). Guarda a conversa em memória e carrega o motor (`lib/roteiro.ts`) sob demanda |
+| `LinkDoWhatsApp` | Link `wa.me` em nova aba, com a mensagem fixa da §8.3 por motivo (geral, produto, pedido). Não renderiza nada sem número |
 | `ProductCard`, `CheeseIllustration`, `components/ilustracoes/` | Cartão de queijo e ilustrações do Apêndice A da spec |
 
-Controles que ainda não têm função (Avise-me, Falar com um queijista e envio de mensagem no painel) seguem o padrão `aria-disabled="true"`: continuam focáveis e visíveis, mas não fazem nada. Ganham ação na etapa 6. Girar, Aproximar e Tela cheia funcionam desde a etapa 5 (Girar sem GLB fica `aria-disabled`, pois o SVG não gira). Buscar e Minha conta foram removidos do cabeçalho até existirem as funções (D19). A lista completa está em [`docs/PLANO.md`](docs/PLANO.md#controles-ao-fim-da-etapa-4).
+O único controle sem função é o **Avise-me** (P15), com o padrão `aria-disabled="true"`: continua focável e visível, mas não faz nada. Fale com um queijista, o campo de mensagem e os botões do WhatsApp funcionam desde a etapa 6. Girar, Aproximar e Tela cheia funcionam desde a etapa 5 (Girar sem GLB fica `aria-disabled`, pois o SVG não gira). Buscar e Minha conta foram removidos do cabeçalho até existirem as funções (D19). A lista completa está em [`docs/PLANO.md`](docs/PLANO.md#controles-ao-fim-da-etapa-4).
+
+## Assistente e WhatsApp
+
+A etapa 6 ligou o painel de atendimento, decidida no [ADR-0010](docs/adr/0010-assistente-deterministico-e-whatsapp.md). **Não há IA**: o assistente é um roteiro determinístico (`lib/roteiro.ts`), atrás da interface `Assistente` de `lib/assistant.ts`, para que uma IA futura troque só `carregarAssistente()`.
+
+- **Textos:** os que a spec traz são literais; os demais ficam em `TEXTOS_DO_ROTEIRO` como `[A DEFINIR: …]` até o dono escrever (P52). Ver [`docs/conteudo.md`](docs/conteudo.md#assistente-horário-e-whatsapp).
+- **Horário:** `lib/whatsapp.ts` (`HORARIO_DO_ATENDIMENTO`), sempre em `America/Sao_Paulo`. Feriados não contam.
+- **Número do WhatsApp:** resolvido no servidor (`app/layout.tsx`) e passado ao `AtendimentoProvider`. Sem número em produção, nenhum link `wa.me` é renderizado. Ver [`docs/ambiente.md`](docs/ambiente.md).
+- **Privacidade:** a conversa fica só em memória; o texto digitado nunca entra na URL do WhatsApp; nenhuma requisição de rede. O motor é um *chunk* tardio, fora do JavaScript inicial.
 
 ## Estrutura de pastas
 
@@ -133,7 +143,7 @@ Os arquivos corrigidos voltam ao stage sozinhos.
 - [`CLAUDE.md`](CLAUDE.md): instruções de trabalho do repositório.
 - [`docs/PLANO.md`](docs/PLANO.md): plano da etapa atual.
 - [`docs/adr/`](docs/adr/README.md): decisões técnicas.
-- [`docs/conteudo.md`](docs/conteudo.md): guia do dono da loja (cadastro de queijos e entrega de modelos 3D).
+- [`docs/conteudo.md`](docs/conteudo.md): guia do dono da loja (cadastro de queijos, modelos 3D, assistente, horário e WhatsApp).
 - [`docs/ambiente.md`](docs/ambiente.md): variáveis de ambiente e a trava de dados fictícios.
 
 > **Dados fictícios.** WhatsApp, CNPJ, endereço, frete, prazo, parcelas e produtor do Canastra são **fictícios** e ficam em `data/ficticio.ts`. O build de produção na Vercel (`VERCEL_ENV=production`) falha enquanto `DADOS_FICTICIOS_ATIVOS` for `true`. Troque os dados antes de publicar.

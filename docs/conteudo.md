@@ -1,6 +1,6 @@
 # Guia de conteúdo (para o dono da loja)
 
-Este guia explica como cuidar do que aparece na loja, sem precisar programar. Ele cresce a cada etapa do projeto. Hoje cobre **queijos** e **modelos 3D**. O que ainda não está aqui está listado no fim, em [O que ainda não está neste guia](#o-que-ainda-não-está-neste-guia).
+Este guia explica como cuidar do que aparece na loja, sem precisar programar. Ele cresce a cada etapa do projeto. Hoje cobre **queijos**, **modelos 3D** e o **assistente, o horário e o WhatsApp**. O que ainda não está aqui está listado no fim, em [O que ainda não está neste guia](#o-que-ainda-não-está-neste-guia).
 
 > **Aviso.** A loja é **simulada**. Alguns dados são **fictícios** (WhatsApp, CNPJ, endereço, frete, prazo, parcelas e produtor do Canastra). Eles ficam todos no arquivo `data/ficticio.ts` e **precisam ser trocados antes de a loja ir ao ar**. O sistema barra a publicação enquanto houver dados fictícios.
 
@@ -112,11 +112,84 @@ Detalhes úteis:
 - **Luz e ambiente (spec §11):** a luz quente de cerca de 3200 K e o ambiente (HDR) próprio da loja estão **previstos para o primeiro GLB real**. Hoje vale a luz neutra padrão da biblioteca.
 - **Hero da Home e giro no cartão do catálogo** também só entram com o primeiro GLB. Para o hero, será preciso aprovar uma variante do desenho sem o queijo.
 
+## Assistente, horário e WhatsApp
+
+O painel de atendimento (botão flutuante) tem um assistente que **não é inteligência artificial**: ele segue um roteiro fixo e reconhece algumas palavras. Tudo o que ele diz está em poucos lugares, listados abaixo. Como são arquivos de código, **peça ajuda a quem mantém o projeto** para editar; use esta seção para saber o que escrever e onde.
+
+### Textos que faltam (você escreve)
+
+A especificação não traz estes textos, então eles aparecem na conversa como `[A DEFINIR: …]`, de propósito. **Não os apague nem peça para inventar**: escreva o texto e troque a lacuna inteira, com os colchetes. Eles ficam no objeto `TEXTOS_DO_ROTEIRO`, no arquivo `lib/roteiro.ts`.
+
+| Nome no arquivo        | Quando aparece                                                                  |
+| ---------------------- | ------------------------------------------------------------------------------- |
+| `transicaoSugestao`    | Antes da primeira pergunta de **Sugira um queijo**                              |
+| `tabua`                | Antes dos três queijos de **Montar uma tábua**                                  |
+| `pedidoPedirNumero`    | Ao escolher **Onde está meu pedido?** (peça o número no formato AQ-123456)      |
+| `pedidoNumeroInvalido` | Quando o número digitado não está no formato                                    |
+| `pedidoEncaminhar`     | Com o número certo: ainda não há consulta real, então encaminha ao WhatsApp     |
+| `harmonizar`           | Antes da pergunta "Vai acompanhar com…"                                         |
+| `outrasOpcoes`         | Ao escolher **Ver outras opções** (Manchego e Parmigiano Reggiano)              |
+| `presenteFormato`      | Pergunta do tamanho antes de pôr o presente na sacola                           |
+| `depoisDaAcao`         | Depois que o assistente põe o queijo na sacola                                  |
+| `continuar`            | Depois de cada sugestão, antes de voltar às três opções iniciais                |
+| `naoEntendi`           | Quando o assistente não reconhece a mensagem                                    |
+| `saude`                | Perguntas de saúde (gravidez, alergia, leite cru…)                              |
+| `avisoNovaAba`         | Aviso lido só por leitor de tela: o WhatsApp abre em nova aba (fica em `lib/whatsapp.ts`) |
+
+Exemplo, antes e depois:
+
+```ts
+// antes
+tabua: A_DEFINIR('texto antes dos cartões da tábua'),
+// depois
+tabua: 'Uma tábua começa pela casca bonita. Veja três queijos que fazem sucesso:',
+```
+
+Dois cuidados:
+
+- O texto de **saúde** deve **só recomendar consultar um médico**, sem sugerir queijo. Peça a revisão de um profissional antes de publicar.
+- **Não prometa prazo de entrega** em nenhum texto. Perguntas sobre entrega vão para um queijista.
+
+Os textos que **já estão aprovados** (saudação, "Vou chamar um queijista da nossa equipe…", a sugestão do Canastra para presente e as perguntas do quiz) vêm da especificação. Não mude sem aprovação do dono do projeto.
+
+### Horário de atendimento
+
+O horário fica em `lib/whatsapp.ts`:
+
+- `HORARIO_DO_ATENDIMENTO` é uma lista de sete dias, do domingo (primeira posição) ao sábado. Cada dia é `null` (fechado) ou `{ abre, fecha }`, em **minutos desde a meia-noite**: 9h vale `540`, 15h vale `900`, 18h vale `1080`. A hora de fechar já é "fechado" (18h00 é fechado; 17h59 é aberto).
+- `TEXTO_DO_HORARIO` é a linha mostrada quando a cave está aberta ("Seg a sex, 9h às 18h · sáb, 9h às 15h").
+- `TEXTO_DA_CAVE_FECHADA` é a mensagem mostrada quando está fechada. O botão verde do WhatsApp continua aparecendo.
+
+Se mudar o horário, **mude os dois textos junto** com a lista, e peça aprovação do dono do projeto, pois eles vêm da especificação. A hora é sempre a de **São Paulo**, qualquer que seja o fuso de quem visita.
+
+**Feriados não contam** (decisão do dono, P50): vale só o dia da semana. Se um dia quiser fechar em feriados, é preciso uma lista de datas; peça a quem mantém o código.
+
+### Palavras que o assistente reconhece
+
+Quando alguém digita no campo, o assistente procura palavras-chave, **sem se importar com acento ou maiúsculas**. A primeira intenção que casar vence, nesta ordem:
+
+1. **Saúde** (gravidez, alergia, lactose, diabetes, doença, bebê, glúten…): responde com o texto `saude`, sem recomendar queijo. A lista é ampla de propósito.
+2. **Falar com uma pessoa** (atendente, queijista, reclamação, problema, entrega, prazo, frete, troca, devolução, empresa, corporativo…): passa para o WhatsApp.
+3. **Pedido** ("meu pedido", status, rastreio, "onde está", ou um número como AQ-123456).
+4. **Presente com vinho tinto**: a conversa do protótipo.
+5. **Tábua** (tábua, frios, petisco).
+6. **Combinação** (harmonizar, vinho, cerveja, espumante…).
+7. **Sugestão** (sugerir, recomendar, indicar, queijo, presente).
+8. Qualquer outra coisa: "não entendi", com as três opções iniciais.
+
+As listas estão em `lib/roteiro.ts` (`PALAVRAS_DE_SAUDE`, `PALAVRAS_DE_HUMANO`, `PALAVRAS_DE_PEDIDO`, `PALAVRAS_DE_TABUA` e vizinhas). Para acrescentar uma palavra, peça a quem mantém o código: a lista usa um formato próprio e uma palavra a mais pode mudar a prioridade.
+
+### Número do WhatsApp
+
+O número aparece nos botões verdes e em **Fale com um queijista**. Hoje é **fictício** (`data/ficticio.ts`). O número real se configura pela variável de ambiente descrita em [`docs/ambiente.md`](ambiente.md). Sem número em produção, os botões e a linha **Dúvidas sobre este queijo? Fale com um queijista** não aparecem.
+
+O que vai na mensagem do WhatsApp é sempre um texto fixo da especificação (geral, de um queijo, de um pedido ou de empresa). **O que a pessoa digitou no chat nunca vai para o link.**
+
 ## O que ainda não está neste guia
 
 Entram quando as etapas correspondentes forem concluídas, sem prometer data:
 
-- trocar fotos, preços e o valor do frete grátis, o desconto do Pix e o horário de atendimento (o assistente e o horário vêm na etapa 6);
+- trocar fotos, preços e o valor do frete grátis e o desconto do Pix;
 - onde ficam os textos de cada página (Presentes, Aprenda e Produtores vêm na etapa 7);
 - cadastro de queijos por uma plataforma, se um dia houver.
 

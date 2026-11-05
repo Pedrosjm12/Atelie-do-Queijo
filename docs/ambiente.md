@@ -5,7 +5,7 @@ Copie `.env.example` para `.env.local` e preencha. **Nunca** coloque valores rea
 | Variável                       | Para que serve                                                       | Onde obter                                    | Pública ou secreta | Situação                                                                |
 | ------------------------------ | -------------------------------------------------------------------- | --------------------------------------------- | ------------------ | ----------------------------------------------------------------------- |
 | `NEXT_PUBLIC_SITE_URL`         | URL pública do site (metadados e sitemap). Ex.: `http://localhost:3000` | É o endereço onde o site é publicado          | Pública            | Declarada no `.env.example`, **ainda não lida pelo código** (etapa 8)   |
-| `NEXT_PUBLIC_WHATSAPP_NUMBER`  | Número do WhatsApp da loja: `55` + DDD + número, só dígitos (ex.: `5511988887777`) | O dono da loja (número real do atendimento)   | Pública            | Comentada no `.env.example`; os links entram na etapa 6                 |
+| `NEXT_PUBLIC_WHATSAPP_NUMBER`  | Número do WhatsApp da loja: `55` + DDD + número, só dígitos (ex.: `5511988887777`) | O dono da loja (número real do atendimento)   | Pública            | **Em uso** desde a etapa 6 (links `wa.me`); comentada no `.env.example`  |
 
 ## Regra do WhatsApp
 
@@ -15,7 +15,9 @@ A leitura é feita por `numeroDoWhatsApp()` em `data/ficticio.ts`:
 - Se estiver vazia ou inválida **fora de produção**, vale o número **fictício** `5520900000000`.
 - Se estiver vazia ou inválida **em produção** (`VERCEL_ENV=production`), o resultado é `null` e a interface deve **esconder** os links do WhatsApp.
 
-`numeroDoWhatsApp()` roda **só no servidor** (`app/layout.tsx`) e entrega o número ao navegador por prop, porque `VERCEL_ENV` não existe no navegador. Consequência: **publique somente na Vercel** ou garanta que `VERCEL_ENV=production` esteja definida no ambiente de produção; sem ela, o site publicaria o número fictício. Depois do build de produção, confira que `5520900000000` não aparece em `.next/static` (`grep -r 5520900000000 .next/static` não deve achar nada). Sem número em produção, a faixa "Prefere falar com uma pessoa?" do painel e os botões do WhatsApp somem.
+`numeroDoWhatsApp()` roda **só no servidor** (`app/layout.tsx`) e entrega o número ao navegador por prop, porque `VERCEL_ENV` não existe no navegador. Consequência: **publique somente na Vercel** ou garanta que `VERCEL_ENV=production` esteja definida no ambiente de produção; sem ela, o site publicaria o número fictício. Depois do build de produção, confira que `5520900000000` não aparece em `.next/static` (`grep -r 5520900000000 .next/static` não deve achar nada). Sem número em produção, **nenhum link `wa.me` é renderizado**: somem a faixa "Prefere falar com uma pessoa?" do painel, o botão verde da aba Queijista e a linha "Dúvidas sobre este queijo? Fale com um queijista" do produto. A aba Queijista mantém só o texto do horário.
+
+Quem usa o número: `app/layout.tsx` (servidor) chama `numeroDoWhatsApp()` e passa o resultado ao `AtendimentoProvider`; `components/LinkDoWhatsApp.tsx` monta o link com `linkDoWhatsApp` (`lib/whatsapp.ts`). Um teste barra qualquer arquivo `'use client'` que importe `numeroDoWhatsApp`. A mensagem do link é sempre um texto fixo da spec (§8.3); nada digitado no chat entra na URL.
 
 ## Trava de produção (`VERCEL_ENV`)
 
