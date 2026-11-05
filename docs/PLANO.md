@@ -1,19 +1,19 @@
 # Plano de implementação — Ateliê do Queijo
 
 > Fonte da verdade: `ATELIE-DO-QUEIJO-SPEC.md`. Decisões técnicas: `docs/adr/`.
-> Última atualização: 2026-11-05 (detalhamento da etapa 8). Etapas 1, 2, 3, 4, 5, 6 e 7 **concluídas**; **próxima: etapa 8, detalhada** (aguarda as respostas do dono às perguntas P68 a P84). A loja segue **simulada**.
+> Última atualização: 2026-11-05 (respostas do dono às perguntas P68 a P84 da etapa 8; ADRs 0014 e 0015 aceitos). Etapas 1, 2, 3, 4, 5, 6 e 7 **concluídas**; **próxima: etapa 8, pronta para começar** (todas as perguntas respondidas; só os três textos do P84 aguardam a escolha do dono, sem bloquear nenhum bloco). A loja segue **simulada**.
 >
 > **AVISO: dados de negócio fictícios** (WhatsApp, CNPJ, endereço, frete, parcelas, produtor) estão em `data/ficticio.ts` e **precisam ser trocados antes da publicação**; o build de produção na Vercel falha enquanto a trava existir. Ver [Decisões do dono de 2026-11-03](#decisões-do-dono-de-2026-11-03-d1-a-d34).
 >
-> **RETOMADA (2026-11-05): as etapas 1 a 7 estão concluídas; a etapa 8 (rodada de qualidade) está DETALHADA e aguarda o dono responder as [perguntas P68 a P84](#perguntas-ao-dono-etapa-8).** A etapa 7 entregou `/presentes`, `/aprenda`, `/aprenda/<slug>`, `/produtores` e a 404 da §12 (`app/not-found.tsx`), com [ADR-0011](adr/0011-paginas-de-conteudo-e-404.md) (Aceito) e as [perguntas P53 a P67](#perguntas-ao-dono-etapa-7) respondidas com a opção A. Todos os links do menu, do rodapé e da Home levam a uma página com h1. Ver [Etapa 7](#etapa-7--páginas-restantes-presentes-aprenda-produtores-e-404).
+> **RETOMADA (2026-11-05): as etapas 1 a 7 estão concluídas; a etapa 8 (rodada de qualidade) está DETALHADA, com as [perguntas P68 a P84](#perguntas-ao-dono-etapa-8) respondidas pelo dono em 2026-11-05 e os ADRs 0014 e 0015 aceitos. Pronta para começar pelo bloco A.** A etapa 7 entregou `/presentes`, `/aprenda`, `/aprenda/<slug>`, `/produtores` e a 404 da §12 (`app/not-found.tsx`), com [ADR-0011](adr/0011-paginas-de-conteudo-e-404.md) (Aceito) e as [perguntas P53 a P67](#perguntas-ao-dono-etapa-7) respondidas com a opção A. Todos os links do menu, do rodapé e da Home levam a uma página com h1. Ver [Etapa 7](#etapa-7--páginas-restantes-presentes-aprenda-produtores-e-404).
 >
-> - **Próximo passo:** o dono responde P68 a P84 e aprova (ou não) os ADRs propostos [0014](adr/0014-dependencias-da-rodada-de-qualidade.md) (dependências: `@axe-core/playwright` e cobertura do Vitest) e [0015](adr/0015-cabecalhos-http-e-csp.md) (cabeçalhos HTTP e CSP). Depois, a sessão principal segue as [tarefas da etapa 8](#etapa-8--rodada-de-qualidade-testes-acessibilidade-desempenho-seo-e-segurança) na ordem dos blocos A a F. Toda a herança (etapas 4, 6 e 7) foi distribuída no [mapa da herança](#mapa-da-herança-da-etapa-8). Nada da etapa 8 foi implementado ainda.
+> - **Próximo passo:** a sessão principal segue as [tarefas da etapa 8](#etapa-8--rodada-de-qualidade-testes-acessibilidade-desempenho-seo-e-segurança) na ordem dos blocos A a F. ADRs [0014](adr/0014-dependencias-da-rodada-de-qualidade.md) (dependências: `@axe-core/playwright` e cobertura do Vitest) e [0015](adr/0015-cabecalhos-http-e-csp.md) (cabeçalhos HTTP e CSP) **aceitos** em 2026-11-05. **Ações do dono:** escolher os três textos do P84 ([propostas](#propostas-de-texto-p84-aguardando-aprovação)) e, antes da tarefa 19, instalar o Docker Desktop (P79; sem ele, vale o plano B, o *workflow* manual D). O P81 = B **revogou o D2**: a borda dos campos passa a `--placeholder`. Toda a herança (etapas 4, 6 e 7) foi distribuída no [mapa da herança](#mapa-da-herança-da-etapa-8). Nada da etapa 8 foi implementado ainda.
 > - **Estado:** etapa 7 publicada nos commits `0589676`, `6791989`/`eca43a5`, `7602c3d`/`22a508a` e `c5b514e` (ver [Commits da etapa 7](#commits-da-etapa-7)); etapa 6 em `a744972` e `a37640c` ([Commits da etapa 6](#commits-da-etapa-6)). A etapa 5 está nos commits `92fb989` e `a990e3a`. **Nenhum queijo tem GLB**: o bloco C da etapa 5 (hero da Home e giro no cartão) segue **pendente, só com o 1º GLB** (P40 = B).
-> - **Lacunas do dono que seguem visíveis:** os 12 textos do assistente e o aviso de nova aba (`[A DEFINIR: …]`, P52) em `TEXTOS_DO_ROTEIRO` (`lib/roteiro.ts`) e `AVISO_DE_NOVA_ABA` (`lib/whatsapp.ts`). Como editar: [`docs/conteudo.md`](conteudo.md#assistente-horário-e-whatsapp). Pendências do bloco B (nova aba para quem enxerga, `depoisDaAcao`, erro do chunk, contraste da borda do campo, aba sem número) em [Verificação do bloco B](#verificação-do-bloco-b-etapa-6-correções-aplicadas-e-pendências).
+> - **Lacunas do dono que seguem visíveis:** os 12 textos do assistente e o aviso de nova aba (`[A DEFINIR: …]`, P52) em `TEXTOS_DO_ROTEIRO` (`lib/roteiro.ts`) e `AVISO_DE_NOVA_ABA` (`lib/whatsapp.ts`). Como editar: [`docs/conteudo.md`](conteudo.md#assistente-horário-e-whatsapp). Pendências do bloco B (nova aba para quem enxerga, `depoisDaAcao`, erro do chunk, contraste da borda do campo, aba sem número) em [Verificação do bloco B](#verificação-do-bloco-b-etapa-6-correções-aplicadas-e-pendências); todas decididas em 2026-11-05 (P81, P83 e P84 da etapa 8): a nova aba fica só para leitor de tela, a borda dos campos vai para `--placeholder` (tarefa 11) e os três textos têm propostas aguardando a escolha do dono.
 > - **Publicação (etapa 9):** o número do WhatsApp é resolvido só no servidor; publicar **somente na Vercel** ou garantir `VERCEL_ENV=production`, e conferir que `5520900000000` não aparece em `.next/static`. A trava de build contra `[A DEFINIR` em produção e a conferência automática do número em `.next/static` foram **antecipadas para a etapa 8** (tarefa 5, P73 e P74); a validação profissional do texto de saúde continua na etapa 9. Ver [`docs/ambiente.md`](ambiente.md).
 > - **Tudo o que aguarda o dono** (textos novos, contrastes, comportamentos, LGPD) está em [Decisões e textos que aguardam o dono (fim da etapa 4)](#decisões-e-textos-que-aguardam-o-dono-fim-da-etapa-4), com as decisões D1 a D34 já aplicadas por cima. Nada ali bloqueia a etapa 8.
 > - **Como retomar:** abra o Claude Code na pasta do projeto, peça "continue de onde paramos" e ele lerá esta nota. Rode `git status` e `npm run lint && npm run typecheck && npm run format:check && npm test && npm run modelos:validar && npm run build && npm run test:e2e` para confirmar o estado antes de seguir.
-> - **Para a etapa 8 (teste instável):** `e2e/pagina-sacola.spec.ts:23` (e, em 2026-11-05, `e2e/checkout.spec.ts:13`) falhou uma vez, sob carga, e passou isolado e nas reexecuções (suspeita: corrida de hidratação; o *gate* `data-hidratado` de `e2e/_apoio/teste.ts` entrou em `24d8de4`). Dois testes do vitest também falharam uma vez na primeira execução; os limites de tempo de `lib/pedido.test.ts` foram relaxados por precaução. A confirmação está na tarefa 18 da etapa 8. A divisão do contexto da conversa em dois **já foi feita** ([ADR-0012](adr/0012-folga-do-orcamento-de-js.md), decisão 3: `useAtendimento()` e `useConversa()`); o `axe-core` está na tarefa 10 (ADR-0014, Proposto).
+> - **Para a etapa 8 (teste instável):** `e2e/pagina-sacola.spec.ts:23` (e, em 2026-11-05, `e2e/checkout.spec.ts:13`) falhou uma vez, sob carga, e passou isolado e nas reexecuções (suspeita: corrida de hidratação; o *gate* `data-hidratado` de `e2e/_apoio/teste.ts` entrou em `24d8de4`). Dois testes do vitest também falharam uma vez na primeira execução; os limites de tempo de `lib/pedido.test.ts` foram relaxados por precaução. A confirmação está na tarefa 18 da etapa 8. A divisão do contexto da conversa em dois **já foi feita** ([ADR-0012](adr/0012-folga-do-orcamento-de-js.md), decisão 3: `useAtendimento()` e `useConversa()`); o `axe-core` está na tarefa 10 (ADR-0014, Aceito).
 > - **Guias:** [`docs/conteudo.md`](conteudo.md) (queijos, modelos 3D, assistente, horário e WhatsApp, kits, artigos e produtores) e [`docs/ambiente.md`](ambiente.md). O `conteudo.md` já cobre kits, artigos e produtores (etapa 7); frete, Pix e gateway entram na etapa 9. O `CHANGELOG.md` registra as etapas 4 a 7.
 >
 > Fluxo usado em cada bloco: `frontend-nextjs` (ou o especialista da tarefa) implementa → `guardiao-do-design` (porta 3000, build), `especialista-em-acessibilidade` (`next dev -p 3001`, sem build) e `revisor-de-codigo` conferem em paralelo, sem editar → correções pelo implementador → lint, typecheck, format:check, test, build e test:e2e → commit e push. Na etapa 4, o `auditor-de-seguranca` entrou nos blocos B, C e E. Reaproveitar `BotaoEmBreve` para controles sem ação (Avise-me, WhatsApp, 3D) e o token `--largura-conteiner` nos contêineres.
@@ -37,7 +37,7 @@ Convenções deste plano:
 | 5 | Visualizador 3D (`CheeseViewer` com `@google/model-viewer`) e fallback SVG do Apêndice A | `especialista-3d-webgl` | **Concluída** ([detalhe](#etapa-5--visualizador-3d-com-fallback-svg)); blocos A e B publicados (`92fb989`, `a990e3a`), [ADR-0009](adr/0009-visualizador-3d-com-model-viewer.md) Aceito. **Bloco C pendente, só com o 1º GLB** |
 | 6 | Assistente com roteiro determinístico, horários e links do WhatsApp no painel de atendimento | `especialista-em-ia-conversacional`, `frontend-nextjs` | **Concluída** ([detalhe](#etapa-6--assistente-com-roteiro-determinístico-horário-e-links-do-whatsapp)); blocos A e B publicados (`a744972`, `a37640c`), [ADR-0010](adr/0010-assistente-deterministico-e-whatsapp.md) Aceito; P44 a P52 decididos em 2026-11-03. Os textos do P52 seguem como `[A DEFINIR: …]` até o dono escrever |
 | 7 | Páginas restantes: Presentes, Aprenda, Produtores, 404 (textos da §12) | `frontend-nextjs`, `guardiao-do-design`, `especialista-em-acessibilidade` | **Concluída** ([detalhe](#etapa-7--páginas-restantes-presentes-aprenda-produtores-e-404)); blocos A a D publicados (`0589676`, `eca43a5`, `7602c3d`, `c5b514e`), [ADR-0011](adr/0011-paginas-de-conteudo-e-404.md) Aceito; P53 a P67 decididas (opção A). Textos da §12 seguem com lacunas do dono |
-| 8 | Rodada de qualidade: testes, acessibilidade, performance e SEO, segurança | `performance-e-seo`, `devops-e-deploy`, `auditor-de-seguranca`, `especialista-em-acessibilidade`, `frontend-nextjs`, `testes-e-qualidade` | **Detalhada** em 2026-11-05 ([detalhe](#etapa-8--rodada-de-qualidade-testes-acessibilidade-desempenho-seo-e-segurança)): blocos A a F, 21 tarefas, ADRs [0014](adr/0014-dependencias-da-rodada-de-qualidade.md) e [0015](adr/0015-cabecalhos-http-e-csp.md) Propostos; aguarda as respostas P68 a P84 |
+| 8 | Rodada de qualidade: testes, acessibilidade, performance e SEO, segurança | `performance-e-seo`, `devops-e-deploy`, `auditor-de-seguranca`, `especialista-em-acessibilidade`, `frontend-nextjs`, `testes-e-qualidade` | **Detalhada** em 2026-11-05 ([detalhe](#etapa-8--rodada-de-qualidade-testes-acessibilidade-desempenho-seo-e-segurança)): blocos A a F, 21 tarefas, ADRs [0014](adr/0014-dependencias-da-rodada-de-qualidade.md) e [0015](adr/0015-cabecalhos-http-e-csp.md) **Aceitos**; P68 a P84 respondidas em 2026-11-05. **Pronta para começar** |
 | 9 | CI completo, ambientes e checklist de aceite da §14 | `devops-e-deploy`, `documentador-tecnico` | A detalhar; herda itens da etapa 4 ([seção](#etapa-9--ci-completo-ambientes-e-aceite-herança-da-etapa-4) e [lista](#fica-para-depois-segurança-e-lgpd)) |
 
 A etapa 9 será detalhada pelo `arquiteto-de-software` no início dela.
@@ -1470,7 +1470,7 @@ Lista curta, só com ponteiros. O detalhe de cada item está na seção indicada
 
 **Bloco C, pendente só com o 1º GLB (P40 = B):** tarefas 9 a 11 (giro no cartão, 3D no hero, verificação). O hero exige uma variante do A.3 sem o queijo, ativo novo a aprovar pelo dono e pelo `guardiao-do-design`. Junto com o 1º GLB entram: luz de ~3200 K e ambiente HDR próprio (§11), `ar`/**Ver na mesa** (D23), rodar o e2e com GLB (hoje pulado) e, se o GLB for comprimido, os decodificadores em `public/decodificadores/`.
 
-**Para o checklist da §14 (desvios e textos novos):** os desvios e textos dos blocos A e B estão em [Textos decididos e desvios da spec](#textos-decididos-e-desvios-da-spec-checklist-da-14), incluindo a lista de [verificação do bloco B](#textos-decididos-e-desvios-da-spec-checklist-da-14). Somam-se os desvios D2, D4, D5 e D6 e o item "trocar dados fictícios" já em [Tarefas geradas por estas decisões](#tarefas-geradas-por-estas-decisões). Pontos que dependem do dono: "Veja as fotos abaixo" não aponta para fotos no celular; economia de dados sem opção manual de pedir o 3D; +4 px de respiro com GLB.
+**Para o checklist da §14 (desvios e textos novos):** os desvios e textos dos blocos A e B estão em [Textos decididos e desvios da spec](#textos-decididos-e-desvios-da-spec-checklist-da-14), incluindo a lista de [verificação do bloco B](#textos-decididos-e-desvios-da-spec-checklist-da-14). Somam-se os desvios D4, D5 e D6, a borda dos campos do P81 = B (o D2 foi revogado em 2026-11-05) e o item "trocar dados fictícios" já em [Tarefas geradas por estas decisões](#tarefas-geradas-por-estas-decisões). Pontos que dependem do dono: "Veja as fotos abaixo" não aponta para fotos no celular; economia de dados sem opção manual de pedir o 3D; +4 px de respiro com GLB.
 
 **Etapa 8:** CSP com `connect-src 'self'` e, com Draco/KTX2, `worker-src blob:`, `'wasm-unsafe-eval'` e `blob:` em `img-src` ([Riscos da etapa 5](#riscos-da-etapa-5)); medir LCP e CLS do produto com GLB real; folga do JavaScript inicial do produto (+3,89 kB de +4 kB, [resultado do bloco B](#textos-decididos-e-desvios-da-spec-checklist-da-14)); o e2e com GLB só roda no CI com GLB real e pode exigir `--enable-unsafe-swiftshader`.
 
@@ -1917,7 +1917,7 @@ Cada tarefa termina com `lint`, `typecheck`, `format:check`, `test`, `modelos:va
 1. **Aviso de nova aba** ("abre em nova aba") hoje só para leitor de tela; decidir se também aparece para quem enxerga.
 2. **`depoisDaAcao`:** o que dizer logo depois que a ação do assistente adiciona o queijo à sacola (texto novo; hoje só a confirmação literal da §7.5).
 3. **Texto de erro do chunk:** quando o motor não carrega, o painel não mostra mensagem (o texto digitado fica no campo). Escrever o texto, se desejado.
-4. **Borda do campo de mensagem:** `--pedra-clara` sobre `--cave` tem contraste ≈ 1,9:1, abaixo de 3:1 (WCAG 1.4.11). **Não alterada** (cores da spec exigem aprovação do dono).
+4. **Borda do campo de mensagem:** `--pedra-clara` sobre `--cave` tem contraste ≈ 1,9:1, abaixo de 3:1 (WCAG 1.4.11). **Não alterada** (cores da spec exigem aprovação do dono). **Decidido em 2026-11-05 (P81 = B):** todos os campos passam a `--placeholder` na tarefa 11 da etapa 8.
 5. **Faixa e aba sem número:** a faixa some; a aba Queijista mantém só o horário, sem botão. Confirmar se o texto da aba deve mudar nesse caso.
 
 **Exceção de zona de toque:** as respostas rápidas (`.resposta`, 36 px) **não** ganham zona de 44 px: o espaçamento de 6 px entre linhas da spec faria as zonas se sobreporem. Têm mais de 24 px (WCAG 2.5.8 AA atendido); revisar se o dono aceitar mais respiro entre elas.
@@ -2329,11 +2329,16 @@ Registrada aqui, **sem implementar**. **Distribuída** em 2026-11-05 no [mapa da
 
 **Objetivo:** deixar o site pronto para ser indexado, auditado e publicado sem surpresa: metadados e dados estruturados só com dados verdadeiros, cabeçalhos HTTP e CSP, travas que impedem publicar com lacunas ou dados fictícios, varredura automática de acessibilidade (WCAG 2.2 AA) em todas as rotas e estados, orçamento de JavaScript e Core Web Vitals medidos por rota, cobertura e regressão visual, sem mudar textos, cores ou medidas da spec sem aprovação.
 
-**Situação: DETALHADA (2026-11-05), aguardando o dono.** Nada implementado. Antes de começar o bloco que depende delas, o dono responde as [perguntas P68 a P84](#perguntas-ao-dono-etapa-8) e aprova ou recusa os ADRs propostos [0014](adr/0014-dependencias-da-rodada-de-qualidade.md) e [0015](adr/0015-cabecalhos-http-e-csp.md). O plano abaixo está escrito com as **recomendações**; se uma resposta for outra, a tarefa correspondente muda antes de começar.
+**Situação: DETALHADA e DECIDIDA (2026-11-05), pronta para começar.** Nada implementado. O dono respondeu as [perguntas P68 a P84](#perguntas-ao-dono-etapa-8) em 2026-11-05 e aceitou os ADRs [0014](adr/0014-dependencias-da-rodada-de-qualidade.md) e [0015](adr/0015-cabecalhos-http-e-csp.md). Valem todas as recomendações, exceto o P84; os pontos que mudam o plano já estão aplicados abaixo:
+
+- **P73 = B** e **P74 = B**: trava de lacunas em todo `[A DEFINIR` do assistente e de `data/`; `PERMITIR_DADOS_FICTICIOS=1` exigida em qualquer build de produção com dados fictícios.
+- **P81 = B**: a borda de **todos os campos** passa a `--placeholder` (#8C8070). **Revoga o D2** ([registro](#revogação-do-d2-pelo-p81-2026-11-05)); desvio da §3.3 para o checklist da §14.
+- **P79 = A** com **ação do dono**: instalar o Docker Desktop antes da tarefa 19; se não puder, vale o **plano B = D** (*workflow* manual no GitHub Actions).
+- **P84 = variante do C**: o arquiteto propõe os três textos e o dono escolhe ([propostas](#propostas-de-texto-p84-aguardando-aprovação)); até lá seguem como lacuna e **não bloqueiam** nenhum bloco.
 
 **Pré-requisito:** etapa 7 concluída (`c5b514e`, `50fbf93`) e o painel sob demanda com o *gate* de hidratação dos e2e (`24d8de4`, ADR-0012).
 
-**Decisões:** [ADR-0014](adr/0014-dependencias-da-rodada-de-qualidade.md) (**Proposto**: `@axe-core/playwright` e `@vitest/coverage-v8`, só de desenvolvimento, zero kB no site); [ADR-0015](adr/0015-cabecalhos-http-e-csp.md) (**Proposto**: cabeçalhos estáticos e CSP sem nonce, páginas continuam estáticas). Herdadas: [ADR-0012](adr/0012-folga-do-orcamento-de-js.md) (medição sem `noModule`, limite = medido + 3 kB por rota; `global-error` próprio recusado pelo dono), [ADR-0013](adr/0013-numero-do-whatsapp-so-no-servidor.md) (`WHATSAPP_NUMBER` só no servidor), [ADR-0011](adr/0011-paginas-de-conteudo-e-404.md) (JSON-LD só com dados verdadeiros), [ADR-0010](adr/0010-assistente-deterministico-e-whatsapp.md) e [ADR-0009](adr/0009-visualizador-3d-com-model-viewer.md) (requisitos de CSP do 3D). Do dono: D2 (borda dos campos mantida), D3 (opacidade `.65`), D19 (sem busca), D25 (newsletter não grava), D26 a D29 (fictícios), D31 (Vercel), D33 (rascunho de privacidade na etapa 9), D34 (`--placeholder` provisório).
+**Decisões:** [ADR-0014](adr/0014-dependencias-da-rodada-de-qualidade.md) (**Aceito** em 2026-11-05: `@axe-core/playwright` e `@vitest/coverage-v8`, só de desenvolvimento, zero kB no site; Lighthouse manual; regressão visual na imagem Docker oficial do Playwright); [ADR-0015](adr/0015-cabecalhos-http-e-csp.md) (**Aceito** em 2026-11-05: cabeçalhos estáticos e CSP estática com `'unsafe-inline'`, sem nonce, páginas continuam estáticas). Respostas P68 a P84 do dono em 2026-11-05. Herdadas: [ADR-0012](adr/0012-folga-do-orcamento-de-js.md) (medição sem `noModule`, limite = medido + 3 kB por rota; `global-error` próprio recusado pelo dono), [ADR-0013](adr/0013-numero-do-whatsapp-so-no-servidor.md) (`WHATSAPP_NUMBER` só no servidor), [ADR-0011](adr/0011-paginas-de-conteudo-e-404.md) (JSON-LD só com dados verdadeiros), [ADR-0010](adr/0010-assistente-deterministico-e-whatsapp.md) e [ADR-0009](adr/0009-visualizador-3d-com-model-viewer.md) (requisitos de CSP do 3D). Do dono: D2 (borda dos campos mantida; **revogado pelo P81 = B em 2026-11-05**), D3 (opacidade `.65`), D19 (sem busca), D25 (newsletter não grava), D26 a D29 (fictícios), D31 (Vercel), D33 (rascunho de privacidade na etapa 9), D34 (`--placeholder` provisório).
 
 **Skills:** antes de cada tarefa, conferir o mapa em `SKILLS-ATELIE-DO-QUEIJO.md`: `seo` (blocos A e C), `core-web-vitals`, `performance` e `web-quality-audit` (bloco E), `accessibility` e `web-design-guidelines` (bloco D), `webapp-testing` (blocos D e F), `vercel-react-best-practices` (manter tudo no servidor). As skills de segurança da Trail of Bits ficam **fora** (não estão na lista aprovada; exigiriam CodeQL/Semgrep e aprovação do dono). A spec vence em caso de conflito.
 
@@ -2354,28 +2359,28 @@ Tudo o que as etapas 4, 6 e 7 deixaram para cá, com o destino de cada item.
 | Número fictício fora da Vercel; `5520900000000` fora de `.next/static` | Etapa 6 | Tarefa 5 (P74) |
 | `npm audit` e `npm audit signatures` | Etapa 4 | Tarefa 6 (manual; o passo no CI fica na etapa 9) |
 | LGPD da newsletter e do checkout simulado | Etapa 4 | Tarefa 6 (inventário; o rascunho do aviso fica na etapa 9, D33) |
-| Limite de taxa nas Server Actions | Etapa 4 | Tarefa 6 (P75) |
+| Limite de taxa nas Server Actions | Etapa 4 | **Adiado** (P75 = A): a tarefa 6 só confirma que seguem sem efeito colateral; a regra entra no ADR do gateway (etapa 9) |
 | Validar `EstadoDaConversa` com Zod se o motor for ao servidor | Etapa 6 (d) | **Fora**: o motor continua no navegador; entra no ADR da IA |
 | `axe-core` com ADR e varredura de todas as rotas e do painel | Etapas 6 e 7 | Tarefa 10 (ADR-0014) |
 | e2e de Tab nas páginas novas; `hashchange` em `/presentes` | Etapa 7 | Tarefa 12 |
 | `aria-hidden` nas setas `→` dos links da Home | Etapa 7 | Tarefa 11 |
 | Trilha: alvo (WCAG 2.5.8) e contraste | Etapa 7 | Tarefa 11 (P82) |
 | Indicador de carregamento do painel | ADR-0012 | Tarefa 11 (P80) |
-| Borda do campo de mensagem do chat (≈ 1,9:1) | Etapa 6 | Tarefa 11 (P81) |
+| Borda do campo de mensagem do chat (≈ 1,9:1) | Etapa 6 | Tarefa 11 (P81 = B: borda de **todos** os campos em `--placeholder`; revoga o D2) |
 | Foco do botão desabilitado com `.65` (D3): reconferir | Etapa 4 | Tarefas 10 e 12 |
 | Colar "CEP 01310-100" (`maxLength` corta antes da máscara) | Etapa 4 | Tarefa 11 |
 | Reserva de 320 px da `/sacola` (CLS) | Etapa 4 | Tarefas 14 e 15 |
 | Lighthouse e Core Web Vitals no build de produção; LCP do hero com 3D | Etapas 5 e 7 | Tarefas 14 e 15 (P76) |
-| `useReportWebVitals` | Pedido desta etapa | P77 |
+| `useReportWebVitals` | Pedido desta etapa | **Não entra** (P77 = A); reavaliar na etapa 9 com ADR |
 | `medir:pacote` com as rotas novas | Etapa 7 | Tarefa 14 |
 | Cobertura de testes | Pedido desta etapa | Tarefa 17 (P78) |
 | Regressão visual com *baselines* | Pedido desta etapa | Tarefa 19 (P79) |
 | Specs instáveis (`checkout.spec.ts:13`, `pagina-sacola.spec.ts:23`) e o *gate* de hidratação | Etapas 6 e 7 | Tarefa 18 |
 | Dividir o contexto da conversa em dois | Etapa 6 | **Já feito** (ADR-0012, decisão 3) |
-| Aviso "abre em nova aba" visível | Etapa 6 | P83 (tarefa 11, se mudar) |
-| Texto depois da ação do assistente, texto de erro do *chunk*, aba sem número | Etapa 6 | P84 |
+| Aviso "abre em nova aba" visível | Etapa 6 | **Nada muda** (P83 = A): segue só para leitor de tela |
+| Texto depois da ação do assistente, texto de erro do *chunk*, aba sem número | Etapa 6 | P84 (variante do C): [propostas](#propostas-de-texto-p84-aguardando-aprovação) aguardando o dono; aplicação na tarefa 11 se aprovadas a tempo, senão em tarefa própria |
 | `app/global-error.tsx` próprio | ADR-0012 | **Decidido: não criar** (o dono recusou) |
-| Tipografia do checkout (D5) e borda dos campos (D2) no checklist da §14 | Etapa 4 | Etapa 9 (registro no checklist) |
+| Tipografia do checkout (D5) e borda dos campos no checklist da §14 | Etapa 4 | Etapa 9 (registro no checklist). A borda deixou de ser o desvio D2 e passou a ser o desvio do P81 = B ([registro](#revogação-do-d2-pelo-p81-2026-11-05)) |
 
 ### Escopo: o que entra e o que fica para depois
 
@@ -2383,20 +2388,21 @@ Tudo o que as etapas 4, 6 e 7 deixaram para cá, com o destino de cada item.
 | --- | --- | --- |
 | §13 SEO: `<title>` por página, description com a nota sensorial | Já existe (etapas 3 a 7); a etapa 8 acrescenta canônica, Open Graph e Twitter com a mesma fonte de texto | — |
 | §13 SEO: "dados estruturados `Product` com preço em BRL" | `Product` com um `Offer` por formato (preços literais da §9, `priceCurrency: BRL`) | `image` e `brand` quando houver foto e produtor real |
-| Outros JSON-LD | Conforme P71 (recomendação: só dados verdadeiros e não fictícios) | Kits com preço, artigos com corpo, produtores reais |
+| Outros JSON-LD | P71 = A: só dados verdadeiros e não fictícios (`Organization` sem CNPJ, endereço e telefone; nada para kits e produtores) | Kits com preço, artigos com corpo, produtores reais |
 | Sitemap e robots | `app/sitemap.ts` e `app/robots.ts` estáticos | `lastModified` quando houver datas reais |
-| Imagem de compartilhamento e ícone | Conforme P70 | Foto do dono |
-| Cabeçalhos e CSP | ADR-0015 (P68) | Revisão no ADR do gateway |
-| Travas de publicação | Lacunas (P73) e dados fictícios fora da Vercel (P74) | Remoção das travas quando o dono trocar os dados (etapa 9) |
+| Imagem de compartilhamento e ícone | P70 = A: `next/og` com fundo `--cave` e o bloco "símbolo sobre dourado" do A.2, sem texto; ícone = A.1 | Foto do dono |
+| Cabeçalhos e CSP | ADR-0015 (P68 = A: CSP estática com `'unsafe-inline'`) | Revisão no ADR do gateway |
+| Travas de publicação | Lacunas (P73 = B: todo `[A DEFINIR` do assistente e de `data/`) e dados fictícios em qualquer build de produção (P74 = B: `PERMITIR_DADOS_FICTICIOS=1`) | Remoção das travas quando o dono trocar os dados (etapa 9) |
+| Limite de taxa nas Server Actions | **Fora** (P75 = A): só a confirmação de que seguem sem efeito colateral | ADR do gateway (etapa 9) |
 | Auditoria de dependências | `npm audit` manual com triagem | `npm audit` e `npm audit signatures` no CI, Dependabot ou Renovate (etapa 9) |
 | LGPD | Inventário dos dados pessoais e conferência de que nada é gravado, enviado ou registrado em log | Rascunho do aviso de privacidade (D33) e validação jurídica (etapa 9) |
-| Acessibilidade | axe em todas as rotas e estados, e2e de teclado, correções sem mudança visual; mudanças visuais só com P80 a P83 | Reconferir quando os textos e cores pendentes forem decididos |
-| Desempenho | Orçamento por rota, CWV de laboratório, Lighthouse manual (P76) | Dados de campo (P77), Lighthouse no CI (etapa 9) |
+| Acessibilidade | axe em todas as rotas e estados, e2e de teclado; mudanças visuais **só** as aprovadas: borda dos campos em `--placeholder` (P81 = B) e cursor de espera no gatilho do painel (P80 = A); zona de toque da trilha invisível (P82 = A); nada muda na nova aba (P83 = A) | Reconferir quando os textos do P84 forem escolhidos |
+| Desempenho | Orçamento por rota, CWV de laboratório, Lighthouse manual, mediana de 3 (P76 = A) | Dados de campo (P77 = A: não agora), Lighthouse no CI (etapa 9) |
 | 3D no hero e giro no cartão | **Fora** (bloco C da etapa 5, só com o 1º GLB); a etapa 8 só deixa a medida pronta | Com o 1º GLB |
-| Testes | Cobertura (P78), regressão visual (P79), estabilidade dos e2e | Regressão visual no CI (etapa 9) |
+| Testes | Cobertura com catraca em `lib/` e `data/` (P78 = A), regressão visual na imagem Docker oficial do Playwright (P79 = A; plano B = D), estabilidade dos e2e | Regressão visual no CI (etapa 9) |
 | CI | Nenhuma mudança no `ci.yml`: o axe e o teste de cabeçalhos entram no `test:e2e`, que já roda no CI | Etapa 9 (cobertura, visual, audit, Lighthouse) |
 
-**Fora, por regra do projeto:** nenhuma dependência de produção nova; nenhum texto, cor ou medida da spec alterados sem resposta do dono; nenhuma conta ou serviço externo (análise, monitoramento, *rate limit* hospedado); nada publicado.
+**Fora, por regra do projeto:** nenhuma dependência de produção nova; nenhum texto, cor ou medida da spec alterados sem resposta do dono (a única cor alterada é a borda dos campos, P81 = B; os textos do P84 só entram depois da escolha do dono); nenhuma conta ou serviço externo (análise, monitoramento, *rate limit* hospedado); nada publicado.
 
 ### Contratos
 
@@ -2436,10 +2442,10 @@ export function metadadosDaPagina(opcoes: {
 export function descricaoCurta(texto: string, limite?: number /* 160 */): string;
 ```
 
-- `openGraph`: `title`, `description`, `url` (= canônica), `siteName: NOME_DO_SITE`, `locale: 'pt_BR'`, `type`. A imagem vem do arquivo `app/opengraph-image.*` (P70), que tem prioridade sobre o objeto e vale para todas as rotas.
-- `twitter`: `card: 'summary_large_image'` com imagem (P70 = A ou C); `summary` sem imagem (P70 = B).
+- `openGraph`: `title`, `description`, `url` (= canônica), `siteName: NOME_DO_SITE`, `locale: 'pt_BR'`, `type`. A imagem vem do arquivo `app/opengraph-image.tsx` (P70 = A: `ImageResponse` de `next/og`, 1200 × 630, fundo `--cave` e o bloco "símbolo sobre dourado" do Apêndice A.2 ao centro, **sem texto** e sem fonte nova), que tem prioridade sobre o objeto e vale para todas as rotas. Ícone: `app/icon.svg` com o símbolo A.1.
+- `twitter`: `card: 'summary_large_image'` (P70 = A).
 - `/sacola`, `/checkout` e a 404 **não** usam `metadadosDaPagina` e continuam com `robots: { index: false, follow: false }` (a 404 recebe `noindex` do Next).
-- Descrições: conforme P72. `Artigo` ganha `descricao?: string` (escrita pelo dono) se P72(b) = A.
+- Descrições (P72 = A/A): `/produtores` usa só a primeira frase literal da §12 (**O Ateliê nasceu da vontade de levar até você queijos que só se encontravam na porta da fazenda ou nas melhores queijarias da Europa.**). `Artigo` ganha o campo opcional `descricao?: string` (escrito pelo dono em `data/artigos.ts`); sem ele, `descricaoCurta` do primeiro parágrafo do corpo; sem corpo, a descrição do layout.
 
 #### `app/sitemap.ts` e `app/robots.ts`
 
@@ -2452,7 +2458,7 @@ export function descricaoCurta(texto: string, limite?: number /* 160 */): string
 type Json = string | number | boolean | null | readonly Json[] | { readonly [chave: string]: Json };
 export type DadoEstruturado = { '@context': 'https://schema.org'; '@type': string; [chave: string]: Json };
 
-export function organizacao(site: URL): DadoEstruturado;          // name, url (+ logo, se P70 criar o ícone)
+export function organizacao(site: URL): DadoEstruturado;          // name, url, logo (ícone A.1 do P70); sem CNPJ, endereço e telefone (P71 = A)
 export function siteWeb(site: URL): DadoEstruturado;              // name, url, inLanguage 'pt-BR'; sem SearchAction (D19)
 export function produto(queijo: Cheese, site: URL): DadoEstruturado; // name, description (nota), url, offers[]
 export function trilhaDeNavegacao(
@@ -2470,7 +2476,7 @@ export function DadosEstruturados(props: { dados: DadoEstruturado | readonly Dad
 ```
 
 - **Regra única:** nenhum campo recebe texto com `[` (lacuna) nem valor de `data/ficticio.ts`; o construtor **omite** o campo em vez de publicá-lo. `Offer`: `price` como texto com ponto (`"136.00"`, a partir de `Centavos`), `priceCurrency: 'BRL'`, `availability` `InStock` ou `OutOfStock` conforme `estoque`, `url` do produto. Nunca `Offer` com preço nulo.
-- Onde entra: Home (`organizacao` + `siteWeb`), produto (`produto` + `trilhaDeNavegacao`), artigo (`trilhaDeNavegacao` + `artigo` quando houver corpo). Kits e produtores conforme P71 (recomendação: nada até haver preço e dados reais).
+- Onde entra: Home (`organizacao` + `siteWeb`), produto (`produto` + `trilhaDeNavegacao`), artigo (`trilhaDeNavegacao` + `artigo` quando houver corpo). Kits e produtores: **nada** até haver preço e dados reais (P71 = A).
 - A `Trilha` não muda de visual; a página que a monta passa os mesmos itens aos dois componentes (o JSON-LD não fica dentro da `Trilha`, que segue só visual).
 
 #### `lib/cabecalhos.ts` (puro; importado pelo `next.config.ts`)
@@ -2481,7 +2487,7 @@ export function cabecalhosDeSeguranca(opcoes: { desenvolvimento: boolean; produc
   readonly { key: string; value: string }[];
 ```
 
-- Valores do ADR-0015 (P68 = A). `desenvolvimento` = `NODE_ENV === 'development'` (acrescenta `'unsafe-eval'`); `producao` = `VERCEL_ENV === 'production'` (acrescenta `upgrade-insecure-requests`).
+- Valores do ADR-0015 (P68 = A, decidido: CSP estática com `'unsafe-inline'` em `script-src` e `style-src`). `desenvolvimento` = `NODE_ENV === 'development'` (acrescenta `'unsafe-eval'`); `producao` = `VERCEL_ENV === 'production'` (acrescenta `upgrade-insecure-requests`).
 - `next.config.ts`: `poweredByHeader: false` e `headers()` com `source: '/:path*'`.
 
 #### Travas de publicação (`lib/lacunas.ts` e `data/ficticio.ts`)
@@ -2493,8 +2499,8 @@ export function encontrarLacunas(fontes: Readonly<Record<string, unknown>>): rea
 export function exigirSemLacunasEmProducao(vercelEnv: string | undefined, fontes: Readonly<Record<string, unknown>>): void;
 ```
 
-- Fontes conforme P73 (recomendação B: `TEXTOS_DO_ROTEIRO`, `AVISO_DE_NOVA_ABA`, `QUEIJOS`, `ARTIGOS`, `CATEGORIAS`). Chamada no `next.config.ts`, ao lado de `exigirSemDadosFicticiosEmProducao`.
-- Se P74 = B: `data/ficticio.ts` ganha `dadosFicticiosPermitidos(ambiente): boolean` (verdadeiro em `next dev` ou com `PERMITIR_DADOS_FICTICIOS=1`, **nunca** com `VERCEL_ENV=production`); `numeroDoWhatsApp()` e a trava passam a usá-la; `playwright.config.ts` (`webServer.env`), o `ci.yml` e o `.env.local` do dono definem a variável.
+- Fontes (P73 = B, decidido): todo `[A DEFINIR` do assistente e de `data/`: `TEXTOS_DO_ROTEIRO`, `AVISO_DE_NOVA_ABA`, `QUEIJOS`, `ARTIGOS`, `CATEGORIAS` e qualquer outro módulo exportado de `data/` com texto. `[FOTO: …]`, `[PREÇO]`, `[n]` e `[TEXTO DO ARTIGO]` **não** travam (ficam para o checklist da etapa 9, D34). O `depoisDaAcao` do P84 é uma das lacunas listadas até o dono escolher o texto. Chamada no `next.config.ts`, ao lado de `exigirSemDadosFicticiosEmProducao`.
+- P74 = B (decidido): `data/ficticio.ts` ganha `dadosFicticiosPermitidos(ambiente): boolean`, verdadeiro em `next dev` ou com `PERMITIR_DADOS_FICTICIOS=1`, **nunca** com `VERCEL_ENV=production`. Em qualquer `next build` (Vercel ou não) com `DADOS_FICTICIOS_ATIVOS = true` e sem a variável, o build falha e `numeroDoWhatsApp()` devolve `null`. `playwright.config.ts` (`webServer.env`), o `ci.yml` e o `.env.local` do dono definem a variável; `.env.example` e `docs/ambiente.md` a documentam. Mensagem de erro em português dizendo exatamente o que definir.
 - `scripts/medir-pacote.mjs` ganha mais uma trava: **falha** se `NUMERO_WHATSAPP_FICTICIO` aparecer em qualquer arquivo de `.next/static`.
 
 #### Apoio de acessibilidade dos e2e (`e2e/_apoio/acessibilidade.ts`)
@@ -2518,21 +2524,23 @@ export async function conferirAcessibilidade(page: Page, opcoes?: { incluir?: st
 | `lib/site.ts`, `lib/seo.ts`, `lib/dadosEstruturados.ts`, `lib/cabecalhos.ts`, `lib/lacunas.ts` | Módulos de servidor/build (nenhum arquivo `'use client'` os importa; teste confere) | Metadados, sitemap, robots, JSON-LD, cabeçalhos e travas existem só no HTML e no build |
 | `app/sitemap.ts`, `app/robots.ts`, `app/opengraph-image.*`, `app/icon.*` | Server, estáticos | Gerados no build |
 | `components/DadosEstruturados.tsx` | Server | Só um `<script type="application/ld+json">` |
-| `SupportFab` e gatilhos do painel (P80) | Client (já existem) | `aria-busy` durante o download do *chunk*; poucas linhas |
+| `SupportFab` e gatilhos do painel (P80 = A) | Client (já existem) | `aria-busy="true"` e `cursor: progress` (ou `wait`) só enquanto o *chunk* baixa depois de um clique; sem texto nem cor nova; poucas linhas |
 | Setas `→` com `aria-hidden` (`CabecalhoDeSecao`, `BrasilEMundo`, produtores) | Server (já são) | Só marcação |
-| Zona de toque da `Trilha` (P82) | Server, só CSS | — |
+| Zona de toque da `Trilha` (P82 = A) | Server, só CSS | `::after` invisível ≥ 24 × 24 px, sem sublinhado nem mudança de medida |
+| Borda dos campos (P81 = B) | Só CSS | Ver [revogação do D2](#revogação-do-d2-pelo-p81-2026-11-05) |
 | Campo de CEP (colar) | Client (já existe) | `onPaste` que normaliza |
 | `useReportWebVitals` | **Não entra** (P77 = A) | — |
 
 ### Acessibilidade
 
 - **Varredura com axe** (tarefa 10), no build de produção, a 1440 e a 390 px, depois do *gate* de hidratação: `/`; `/queijos` e `/queijos?origem=brasil`; `/queijos/canastra-curado` e `/queijos/brie-frances` (ficha em lacuna); `/sacola` vazia e com um item (com e sem embalagem para presente); `/checkout` na etapa 1 com o resumo de erros, na etapa 2, na confirmação e no erro de pagamento; `/presentes`; `/aprenda`; `/aprenda/queijo-e-vinho`; `/produtores`; `/nao-existe`; painel aberto na aba Assistente (início e estado do protótipo da §8.2), na aba Queijista dentro do horário e com a cave fechada (`page.clock`); menu do celular aberto; resultado do quiz da Home; aviso **Adicionado à sacola. Boa escolha.** visível.
-- **Exceções** só em `EXCECOES_DO_AXE`, por regra e seletor, com o motivo: hoje, só `color-contrast` nos textos `[FOTO: …]` (`--placeholder`, D34). A borda dos campos (D2) não é conferida pelo axe (1.4.11 fica com a revisão manual e com o P81).
+- **Exceções** só em `EXCECOES_DO_AXE`, por regra e seletor, com o motivo: hoje, só `color-contrast` nos textos `[FOTO: …]` (`--placeholder`, D34). A borda dos campos não é conferida pelo axe (1.4.11 fica com a revisão manual); com o P81 = B ela passa a ≈ 4,9:1 sobre `--cave` e 4,47:1 sobre `--carvao` e deixa de ser desvio de WCAG.
 - **Teclado** (tarefa 12): Tab e Shift+Tab em `/presentes`, `/aprenda`, `/aprenda/<slug>`, `/produtores` e na 404, com a ordem esperada e foco visível dourado em cada parada; `#presentes-corporativos` a partir do rodapé **e** com a pessoa já em `/presentes` (`hashchange`); foco visível dos botões desabilitados e pendentes com `opacity: .65` (D3) medido ≥ 3:1.
 - **Setas `→`**: o texto visível não muda; a seta vai para um `<span aria-hidden="true">`, e o nome acessível perde a seta (ex.: "Ver todos os queijos"). Os testes que buscam o nome com a seta são atualizados na mesma tarefa.
-- **Trilha (WCAG 2.5.8)**: alvo de cada link ≥ 24 × 24 px conforme P82; `aria-current="page"` continua no item atual.
-- **Painel**: indicador conforme P80; nenhum foco perdido se o *chunk* falhar (já coberto pela `BordaDoPainel`, ADR-0012).
-- **Mudança visual**: nenhuma sem resposta do dono (P80 a P83). O `guardiao-do-design` confere as telas tocadas.
+- **Trilha (WCAG 2.5.8)**: alvo de cada link ≥ 24 × 24 px por zona de toque invisível (P82 = A), sem sublinhado e sem mudança visual; `aria-current="page"` continua no item atual. As zonas de links vizinhos não se sobrepõem (conferir com o separador "/").
+- **Painel**: `aria-busy` e cursor de espera no gatilho enquanto o *chunk* baixa (P80 = A); nenhum foco perdido se o *chunk* falhar (já coberto pela `BordaDoPainel`, ADR-0012). Texto de erro do *chunk*: P84, aguardando o dono.
+- **Nova aba** (P83 = A): o aviso continua só para leitor de tela; nada muda.
+- **Mudança visual**: só as aprovadas em 2026-11-05 (borda dos campos, P81 = B; cursor de espera, P80 = A). O `guardiao-do-design` confere as telas tocadas.
 
 ### Desempenho (orçamento)
 
@@ -2561,60 +2569,61 @@ Medido com `npm run medir:pacote` (método do ADR-0012: sem `<script noModule>`)
 
 ### Testes
 
-- **Unidade:** `urlDoSite` (produção sem variável, `http:` em produção, caminho ou *query* na URL, ausente fora de produção); `caminhosIndexaveis` (inclui os 10 queijos e os 3 artigos; não inclui `/sacola`, `/checkout`); `metadadosDaPagina` (canônica sem *query*, `og:title` com o sufixo, `og:url` igual à canônica); `descricaoCurta` (≤ 160, corte em palavra, não corta `[...]`); `sitemap()` e `robots()` (produção e prévia); construtores de JSON-LD (nenhum texto com `[`, nenhum valor de `data/ficticio.ts`, `Offer` só com preço, `price` com ponto e duas casas, `artigo()` nulo sem corpo, `serializar` escapa `</script>`); `politicaDeConteudo` e `cabecalhosDeSeguranca` (desenvolvimento, local e produção); `encontrarLacunas` e `exigirSemLacunasEmProducao`; `dadosFicticiosPermitidos` (se P74 = B); nenhum arquivo `'use client'` importa `lib/site`, `lib/seo`, `lib/dadosEstruturados`, `lib/cabecalhos` ou `lib/lacunas`.
-- **E2E:** cada rota indexável tem `<link rel="canonical">` absoluto e `og:title`, `og:description`, `og:url` e `og:image` (se P70 ≠ B); `/queijos?origem=mundo` tem canônica `/queijos`; `/sitemap.xml` lista exatamente `caminhosIndexaveis()`; `/robots.txt` sem `Disallow: /sacola`; o JSON-LD de cada página é JSON válido, com os tipos esperados e sem `[`; cabeçalhos de segurança presentes e sem `X-Powered-By`; varredura do axe (lista acima); teclado nas páginas novas.
+- **Unidade:** `urlDoSite` (produção sem variável, `http:` em produção, caminho ou *query* na URL, ausente fora de produção); `caminhosIndexaveis` (inclui os 10 queijos e os 3 artigos; não inclui `/sacola`, `/checkout`); `metadadosDaPagina` (canônica sem *query*, `og:title` com o sufixo, `og:url` igual à canônica); `descricaoCurta` (≤ 160, corte em palavra, não corta `[...]`); `sitemap()` e `robots()` (produção e prévia); construtores de JSON-LD (nenhum texto com `[`, nenhum valor de `data/ficticio.ts`, `Offer` só com preço, `price` com ponto e duas casas, `artigo()` nulo sem corpo, `serializar` escapa `</script>`); `politicaDeConteudo` e `cabecalhosDeSeguranca` (desenvolvimento, local e produção); `encontrarLacunas` e `exigirSemLacunasEmProducao`; `dadosFicticiosPermitidos` (P74 = B: `next dev` permite; build sem a variável recusa; `VERCEL_ENV=production` recusa mesmo com ela); descrição do artigo (com `descricao`, com corte do corpo e sem corpo, P72); nenhum arquivo `'use client'` importa `lib/site`, `lib/seo`, `lib/dadosEstruturados`, `lib/cabecalhos` ou `lib/lacunas`.
+- **E2E:** cada rota indexável tem `<link rel="canonical">` absoluto e `og:title`, `og:description`, `og:url` e `og:image` (P70 = A); `/queijos?origem=mundo` tem canônica `/queijos`; `/sitemap.xml` lista exatamente `caminhosIndexaveis()`; `/robots.txt` sem `Disallow: /sacola`; o JSON-LD de cada página é JSON válido, com os tipos esperados e sem `[`; cabeçalhos de segurança presentes e sem `X-Powered-By`; varredura do axe (lista acima); teclado nas páginas novas.
 - **Estabilidade:** `npx playwright test e2e/checkout.spec.ts e2e/pagina-sacola.spec.ts --repeat-each=10 --workers=4` sem falha; regra de ESLint que proíbe importar `@playwright/test` direto em `e2e/*.spec.ts` (todo spec usa a *fixture* com o *gate* de `e2e/_apoio/teste.ts`).
-- **Cobertura** (P78) e **regressão visual** (P79): tarefas 17 e 19.
+- **Cobertura** (P78 = A) e **regressão visual** (P79 = A, plano B = D): tarefas 17 e 19.
+- **Borda dos campos** (P81 = B): e2e confere `border-top-color` `rgb(140, 128, 112)` nos campos (newsletter, CEP do produto, campos do checkout, campo do chat) e `rgb(74, 64, 56)` (`--pedra-clara`) no que **não** é campo (botão secundário, chips, respostas rápidas, seletor de quantidade, opções de pagamento). Hoje nenhum teste confere a cor da borda dos campos, então nenhum teste existente muda por isso; as *baselines* da tarefa 19 ainda não existem e já nascem com a borda nova.
 
 ### Tarefas
 
 Cada tarefa termina com `lint`, `typecheck`, `format:check`, `test`, `modelos:validar`, `build`, `medir:pacote` e `test:e2e` passando. Estimativa de linhas entre parênteses.
 
-**Bloco A — SEO de base (commit 1)** — depende de P69, P70 e P72
+**Bloco A — SEO de base (commit 1)** — P69 = A, P70 = A e P72 = A/A (decididos)
 
-1. **[performance-e-seo] URL do site, canônicas, Open Graph e descrições** (~300 com testes)
-   - `lib/site.ts`, `lib/seo.ts`; `metadataBase` no `app/layout.tsx`; `metadadosDaPagina` em `/`, `/queijos`, `/queijos/[slug]`, `/presentes`, `/aprenda`, `/aprenda/[slug]` e `/produtores`; descrições conforme P72; `urlDoSite()` chamada no `next.config.ts`; `.env.example` atualizado.
+1. **[performance-e-seo] URL do site, canônicas, Open Graph e descrições** (~320 com testes)
+   - `lib/site.ts`, `lib/seo.ts`; `metadataBase` no `app/layout.tsx`; `metadadosDaPagina` em `/`, `/queijos`, `/queijos/[slug]`, `/presentes`, `/aprenda`, `/aprenda/[slug]` e `/produtores`; descrições do P72 (primeira frase literal da §12 em `/produtores`; campo opcional `descricao` em `Artigo`, vazio em todos os artigos hoje, com o corte do primeiro parágrafo do corpo como reserva); `urlDoSite()` chamada no `next.config.ts`; `.env.example` atualizado.
    - **Pronto quando:** os testes de unidade de `lib/site` e `lib/seo` passam; o HTML de cada rota indexável tem canônica absoluta e as tags `og:` da seção de testes; `/queijos?origem=brasil` tem canônica `/queijos`; build com `VERCEL_ENV=production` e sem `NEXT_PUBLIC_SITE_URL` falha com mensagem em português; nenhuma description passa de 160 caracteres.
 
 2. **[performance-e-seo] Sitemap, robots, imagem de compartilhamento e ícone** (~200 com testes)
-   - `app/sitemap.ts`, `app/robots.ts`; `app/opengraph-image.tsx` (ou `.png`) e `app/icon.svg` conforme P70.
-   - **Pronto quando:** `/sitemap.xml` tem exatamente as 18 URLs de `caminhosIndexaveis()` (Home, catálogo, 10 queijos, presentes, aprenda, 3 artigos, produtores) e nenhuma de `/sacola` ou `/checkout`; `/robots.txt` segue o contrato em produção e em prévia; `og:image` responde 200 com 1200 × 630 (se P70 ≠ B); o `guardiao-do-design` confere que a imagem e o ícone só usam elementos do Apêndice A e cores da §3.1.
+   - `app/sitemap.ts`, `app/robots.ts`; `app/opengraph-image.tsx` (`next/og`: fundo `--cave`, bloco "símbolo sobre dourado" do A.2 ao centro, sem texto) e `app/icon.svg` (símbolo A.1), P70 = A.
+   - **Pronto quando:** `/sitemap.xml` tem exatamente as 18 URLs de `caminhosIndexaveis()` (Home, catálogo, 10 queijos, presentes, aprenda, 3 artigos, produtores) e nenhuma de `/sacola` ou `/checkout`; `/robots.txt` segue o contrato em produção e em prévia; `og:image` responde 200 com 1200 × 630 e a imagem não tem texto; o `guardiao-do-design` confere que a imagem e o ícone só usam elementos do Apêndice A e cores da §3.1.
 
 3. **Verificação do bloco A:** `testes-e-qualidade`, `guardiao-do-design` (imagem e ícone) → `revisor-de-codigo` → commit `feat(seo): adiciona url base, canônicas, open graph, sitemap e robots`.
 
-**Bloco B — Segurança (commit 2)** — depende de P68, P73, P74 e P75; ADR-0015 aceito
+**Bloco B — Segurança (commit 2)** — P68 = A, P73 = B, P74 = B e P75 = A (decididos); ADR-0015 aceito
 
 4. **[devops-e-deploy] Cabeçalhos HTTP e CSP** (~250 com testes)
    - `lib/cabecalhos.ts`, `headers()` e `poweredByHeader: false` no `next.config.ts`; `e2e/cabecalhos.spec.ts`.
    - **Pronto quando:** os testes de unidade passam; o e2e confere os cabeçalhos em `/`, `/queijos`, `/checkout` e `/nao-existe` e a ausência de `X-Powered-By`; o checkout completo (frete e **Confirmar pedido**) passa sob a CSP; **todos** os e2e passam com o console limpo (nenhuma violação de CSP); `next dev` funciona (HMR) com a política de desenvolvimento.
 
 5. **[devops-e-deploy] Travas de publicação** (~200 com testes)
-   - `lib/lacunas.ts` e a chamada no `next.config.ts` (P73); `dadosFicticiosPermitidos` e `PERMITIR_DADOS_FICTICIOS` no Playwright, no CI e no `docs/ambiente.md` (se P74 = B); trava do número fictício em `.next/static` no `medir:pacote`.
-   - **Pronto quando:** `VERCEL_ENV=production npm run build` falha listando as lacunas (hoje: os textos do P52, as fichas dos 9 queijos, os artigos e a categoria vazia) e os dados fictícios; o build local e o e2e continuam passando; `medir:pacote` falha se o número fictício for posto num arquivo client de teste e passa sem ele.
+   - `lib/lacunas.ts` e a chamada no `next.config.ts` (P73 = B); `dadosFicticiosPermitidos` e `PERMITIR_DADOS_FICTICIOS` no Playwright, no CI, no `.env.example` e no `docs/ambiente.md` (P74 = B); trava do número fictício em `.next/static` no `medir:pacote`. **Ação do dono:** acrescentar `PERMITIR_DADOS_FICTICIOS=1` ao próprio `.env.local` (a tarefa avisa no resumo).
+   - **Pronto quando:** `VERCEL_ENV=production npm run build` falha listando as lacunas (hoje: os textos do P52, incluindo o `depoisDaAcao`, as fichas dos 9 queijos, os artigos e a categoria vazia) e os dados fictícios; `npm run build` **sem** `PERMITIR_DADOS_FICTICIOS` falha com mensagem que diz o que definir, e **com** ela passa; o build local com a variável e o e2e continuam passando; `medir:pacote` falha se o número fictício for posto num arquivo client de teste e passa sem ele.
 
 6. **[auditor-de-seguranca] Auditoria da etapa (somente leitura)** — correções pelo `devops-e-deploy` ou pelo `engenheiro-de-ecommerce`
-   - `npm audit` (com e sem `--omit=dev`), `npm audit signatures`; revisão dos cabeçalhos e da CSP; inventário LGPD; Server Actions sem efeito colateral (base do P75); nenhum dado pessoal em log, URL ou armazenamento; achados registrados neste plano em "Verificação do bloco B (etapa 8)".
+   - `npm audit` (com e sem `--omit=dev`), `npm audit signatures`; revisão dos cabeçalhos e da CSP; inventário LGPD; Server Actions sem efeito colateral (P75 = A: o limite de taxa fica adiado para o ADR do gateway, e esta conferência é o que sustenta o adiamento); nenhum dado pessoal em log, URL ou armazenamento; achados registrados neste plano em "Verificação do bloco B (etapa 8)".
    - **Pronto quando:** nenhuma vulnerabilidade alta ou crítica em produção; cada achado tem correção aplicada ou decisão registrada; o inventário LGPD está neste plano para o rascunho da etapa 9.
 
 7. **Verificação do bloco B:** `testes-e-qualidade`, `performance-e-seo` (nenhuma página deixou de ser estática no `next build`) → `revisor-de-codigo` → commit `feat(seguranca): adiciona cabeçalhos http, csp e travas de publicação`.
 
-**Bloco C — Dados estruturados (commit 3)** — depende de P71
+**Bloco C — Dados estruturados (commit 3)** — P71 = A (decidido)
 
 8. **[performance-e-seo] JSON-LD** (~350 com testes)
-   - `lib/dadosEstruturados.ts`, `components/DadosEstruturados.tsx`; Home (`Organization` + `WebSite`), produto (`Product` + `BreadcrumbList`), artigo (`BreadcrumbList`; `Article` só com corpo); kits e produtores conforme P71.
+   - `lib/dadosEstruturados.ts`, `components/DadosEstruturados.tsx`; Home (`Organization` com nome, URL e logo, sem CNPJ, endereço e telefone; `WebSite` sem busca), produto (`Product` sem `brand` e `image` + `BreadcrumbList`), artigo (`BreadcrumbList`; `Article` só com corpo); **nada** para kits e produtores (P71 = A).
    - **Pronto quando:** os testes de unidade passam; o e2e lê o JSON-LD de `/`, `/queijos/canastra-curado`, `/queijos/brie-frances` e `/aprenda/queijo-e-vinho`, faz `JSON.parse` e confere os tipos; nenhum valor contém `[` nem dado de `data/ficticio.ts`; o `Product` do Canastra tem os três `Offer` com os preços da §9; o Teste de Pesquisa Aprimorada do Google ou o validador do schema.org (colando o HTML gerado) não aponta erro (a falta de `image` fica registrada como aviso esperado).
 
 9. **Verificação do bloco C:** `testes-e-qualidade`, `auditor-de-seguranca` (escape do `<script>`) → `revisor-de-codigo` → commit `feat(seo): adiciona dados estruturados json-ld`.
 
-**Bloco D — Acessibilidade (commit 4)** — depende de P80 a P83; ADR-0014 aceito
+**Bloco D — Acessibilidade (commit 4)** — P80 = A, P81 = B, P82 = A e P83 = A (decididos); ADR-0014 aceito
 
 10. **[testes-e-qualidade + especialista-em-acessibilidade] Varredura com axe** (~250)
     - Instalar `@axe-core/playwright` 4.14.0 (ADR-0014); `e2e/_apoio/acessibilidade.ts`; `e2e/acessibilidade.spec.ts` com a lista da seção de acessibilidade, a 1440 e a 390 px. Primeiro roda e **lista** os achados; as correções vêm na tarefa 11, e o commit só sai com tudo passando.
     - **Pronto quando:** a lista de achados está registrada neste plano; `EXCECOES_DO_AXE` só tem itens com decisão do dono citada.
 
-11. **[frontend-nextjs] Correções de acessibilidade e interface herdadas** (~300 com testes)
-    - Setas `→` com `aria-hidden`; zona de toque da `Trilha` (P82); indicador do painel (P80); borda do campo do chat (P81); aviso de nova aba (P83, se mudar); colar no campo de CEP (`onPaste` que tira tudo que não é dígito e aplica a máscara; vale para o produto e o checkout); os demais achados da tarefa 10.
-    - **Pronto quando:** a varredura da tarefa 10 passa sem violação fora das exceções; colar "CEP 01310-100" resulta em `01310-100` nos dois campos; os testes que buscavam nomes com a seta foram atualizados; o `guardiao-do-design` confirma que nada mudou de visual além do que P80 a P83 aprovaram.
+11. **[frontend-nextjs] Correções de acessibilidade e interface herdadas** (~330 com testes)
+    - Setas `→` com `aria-hidden`; zona de toque invisível ≥ 24 × 24 px na `Trilha` (P82 = A); `aria-busy` e cursor de espera no gatilho do painel enquanto o *chunk* baixa (P80 = A); **borda de todos os campos em `--placeholder`** (P81 = B, [escopo e cuidados](#revogação-do-d2-pelo-p81-2026-11-05)); aviso de nova aba **sem mudança** (P83 = A); colar no campo de CEP (`onPaste` que tira tudo que não é dígito e aplica a máscara; vale para o produto e o checkout); os demais achados da tarefa 10. Os textos do P84 entram aqui **só se** o dono já tiver escolhido; senão, ficam para uma tarefa própria pequena (`frontend-nextjs` + `especialista-em-ia-conversacional`), sem segurar o commit do bloco D.
+    - **Pronto quando:** a varredura da tarefa 10 passa sem violação fora das exceções; colar "CEP 01310-100" resulta em `01310-100` nos dois campos; os testes que buscavam nomes com a seta foram atualizados; o e2e da borda (seção de testes) passa e o seletor de quantidade, as respostas rápidas, os chips e os botões secundários continuam com `--pedra-clara`; o gatilho do painel tem `aria-busy="true"` só durante o download (teste com o `import()` adiado) e volta a `false` ou sem atributo depois; o `guardiao-do-design` confirma que nada mudou de visual além da borda dos campos e do cursor.
 
 12. **[testes-e-qualidade] E2E de teclado** (~250)
     - Ordem de Tab e foco visível em `/presentes`, `/aprenda`, `/aprenda/<slug>`, `/produtores` e na 404; âncora `#presentes-corporativos` pelo rodapé e por `hashchange`; contraste do foco com `.65` (D3).
@@ -2622,10 +2631,10 @@ Cada tarefa termina com `lint`, `typecheck`, `format:check`, `test`, `modelos:va
 
 13. **Verificação do bloco D:** `especialista-em-acessibilidade` (revisão manual com leitor de tela do que o axe não cobre: anúncios do painel, região viva do checkout, foco após navegação), `guardiao-do-design` → `revisor-de-codigo` → commit `fix(acessibilidade): adiciona a varredura com axe e corrige os achados`.
 
-**Bloco E — Desempenho (commit 5)** — depende de P76 e P77
+**Bloco E — Desempenho (commit 5)** — P76 = A e P77 = A (decididos)
 
 14. **[performance-e-seo] Orçamento por rota e Core Web Vitals** (~200)
-    - `medir:pacote` com todas as rotas e o *chunk* do painel (contrato acima); `--web-vitals` em `/`, produto, `/sacola` (vazia e com itens) e `/presentes`; Lighthouse conforme P76 nas mesmas rotas, mais `/aprenda` e o checkout; relatório resumido neste plano (números, elemento de LCP de cada rota, desvios).
+    - `medir:pacote` com todas as rotas e o *chunk* do painel (contrato acima); `--web-vitals` em `/`, produto, `/sacola` (vazia e com itens) e `/presentes`; Lighthouse manual no Chrome DevTools (P76 = A: build de produção local, modo celular, mediana de 3 execuções, sem extensões) nas mesmas rotas, mais `/aprenda` e o checkout; sem `useReportWebVitals` (P77 = A); relatório resumido neste plano (números, elemento de LCP de cada rota, desvios).
     - **Pronto quando:** `medir:pacote` lista e limita todas as rotas; o relatório está neste plano; os limites de CWV da seção de desempenho são atendidos ou cada desvio tem causa e tarefa.
 
 15. **[performance-e-seo + frontend-nextjs] Ajustes medidos** (~150)
@@ -2634,10 +2643,10 @@ Cada tarefa termina com `lint`, `typecheck`, `format:check`, `test`, `modelos:va
 
 16. **Verificação do bloco E:** `testes-e-qualidade` → `revisor-de-codigo` → commit `perf: amplia o orçamento por rota e mede os core web vitals`.
 
-**Bloco F — Testes e regressão (commit 6)** — depende de P78 e P79
+**Bloco F — Testes e regressão (commit 6)** — P78 = A e P79 = A (decididos; P79 com ação do dono)
 
 17. **[testes-e-qualidade] Cobertura** (~100)
-    - `@vitest/coverage-v8` na versão exata do `vitest` (ADR-0014); script `test:cobertura`; limites conforme P78; `coverage/` no `.gitignore`.
+    - `@vitest/coverage-v8` na versão exata do `vitest` (ADR-0014); script `test:cobertura`; limites mínimos (linhas, funções, ramos e instruções) só em `lib/` e `data/`, fixados no valor medido arredondado para baixo, como catraca: só podem subir (P78 = A); `coverage/` no `.gitignore`.
     - **Pronto quando:** `npm run test:cobertura` gera o relatório e passa nos limites; o `npm test` não fica mais lento.
 
 18. **[testes-e-qualidade] Estabilidade dos e2e** (~100)
@@ -2645,22 +2654,24 @@ Cada tarefa termina com `lint`, `typecheck`, `format:check`, `test`, `modelos:va
     - **Pronto quando:** `--repeat-each=10 --workers=4` dos dois specs passa; nenhum spec importa `@playwright/test` direto; a nota do RETOMADA sobre instabilidade é fechada ou atualizada com a causa.
 
 19. **[testes-e-qualidade] Regressão visual** (~250 + imagens)
-    - Projeto `visual` no `playwright.config.ts` (fora do `test:e2e` padrão), script `test:visual`; telas: Home, catálogo, produto do Canastra, painel no estado do protótipo, `/sacola` com itens, checkout etapa 1, `/presentes`, `/aprenda`, artigo, `/produtores` e 404, a 1440 e a 390 px (22 capturas); animações desligadas, `prefers-reduced-motion`, relógio fixo, fontes carregadas; *baselines* conforme P79.
-    - **Pronto quando:** `npm run test:visual` passa duas vezes seguidas no ambiente das *baselines*; uma mudança proposital de 1 px numa margem faz o teste falhar; o `guardiao-do-design` aprovou cada *baseline* contra a spec antes do commit.
+    - Projeto `visual` no `playwright.config.ts` (fora do `test:e2e` padrão), script `test:visual`; telas: Home, catálogo, produto do Canastra, painel no estado do protótipo, `/sacola` com itens, checkout etapa 1, `/presentes`, `/aprenda`, artigo, `/produtores` e 404, a 1440 e a 390 px (22 capturas); animações desligadas, `prefers-reduced-motion`, relógio fixo, fontes carregadas. *Baselines* (P79 = A) geradas e conferidas **no Linux, dentro da imagem Docker oficial do Playwright na mesma versão do `@playwright/test` instalado** (hoje 1.64.1; conferir o nome exato da imagem na documentação oficial do Playwright ao implementar), por um script que roda o projeto `visual` dentro do contêiner (ex.: `test:visual:docker`), sem dependência npm nova.
+    - **Pré-requisito e ação do dono:** instalar o **Docker Desktop** no Windows (com WSL 2) antes desta tarefa; nada de conta paga. **Plano B, se o dono não puder instalar:** opção **D** do P79, um *workflow* manual (`workflow_dispatch`) no GitHub Actions, pelo `devops-e-deploy`, que roda o projeto `visual` na mesma imagem e entrega as capturas como artefato para o dono revisar e commitar; o `ci.yml` não muda.
+    - **Pronto quando:** `npm run test:visual` passa duas vezes seguidas no ambiente das *baselines* (contêiner ou *workflow*); uma mudança proposital de 1 px numa margem faz o teste falhar; o `guardiao-do-design` aprovou cada *baseline* contra a spec antes do commit.
 
 20. **Verificação do bloco F:** `guardiao-do-design` (*baselines*) → `revisor-de-codigo` → commit `test: adiciona cobertura e regressão visual`.
 
 **Fechamento**
 
 21. **[documentador-tecnico] Fechamento da etapa 8**
-    - `docs/ambiente.md` (`NEXT_PUBLIC_SITE_URL` obrigatória em produção, `PERMITIR_DADOS_FICTICIOS` se P74 = B, cabeçalhos e CSP: como liberar um domínio novo); `docs/conteudo.md` (o que aparece no JSON-LD quando o dono preencher preço, corpo, foto e produtor; descrição dos artigos; o que a trava de lacunas lista); README (scripts `test:cobertura`, `test:visual`, `medir:pacote`); CHANGELOG; neste plano, a situação da etapa e os desvios para o checklist da §14; status dos ADRs 0014 e 0015.
+    - `docs/ambiente.md` (`NEXT_PUBLIC_SITE_URL` obrigatória e `https` em produção, `PERMITIR_DADOS_FICTICIOS=1` obrigatória em qualquer build de produção enquanto houver dados fictícios, cabeçalhos e CSP: como liberar um domínio novo, Docker Desktop para a regressão visual); `docs/conteudo.md` (o que aparece no JSON-LD quando o dono preencher preço, corpo, foto e produtor; campo `descricao` dos artigos; o que a trava de lacunas lista; onde ficam os textos do P84); README (scripts `test:cobertura`, `test:visual`, `medir:pacote`); CHANGELOG; neste plano, a situação da etapa e os [desvios para o checklist da §14](#desvios-para-o-checklist-da-14-etapa-8); `CHANGELOG.md` registra a revogação do D2 (a entrada antiga da etapa 4 não é reescrita).
     - **Pronto quando:** commit `docs: fecha a etapa 8` publicado.
 
 ### Commits da etapa 8
 
 | Bloco | Conteúdo | Mensagem | Situação |
 | --- | --- | --- | --- |
-| Docs | Este detalhamento e os ADRs 0014 e 0015 | `docs: detalha a etapa 8 e propõe os adrs 0014 e 0015` | A fazer (sessão principal) |
+| Docs | Este detalhamento e os ADRs 0014 e 0015 | `docs: detalha a etapa 8 e propõe os adrs 0014 e 0015` | Publicado (`e147dbd`) |
+| Docs | Respostas P68 a P84, revogação do D2, ADRs 0014 e 0015 aceitos, propostas de texto do P84 | `docs: registra as respostas p68 a p84 e aceita os adrs 0014 e 0015` | A fazer (sessão principal) |
 | A | Tarefas 1 a 3 | `feat(seo): adiciona url base, canônicas, open graph, sitemap e robots` | A fazer |
 | B | Tarefas 4 a 7 | `feat(seguranca): adiciona cabeçalhos http, csp e travas de publicação` | A fazer |
 | C | Tarefas 8 e 9 | `feat(seo): adiciona dados estruturados json-ld` | A fazer |
@@ -2676,13 +2687,14 @@ Ordem: A antes de C (o JSON-LD usa `urlDoSite`); B cedo, para todos os e2e segui
 - [ ] §13 SEO atendida: `<title>`, description, canônica, Open Graph e `Product` com preço em BRL em todas as páginas indexáveis; sitemap e robots conforme o contrato.
 - [ ] Nenhum dado estruturado publica lacuna ou dado fictício.
 - [ ] Cabeçalhos e CSP do ADR-0015 em todas as rotas; nenhuma violação no console; páginas continuam estáticas.
-- [ ] Build com `VERCEL_ENV=production` falha com lacunas (P73) e com dados fictícios; o número fictício não aparece em `.next/static` (trava automática).
+- [ ] Build com `VERCEL_ENV=production` falha com lacunas `[A DEFINIR` (P73 = B) e com dados fictícios; qualquer build de produção sem `PERMITIR_DADOS_FICTICIOS=1` falha enquanto houver dados fictícios (P74 = B); o número fictício não aparece em `.next/static` (trava automática).
 - [ ] `npm audit` sem alta ou crítica em produção; inventário LGPD registrado.
 - [ ] Varredura do axe sem violação (WCAG 2.2 AA) em todas as rotas e estados listados, a 1440 e 390 px, com exceções só decididas pelo dono.
 - [ ] §13 "Alvos de toque ≥ 44 px. Foco visível em dourado" reconferido nas páginas novas e na trilha (com as exceções já registradas).
 - [ ] Orçamento de JS limitado em todas as rotas; CWV de laboratório e Lighthouse registrados.
-- [ ] Cobertura e regressão visual conforme P78 e P79; os dois specs instáveis estáveis em 10 repetições.
-- [ ] Nenhuma dependência de produção nova; nenhum texto, cor ou medida mudados sem resposta do dono.
+- [ ] Cobertura com catraca em `lib/` e `data/` (P78 = A) e regressão visual com *baselines* geradas no Linux (P79 = A no Docker, ou D); os dois specs instáveis estáveis em 10 repetições.
+- [ ] Borda de todos os campos em `--placeholder` (P81 = B) e o restante com `--pedra-clara`; desvio registrado para o checklist da §14.
+- [ ] Nenhuma dependência de produção nova; nenhum texto, cor ou medida mudados sem resposta do dono; os textos do P84 só no código depois da escolha do dono.
 
 ### Riscos da etapa 8
 
@@ -2691,40 +2703,90 @@ Ordem: A antes de C (o JSON-LD usa `urlDoSite`); B cedo, para todos os e2e segui
 - **JSON-LD com lacuna, dado fictício ou `</script>`** → construtores omitem o campo; testes que barram `[` e os valores de `data/ficticio.ts`; `serializar` escapa `<`.
 - **`next.config.ts` importando `lib/roteiro` e `data/`** (aliases `@/`, custo do build) → conferir na documentação do Next 16.4.3 se o carregador do `next.config.ts` resolve os aliases; se não, as travas leem as fontes por caminhos relativos ou viram um script `prebuild`; o teste de unidade cobre a regra de qualquer forma.
 - **Trava de lacunas bloqueando prévias** → só com `VERCEL_ENV=production`.
-- **`PERMITIR_DADOS_FICTICIOS` esquecida** (se P74 = B) → mensagem de erro diz exatamente o que definir; Playwright e CI já a definem.
+- **`PERMITIR_DADOS_FICTICIOS` esquecida** (P74 = B) → mensagem de erro diz exatamente o que definir; Playwright e CI já a definem; o resumo da tarefa 5 lembra o dono de pôr a variável no `.env.local`.
+- **Borda dos campos trocada demais ou de menos** (P81 = B; `--borda-campo` hoje também é usada pelo seletor de quantidade e pelas respostas rápidas do chat) → trocar só nos campos, nunca o token `--pedra-clara`; e2e confere as duas cores.
+- **Docker Desktop indisponível** (P79) → plano B = D (*workflow* manual), decidido antes de começar a tarefa 19.
 - **Falsos positivos do axe ou exceção larga demais** → exceção só por regra e seletor, com decisão do dono citada; nenhuma regra desligada para a página.
 - **Varredura lenta ou instável** → roda depois do *gate* de hidratação, com `prefers-reduced-motion`; um spec por rota, em paralelo.
 - **Regressão visual instável** (fontes, sistema operacional, 3D, relógio do horário, animações) → *baselines* num único ambiente (P79), animações desligadas, `page.clock` fixo, sem GLB; 22 capturas para limitar o peso no repositório (estimativa de 3 a 6 MB).
-- **Folga de JS** → tudo desta etapa é servidor ou build; os poucos bytes de client (P80, CEP) são medidos no bloco D.
+- **Folga de JS** → tudo desta etapa é servidor ou build; os poucos bytes de client (P80, CEP e, se aprovados, os textos do P84) são medidos no bloco D.
 - **Números de Lighthouse variando** → mediana de 3 execuções no mesmo computador, build de produção, sem extensões.
 - **Mudar nomes acessíveis** (setas) quebrar testes → atualizados na mesma tarefa; o texto visível não muda.
 - **Limites de cobertura travando o trabalho** → catraca a partir do valor medido, só em `lib/` e `data/`.
 
 ### Perguntas ao dono (etapa 8)
 
-Cada pergunta tem alternativas e uma recomendação. Responda com o número e a letra (ex.: "P68 A"). Sem resposta, a tarefa que depende dela não começa.
+Cada pergunta tem alternativas e uma recomendação. **Todas respondidas pelo dono em 2026-11-05** (todas as recomendações aceitas, exceto o P84, respondido com uma variante do C; a recomendação aceita no P81, B, revoga o D2). Nenhuma tarefa está bloqueada por pergunta.
 
 | # | Pergunta | Opções | Recomendação | Decisão do dono |
 | --- | --- | --- | --- | --- |
-| P68 | Como aplicar a política de conteúdo (CSP)? O Next só põe *nonce* em páginas dinâmicas, e quase todas as nossas são estáticas | **A)** CSP estática em `next.config.ts`, com `'unsafe-inline'` em scripts e estilos: as páginas continuam estáticas; bloqueia recursos de outros domínios, `<object>`, `<base>`, formulários para fora, molduras de outros sites e envio de dados para outro domínio, mas não bloqueia um script *inline* injetado (ADR-0015). **B)** *Nonce* por requisição com `proxy.ts`: política estrita, mas **todas** as páginas viram dinâmicas (sem pré-renderização nem cache de CDN, mais lentas e mais custo de servidor). **C)** SRI experimental do Next + CSP sem `'unsafe-inline'`: continua estático, mas é experimental e os scripts *inline* do App Router podem ser bloqueados; exige um teste prático antes | **A** agora: o site não reflete entrada de usuário no HTML e não tem dado de cartão. Reavaliar B ou C só nas rotas de pagamento, no ADR do gateway (etapa 9) | |
-| P69 | `NEXT_PUBLIC_SITE_URL` (base das canônicas, do sitemap e do Open Graph) é obrigatória? | **A)** Obrigatória com `VERCEL_ENV=production` (o build falha se faltar, se não for `https` ou se tiver caminho); fora de produção vale `http://localhost:3000`. **B)** Em produção, se faltar, usar o domínio de produção que a Vercel informa (`VERCEL_PROJECT_PRODUCTION_URL`). **C)** Obrigatória sempre, também no computador local e no CI | **A**: erro de configuração não passa em silêncio, e o domínio final ainda não foi escolhido | |
-| P70 | Imagem de compartilhamento (WhatsApp, redes) e ícone da aba do navegador. A spec não define nenhum dos dois | **A)** Gerar no build, sem dependência: imagem 1200 × 630 com fundo `--cave` e o bloco "símbolo sobre dourado" do Apêndice A.2 ao centro, **sem texto**; ícone = símbolo A.1. **B)** Igual a A, com o nome **Ateliê do Queijo** e a assinatura **Queijos de autor, escolhidos à mão.** em Cormorant (exige guardar o arquivo da fonte no repositório, licença OFL). **C)** O dono fornece imagem e ícone; até lá, nenhuma imagem (cartão pequeno nas redes) e nenhum ícone | **A**: usa só elementos e cores da spec, sem texto nem fonte nova; troca por foto quando o dono tiver | |
-| P71 | Que dados estruturados publicar, se parte dos dados é lacuna ou fictícia? | **A)** Só dados verdadeiros e não fictícios: `Organization` com nome, URL (e o ícone do P70), **sem** CNPJ, endereço e telefone (fictícios, D26 e D27); `WebSite` sem busca (D19); `Product` com um `Offer` por formato (preços da §9), sem `brand` e sem `image`; `BreadcrumbList` no produto e no artigo; `Article` só quando houver corpo; **nada** para kits (sem preço) e produtores (fictício). **B)** A + `ItemList` dos kits com nome e descrição, sem preço (o Google aponta erro em `Product` sem `offers`). **C)** Incluir também os valores fictícios (CNPJ, endereço, produtor), para trocar na etapa 9 | **A**: nada inventado vai para os buscadores, e cada dado entra sozinho quando o dono preencher | |
-| P72 | Descrições para os buscadores (até 160 caracteres). (a) `/produtores` usa hoje o texto da §12, com ≈ 230. (b) Artigos usam a descrição do layout até haver corpo | (a) **A)** Só a primeira frase literal da §12: **O Ateliê nasceu da vontade de levar até você queijos que só se encontravam na porta da fazenda ou nas melhores queijarias da Europa.** (≈ 132 caracteres). **B)** O dono escreve uma descrição nova. **C)** Manter as ≈ 230 (o buscador corta). (b) **A)** Campo opcional de descrição em cada artigo, escrito pelo dono; sem ele, o primeiro parágrafo do corpo, cortado em palavra inteira com "…". **B)** Só o corte automático do primeiro parágrafo | (a) **A**, texto da spec sem invenção. (b) **A** | |
-| P73 | A trava que impede publicar com lacunas vale para quais textos? (só com `VERCEL_ENV=production`; prévias não são afetadas) | **A)** Só os textos do assistente: `TEXTOS_DO_ROTEIRO` e o aviso de nova aba (o que a etapa 6 pediu). **B)** Todo `[A DEFINIR` do assistente e dos dados: fichas dos 9 queijos, artigos, categoria vazia, queijos citados. **C)** B + toda lacuna entre colchetes (`[PREÇO]`, `[FOTO: …]`, `[n]`, `[TEXTO DO ARTIGO]`): nada vai ao ar com lacuna | **B**: impede publicar texto a definir; `[FOTO: …]` e `[PREÇO]` ficam para o checklist da etapa 9, porque o D34 admite publicar com placeholders de foto | |
-| P74 | Hoje o número fictício do WhatsApp e a trava dos dados fictícios dependem de `VERCEL_ENV`. Fora da Vercel, um build de produção usaria os fictícios sem aviso | **A)** Manter: a hospedagem decidida é a Vercel (D31); só documentar. **B)** Inverter o padrão: fora do `next dev`, os fictícios só valem com `PERMITIR_DADOS_FICTICIOS=1` (no seu `.env.local`, no Playwright e no CI); sem ela, o número some e o build falha, em qualquer hospedagem. **C)** A + conferir no CI que `VERCEL_ENV` existe nos builds de produção | **B**: falha segura e barata; protege também contra um build manual feito por engano | |
-| P75 | Limite de taxa nas duas Server Actions (frete e confirmar pedido). Hoje elas só simulam: nada é gravado, enviado ou cobrado | **A)** Continua adiado, como registrado na etapa 4: entra junto com o e-mail transacional ou o gateway (ADR do gateway, etapa 9); a etapa 8 só confirma que seguem sem efeito colateral. **B)** Limitador em memória por IP agora (simples, mas não vale entre instâncias da Vercel: dá falsa segurança). **C)** Regra de limite no firewall da Vercel ou serviço externo (Upstash): exige conta ou configuração do projeto e sua aprovação | **A**: sem custo nem dado em jogo hoje; a regra passa a ser obrigatória no ADR do gateway | |
-| P76 | Como rodar o Lighthouse? | **A)** Manual, no Chrome (DevTools), sobre o build de produção local, em modo celular, mediana de 3 execuções; relatório resumido no plano; a regressão automática fica com o `medir:pacote --web-vitals` (sem dependência). **B)** Lighthouse CI (`@lhci/cli`) como dependência de desenvolvimento, com notas mínimas, local agora e no CI na etapa 9 (dependência grande). **C)** `npx lighthouse` sem instalar (versão não fixada; rejeitada por segurança) | **A** agora; B na etapa 9, se quiser a nota no CI | |
-| P77 | Medir os Core Web Vitals dos visitantes reais (`useReportWebVitals`)? | **A)** Não agora: não há destino para os dados e a coleta precisa de aviso de privacidade; só medidas de laboratório. Reavaliar na etapa 9 (por exemplo, Vercel Speed Insights, com ADR). **B)** Componente mínimo que envia as medidas para uma rota do próprio site, que só registra no log da hospedagem (≈ 1 kB a mais em todas as páginas, dado de navegação, LGPD). **C)** Só imprimir no console fora de produção (pouco útil) | **A** | |
-| P78 | Cobertura dos testes de unidade | **A)** `@vitest/coverage-v8` (ADR-0014), relatório e limites mínimos só em `lib/` e `data/`, fixados no valor medido arredondado para baixo (só podem subir). **B)** Só o relatório, sem limite. **C)** Sem ferramenta de cobertura | **A** | |
-| P79 | Regressão visual: as capturas mudam entre Windows e Linux (fontes e suavização). Onde gerar as imagens de referência? | **A)** No Linux, dentro da imagem Docker oficial do Playwright (mesma versão, 1.64.1), igual ao CI; você roda pelo Docker Desktop no Windows; no CI na etapa 9. **B)** No seu Windows, rodando só no seu computador (não serve para o CI). **C)** Sem regressão visual automática; o `guardiao-do-design` continua comparando à mão. **D)** Geradas pelo próprio GitHub Actions (um *workflow* manual que gera e entrega as imagens para você revisar e commitar), sem Docker no seu computador | **A**, se puder instalar o Docker Desktop; senão **D** | |
-| P80 | Ao clicar no botão de atendimento antes de o painel terminar de baixar, nada aparece até ele chegar (raro: o download começa sozinho logo após a página carregar) | **A)** Sem texto nem cor nova: o botão recebe `aria-busy` (o leitor de tela anuncia "ocupado") e o cursor de espera enquanto baixa. **B)** Texto curto visível perto do botão, só se a espera passar de 300 ms (texto novo, a escrever: até lá `[A DEFINIR: texto de carregamento do atendimento]`). **C)** Nada | **A** | |
-| P81 | A borda do campo de mensagem do chat (`--pedra-clara` sobre `--cave`) tem contraste ≈ 1,9:1; a WCAG pede 3:1. O D2 manteve essa cor nos campos do checkout | **A)** O D2 vale também para o chat: manter e registrar como desvio da §14. **B)** Trocar a borda de **todos** os campos para `--placeholder` (#8C8070), cor que já está na paleta: ≈ 4,9:1 sobre `--cave` e 4,47:1 sobre `--carvao` (revoga o D2; o visual dos campos fica mais claro). **C)** Cor nova ≈ #7A6E60 só para campos (fora da paleta da §3.1) | **B**: atende a WCAG sem cor nova; **A** se preferir manter o visual da spec | |
-| P82 | Links da trilha ("Início / Queijos / …"): o texto de 13 px dá um alvo menor que 24 × 24 px (WCAG 2.5.8) | **A)** Zona de toque invisível que leva cada link a pelo menos 24 × 24 px, sem mudança visual (mesma técnica do painel na etapa 6); links seguem sem sublinhado (a trilha é reconhecida pela estrutura e pelo item atual). **B)** A + sublinhar os links da trilha (muda o visual). **C)** Aumentar fonte ou espaçamento visível da trilha (muda medida da spec) | **A** | |
-| P83 | O aviso "abre em nova aba" dos links do WhatsApp existe hoje só para leitor de tela (P49). Mostrar também para quem enxerga? | **A)** Não: o rótulo e o ícone já dizem que é o WhatsApp, e no celular o link abre o aplicativo. **B)** Ícone de "sai do site" ao lado do texto (ícone novo, fora da §4.10). **C)** Texto visível curto ao lado do botão (texto novo, a escrever) | **A** | |
-| P84 | Textos que você ainda não escreveu, herdados da etapa 6: o que dizer depois que o assistente põe o queijo na sacola (`depoisDaAcao`), uma mensagem se o painel não carregar, e o texto da aba Queijista sem número | **A)** Seguem como estão: lacunas visíveis (`[A DEFINIR: …]`), erro do painel sem mensagem (o texto digitado fica e a próxima abertura tenta de novo), aba sem número só com o horário; a trava do P73 impede publicar com elas; você escreve quando quiser. **B)** Você escreve agora e a etapa 8 aplica (tarefa 11). **C)** Para o erro do painel, reaproveitar um texto que já existe na spec (nenhum se encaixa bem; não recomendado) | **A**: não bloqueia a etapa, e a trava garante que nada vai ao ar sem os textos | |
+| P68 | Como aplicar a política de conteúdo (CSP)? O Next só põe *nonce* em páginas dinâmicas, e quase todas as nossas são estáticas | **A)** CSP estática em `next.config.ts`, com `'unsafe-inline'` em scripts e estilos: as páginas continuam estáticas; bloqueia recursos de outros domínios, `<object>`, `<base>`, formulários para fora, molduras de outros sites e envio de dados para outro domínio, mas não bloqueia um script *inline* injetado (ADR-0015). **B)** *Nonce* por requisição com `proxy.ts`: política estrita, mas **todas** as páginas viram dinâmicas (sem pré-renderização nem cache de CDN, mais lentas e mais custo de servidor). **C)** SRI experimental do Next + CSP sem `'unsafe-inline'`: continua estático, mas é experimental e os scripts *inline* do App Router podem ser bloqueados; exige um teste prático antes | **A** agora: o site não reflete entrada de usuário no HTML e não tem dado de cartão. Reavaliar B ou C só nas rotas de pagamento, no ADR do gateway (etapa 9) | **Respondida em 2026-11-05: A** (CSP estática com `'unsafe-inline'`; ADR-0015 aceito) |
+| P69 | `NEXT_PUBLIC_SITE_URL` (base das canônicas, do sitemap e do Open Graph) é obrigatória? | **A)** Obrigatória com `VERCEL_ENV=production` (o build falha se faltar, se não for `https` ou se tiver caminho); fora de produção vale `http://localhost:3000`. **B)** Em produção, se faltar, usar o domínio de produção que a Vercel informa (`VERCEL_PROJECT_PRODUCTION_URL`). **C)** Obrigatória sempre, também no computador local e no CI | **A**: erro de configuração não passa em silêncio, e o domínio final ainda não foi escolhido | **Respondida em 2026-11-05: A** (obrigatória e `https` em produção) |
+| P70 | Imagem de compartilhamento (WhatsApp, redes) e ícone da aba do navegador. A spec não define nenhum dos dois | **A)** Gerar no build, sem dependência: imagem 1200 × 630 com fundo `--cave` e o bloco "símbolo sobre dourado" do Apêndice A.2 ao centro, **sem texto**; ícone = símbolo A.1. **B)** Igual a A, com o nome **Ateliê do Queijo** e a assinatura **Queijos de autor, escolhidos à mão.** em Cormorant (exige guardar o arquivo da fonte no repositório, licença OFL). **C)** O dono fornece imagem e ícone; até lá, nenhuma imagem (cartão pequeno nas redes) e nenhum ícone | **A**: usa só elementos e cores da spec, sem texto nem fonte nova; troca por foto quando o dono tiver | **Respondida em 2026-11-05: A** (`next/og`, fundo `--cave` com o símbolo A.2, sem texto; ícone A.1) |
+| P71 | Que dados estruturados publicar, se parte dos dados é lacuna ou fictícia? | **A)** Só dados verdadeiros e não fictícios: `Organization` com nome, URL (e o ícone do P70), **sem** CNPJ, endereço e telefone (fictícios, D26 e D27); `WebSite` sem busca (D19); `Product` com um `Offer` por formato (preços da §9), sem `brand` e sem `image`; `BreadcrumbList` no produto e no artigo; `Article` só quando houver corpo; **nada** para kits (sem preço) e produtores (fictício). **B)** A + `ItemList` dos kits com nome e descrição, sem preço (o Google aponta erro em `Product` sem `offers`). **C)** Incluir também os valores fictícios (CNPJ, endereço, produtor), para trocar na etapa 9 | **A**: nada inventado vai para os buscadores, e cada dado entra sozinho quando o dono preencher | **Respondida em 2026-11-05: A** (só dados verdadeiros) |
+| P72 | Descrições para os buscadores (até 160 caracteres). (a) `/produtores` usa hoje o texto da §12, com ≈ 230. (b) Artigos usam a descrição do layout até haver corpo | (a) **A)** Só a primeira frase literal da §12: **O Ateliê nasceu da vontade de levar até você queijos que só se encontravam na porta da fazenda ou nas melhores queijarias da Europa.** (≈ 132 caracteres). **B)** O dono escreve uma descrição nova. **C)** Manter as ≈ 230 (o buscador corta). (b) **A)** Campo opcional de descrição em cada artigo, escrito pelo dono; sem ele, o primeiro parágrafo do corpo, cortado em palavra inteira com "…". **B)** Só o corte automático do primeiro parágrafo | (a) **A**, texto da spec sem invenção. (b) **A** | **Respondida em 2026-11-05: (a) A e (b) A** (primeira frase literal da §12; campo opcional `descricao`, com o corte do corpo como reserva) |
+| P73 | A trava que impede publicar com lacunas vale para quais textos? (só com `VERCEL_ENV=production`; prévias não são afetadas) | **A)** Só os textos do assistente: `TEXTOS_DO_ROTEIRO` e o aviso de nova aba (o que a etapa 6 pediu). **B)** Todo `[A DEFINIR` do assistente e dos dados: fichas dos 9 queijos, artigos, categoria vazia, queijos citados. **C)** B + toda lacuna entre colchetes (`[PREÇO]`, `[FOTO: …]`, `[n]`, `[TEXTO DO ARTIGO]`): nada vai ao ar com lacuna | **B**: impede publicar texto a definir; `[FOTO: …]` e `[PREÇO]` ficam para o checklist da etapa 9, porque o D34 admite publicar com placeholders de foto | **Respondida em 2026-11-05: B** (trava para todo `[A DEFINIR` no assistente e em `data/`) |
+| P74 | Hoje o número fictício do WhatsApp e a trava dos dados fictícios dependem de `VERCEL_ENV`. Fora da Vercel, um build de produção usaria os fictícios sem aviso | **A)** Manter: a hospedagem decidida é a Vercel (D31); só documentar. **B)** Inverter o padrão: fora do `next dev`, os fictícios só valem com `PERMITIR_DADOS_FICTICIOS=1` (no seu `.env.local`, no Playwright e no CI); sem ela, o número some e o build falha, em qualquer hospedagem. **C)** A + conferir no CI que `VERCEL_ENV` existe nos builds de produção | **B**: falha segura e barata; protege também contra um build manual feito por engano | **Respondida em 2026-11-05: B** (`PERMITIR_DADOS_FICTICIOS=1` exigida em qualquer build de produção com dados fictícios) |
+| P75 | Limite de taxa nas duas Server Actions (frete e confirmar pedido). Hoje elas só simulam: nada é gravado, enviado ou cobrado | **A)** Continua adiado, como registrado na etapa 4: entra junto com o e-mail transacional ou o gateway (ADR do gateway, etapa 9); a etapa 8 só confirma que seguem sem efeito colateral. **B)** Limitador em memória por IP agora (simples, mas não vale entre instâncias da Vercel: dá falsa segurança). **C)** Regra de limite no firewall da Vercel ou serviço externo (Upstash): exige conta ou configuração do projeto e sua aprovação | **A**: sem custo nem dado em jogo hoje; a regra passa a ser obrigatória no ADR do gateway | **Respondida em 2026-11-05: A** (adiado) |
+| P76 | Como rodar o Lighthouse? | **A)** Manual, no Chrome (DevTools), sobre o build de produção local, em modo celular, mediana de 3 execuções; relatório resumido no plano; a regressão automática fica com o `medir:pacote --web-vitals` (sem dependência). **B)** Lighthouse CI (`@lhci/cli`) como dependência de desenvolvimento, com notas mínimas, local agora e no CI na etapa 9 (dependência grande). **C)** `npx lighthouse` sem instalar (versão não fixada; rejeitada por segurança) | **A** agora; B na etapa 9, se quiser a nota no CI | **Respondida em 2026-11-05: A** (manual, mediana de 3) |
+| P77 | Medir os Core Web Vitals dos visitantes reais (`useReportWebVitals`)? | **A)** Não agora: não há destino para os dados e a coleta precisa de aviso de privacidade; só medidas de laboratório. Reavaliar na etapa 9 (por exemplo, Vercel Speed Insights, com ADR). **B)** Componente mínimo que envia as medidas para uma rota do próprio site, que só registra no log da hospedagem (≈ 1 kB a mais em todas as páginas, dado de navegação, LGPD). **C)** Só imprimir no console fora de produção (pouco útil) | **A** | **Respondida em 2026-11-05: A** (sem `useReportWebVitals` agora) |
+| P78 | Cobertura dos testes de unidade | **A)** `@vitest/coverage-v8` (ADR-0014), relatório e limites mínimos só em `lib/` e `data/`, fixados no valor medido arredondado para baixo (só podem subir). **B)** Só o relatório, sem limite. **C)** Sem ferramenta de cobertura | **A** | **Respondida em 2026-11-05: A** (`@vitest/coverage-v8` com catraca em `lib/` e `data/`) |
+| P79 | Regressão visual: as capturas mudam entre Windows e Linux (fontes e suavização). Onde gerar as imagens de referência? | **A)** No Linux, dentro da imagem Docker oficial do Playwright (mesma versão, 1.64.1), igual ao CI; você roda pelo Docker Desktop no Windows; no CI na etapa 9. **B)** No seu Windows, rodando só no seu computador (não serve para o CI). **C)** Sem regressão visual automática; o `guardiao-do-design` continua comparando à mão. **D)** Geradas pelo próprio GitHub Actions (um *workflow* manual que gera e entrega as imagens para você revisar e commitar), sem Docker no seu computador | **A**, se puder instalar o Docker Desktop; senão **D** | **Respondida em 2026-11-05: A** (Docker local com a imagem oficial do Playwright). **Ação do dono:** instalar o Docker Desktop antes da tarefa 19; se não puder, plano B = **D** |
+| P80 | Ao clicar no botão de atendimento antes de o painel terminar de baixar, nada aparece até ele chegar (raro: o download começa sozinho logo após a página carregar) | **A)** Sem texto nem cor nova: o botão recebe `aria-busy` (o leitor de tela anuncia "ocupado") e o cursor de espera enquanto baixa. **B)** Texto curto visível perto do botão, só se a espera passar de 300 ms (texto novo, a escrever: até lá `[A DEFINIR: texto de carregamento do atendimento]`). **C)** Nada | **A** | **Respondida em 2026-11-05: A** (`aria-busy` e cursor de espera) |
+| P81 | A borda do campo de mensagem do chat (`--pedra-clara` sobre `--cave`) tem contraste ≈ 1,9:1; a WCAG pede 3:1. O D2 manteve essa cor nos campos do checkout | **A)** O D2 vale também para o chat: manter e registrar como desvio da §14. **B)** Trocar a borda de **todos** os campos para `--placeholder` (#8C8070), cor que já está na paleta: ≈ 4,9:1 sobre `--cave` e 4,47:1 sobre `--carvao` (revoga o D2; o visual dos campos fica mais claro). **C)** Cor nova ≈ #7A6E60 só para campos (fora da paleta da §3.1) | **B**: atende a WCAG sem cor nova; **A** se preferir manter o visual da spec | **Respondida em 2026-11-05: B** (`--placeholder` na borda de todos os campos; **revoga o D2**, ver [registro](#revogação-do-d2-pelo-p81-2026-11-05)) |
+| P82 | Links da trilha ("Início / Queijos / …"): o texto de 13 px dá um alvo menor que 24 × 24 px (WCAG 2.5.8) | **A)** Zona de toque invisível que leva cada link a pelo menos 24 × 24 px, sem mudança visual (mesma técnica do painel na etapa 6); links seguem sem sublinhado (a trilha é reconhecida pela estrutura e pelo item atual). **B)** A + sublinhar os links da trilha (muda o visual). **C)** Aumentar fonte ou espaçamento visível da trilha (muda medida da spec) | **A** | **Respondida em 2026-11-05: A** (zona de toque invisível ≥ 24 × 24 px) |
+| P83 | O aviso "abre em nova aba" dos links do WhatsApp existe hoje só para leitor de tela (P49). Mostrar também para quem enxerga? | **A)** Não: o rótulo e o ícone já dizem que é o WhatsApp, e no celular o link abre o aplicativo. **B)** Ícone de "sai do site" ao lado do texto (ícone novo, fora da §4.10). **C)** Texto visível curto ao lado do botão (texto novo, a escrever) | **A** | **Respondida em 2026-11-05: A** (sem aviso visual; nada muda) |
+| P84 | Textos que você ainda não escreveu, herdados da etapa 6: o que dizer depois que o assistente põe o queijo na sacola (`depoisDaAcao`), uma mensagem se o painel não carregar, e o texto da aba Queijista sem número | **A)** Seguem como estão: lacunas visíveis (`[A DEFINIR: …]`), erro do painel sem mensagem (o texto digitado fica e a próxima abertura tenta de novo), aba sem número só com o horário; a trava do P73 impede publicar com elas; você escreve quando quiser. **B)** Você escreve agora e a etapa 8 aplica (tarefa 11). **C)** Para o erro do painel, reaproveitar um texto que já existe na spec (nenhum se encaixa bem; não recomendado) | **A**: não bloqueia a etapa, e a trava garante que nada vai ao ar sem os textos | **Respondida em 2026-11-05: variante do C.** O arquiteto propõe os três textos e o dono escolhe ([propostas](#propostas-de-texto-p84-aguardando-aprovação)); até a escolha, seguem como lacuna (`depoisDaAcao` com `[A DEFINIR: …]`; erro do *chunk* e aba sem número sem texto, como hoje). Para estes três textos, o dono suspende a regra do P52 "o agente não propõe texto" |
 
 O `app/global-error.tsx` próprio **não** é pergunta: o dono já recusou (ADR-0012, atualização de 2026-11-05).
+
+### Revogação do D2 pelo P81 (2026-11-05)
+
+**Decisão do dono:** P81 = B. A borda de **todos os campos** passa de `1px solid var(--pedra-clara)` para `1px solid var(--placeholder)` (#8C8070, cor que já está na paleta da §3.1). **Revoga o D2** (2026-11-03, "manter `--pedra-clara`"). A spec não é editada; a mudança vira desvio aprovado para o checklist da §14.
+
+- **Motivo:** WCAG 1.4.11 (contraste de componentes ≥ 3:1). `--pedra-clara` dá ≈ 1,9:1 sobre `--cave`; `--placeholder` dá ≈ 4,9:1 sobre `--cave` e 4,47:1 sobre `--carvao`.
+- **O que é "campo"** (muda): elementos onde se digita ou escolhe um valor de formulário: e-mail da newsletter (§5.9, fundo `--carvao`), CEP do produto (§7.2), todos os `input`, `textarea` e `select` do checkout (incluindo CEP e mensagem do cartão) e o campo de mensagem do chat (§8.2).
+- **O que não é campo** (continua `--pedra-clara`, como na spec): botão secundário e chips de opção (§4.4), respostas rápidas do chat (§8.2), seletor de quantidade (§7.2, que a spec descreve à parte), **Girar**, **Aproximar** e o indicador POR DENTRO / PEÇA INTEIRA (§7.2), opções de pagamento do checkout (cartões de escolha, não campos de texto).
+- **Pontos de interpretação a confirmar pelo dono (não bloqueiam; padrão = manter `--pedra-clara`):** seletor de quantidade e opções de pagamento. Se o dono quiser os dois também em `--placeholder`, é a mesma tarefa.
+- **Cuidado na implementação (tarefa 11):** o token `--borda-campo` (`app/globals.css`) hoje também é usado por `components/QuantityStepper.module.css` e pelas respostas rápidas (`.resposta` em `components/SupportPanel.module.css`). Trocar `--borda-campo` sozinho mudaria controles que não são campos: os dois passam a usar `1px solid var(--pedra-clara)` (ou um token próprio de controle) **antes** de `--borda-campo` virar `--placeholder`. O token `--pedra-clara` não muda. Estados de foco (dourado) e de erro não mudam.
+- **Testes afetados:** hoje nenhum teste (Vitest ou e2e) confere a cor da borda dos campos, então nenhum teste existente quebra. A tarefa 11 acrescenta o e2e das duas cores (seção de testes). As *baselines* da tarefa 19 ainda não existem e já são geradas com a borda nova (o bloco D vem antes do F). O `guardiao-do-design` confere Home (newsletter), produto (CEP), checkout e painel.
+- **Onde foi atualizado:** tabela de decisões (D2 marcado como revogado), [Tarefas geradas por estas decisões](#tarefas-geradas-por-estas-decisões) (desvio do checklist), nota do bloco B da etapa 5, pendência 4 da verificação do bloco B da etapa 6, mapa da herança, acessibilidade, testes, tarefa 11 e critérios de pronto desta etapa. O `CHANGELOG.md` da etapa 4 (que cita o D2) é histórico e não é reescrito; o fechamento da etapa 8 registra a revogação.
+
+### Desvios para o checklist da §14 (etapa 8)
+
+| Onde | Desvio ou acréscimo | Decisão |
+| --- | --- | --- |
+| §3.3, §5.9, §7.2 (CEP), §8.2 (campo) e campos do checkout | Borda dos campos em `--placeholder` em vez de `--pedra-clara` | P81 = B (revoga o D2) |
+| Gatilho do painel de atendimento | Cursor de espera e `aria-busy` só enquanto o *chunk* baixa | P80 = A |
+| Trilha | Zona de toque invisível ≥ 24 × 24 px (nada visível muda) | P82 = A |
+| Imagem de compartilhamento e ícone (a spec não define) | Gerados só com elementos do Apêndice A (A.2 e A.1) e cores da §3.1, sem texto | P70 = A |
+| Description de `/produtores` | Só a primeira frase literal da §12 (metadado, nada visível muda) | P72 (a) = A |
+| Textos do P84 | Textos novos, a registrar aqui quando o dono escolher | P84 (variante do C) |
+
+### Propostas de texto (P84), aguardando aprovação
+
+O dono pediu (P84, 2026-11-05) que o arquiteto proponha os três textos e ele escolha. **Nada disto está no código.** Até a escolha, seguem como lacuna: `depoisDaAcao` continua `[A DEFINIR: texto depois de pôr na sacola]` em `TEXTOS_DO_ROTEIRO` (e a trava do P73 o lista), e o erro do *chunk* e a aba sem número continuam sem texto, como hoje. A spec não tem uma seção de tom de voz; as propostas seguem o registro dos textos literais da §8 (assistente e WhatsApp), da §10 (sacola e checkout) e da §12: frases curtas, segunda pessoa, gentis e diretas, sem jargão nem superlativo, e só prometem o que o site faz. Responda com o número (ex.: "1.2, 2.1, 3.1"), peça ajuste ou escreva o seu.
+
+**1. `depoisDaAcao`** — no chat, logo depois de a pessoa escolher o formato do Canastra curado para presente (P46 = C). Em seguida aparecem a confirmação **Adicionado à sacola. Boa escolha.** (§7.5) e as respostas rápidas iniciais, por isso nenhuma proposta repete "boa escolha". A mensagem do cartão é escrita no checkout (§10.2, até 200 caracteres).
+
+- **1.1** Pronto, vai com embalagem de presente. A mensagem do cartão você escreve no checkout, com até 200 caracteres. Posso ajudar em mais alguma coisa?
+- **1.2** Separado para presente, com embalagem e cartão. As palavras do cartão ficam com você: é só escrevê-las no checkout. Quer ver mais alguma coisa da cave?
+
+**2. Erro ao carregar o atendimento** — quando o *chunk* do painel não baixa (sem rede, versão nova publicada): hoje o painel fecha, o foco volta ao botão e a próxima abertura tenta de novo (ADR-0012). O mesmo texto serve para a falha do motor do assistente com o painel aberto (o texto digitado continua no campo).
+
+- **2.1** Não conseguimos abrir o atendimento agora. Confira sua conexão e tente de novo em instantes.
+- **2.2** O atendimento não carregou desta vez. Tente de novo em instantes; se continuar, recarregue a página.
+
+Onde aparece (a decidir junto com a escolha; sugestão sem visual novo): com o painel fechado, na mesma região de aviso do **Adicionado à sacola. Boa escolha.**, com `role="status"`; com o painel aberto, como mensagem do assistente no `role="log"`.
+
+**3. Aba Queijista (WhatsApp) sem número configurado** — hoje a aba mostra só o horário, sem botão, e a faixa "Prefere falar com uma pessoa?" some. Só acontece se o número faltar na configuração.
+
+- **3.1** O atendimento pelo WhatsApp não está disponível por aqui no momento. O Assistente do Ateliê responde na hora, 24 horas.
+- **3.2** O WhatsApp do Ateliê não está disponível por aqui agora. Se quiser, volte para a aba Assistente: ele responde na hora, 24 horas.
+
+Sugestão de uso: dentro do horário, o texto escolhido aparece abaixo da linha do horário; com a cave fechada, fica só o texto literal da §8.3 (**Nossa cave está fechada agora. …**), que já indica o Assistente, para não repetir a mesma ideia duas vezes. "Responde na hora, 24 horas" é o texto da §8.1.
+
+**Ao aprovar:** o `frontend-nextjs` (com o `especialista-em-ia-conversacional` no `depoisDaAcao`) aplica os textos na tarefa 11 ou numa tarefa própria pequena; o comentário de `lib/roteiro.ts` que diz "O agente não propõe texto" passa a citar a exceção do P84; os testes que exigem `[A DEFINIR` no `depoisDaAcao` (`lib/roteiro.test.ts`, "os 13 textos novos continuam como lacuna") são atualizados; o `depoisDaAcao` só aparece quando a ação de pôr na sacola teve sucesso (conferir no provider, que hoje acrescenta a confirmação só no sucesso); a linha "Textos do P84" da tabela de desvios recebe os textos finais.
 
 ### Herança original da etapa 4 (cópia, para referência)
 
@@ -2813,7 +2875,7 @@ Continuam como lacuna, por decisão do dono: dados dos 9 queijos sem ficha (`[A 
 | # | Decisão |
 | --- | --- |
 | D1 | Commits **sem** `Co-Authored-By` e sem menção ao Claude (vale o `CLAUDE.md`). Só o dono como autor. |
-| D2 | Borda dos campos: **manter** `--pedra-clara` (cor da spec); desvio registrado no checklist da §14 (P18). |
+| D2 | ~~Borda dos campos: **manter** `--pedra-clara` (cor da spec); desvio registrado no checklist da §14 (P18).~~ **Revogado em 2026-11-05 pelo P81 = B** (etapa 8): a borda de todos os campos passa a `--placeholder` ([registro](#revogação-do-d2-pelo-p81-2026-11-05)). |
 | D3 | Botão desabilitado e pendente: subir a opacidade de `.5` para **`.65`** (revoga o `.5` do P19). Reconferir o contraste do foco. |
 | D4 | Confirmação do pedido mostra **Pedido nº AQ-…** acima do título (revoga o P36; desvio da §10.2 registrado no checklist). |
 | D5 | Tipografia do checkout (h2 28 px, resumo de erros 18 px, **Resumo do pedido** 22 px, legenda 12 px com `0,14em`): **aprovada**; registrar no checklist. |
@@ -2858,7 +2920,7 @@ Continuam como lacuna, por decisão do dono: dados dos 9 queijos sem ficha (`[A 
 | ADR do `@google/model-viewer` | `arquiteto-de-software` | Início da etapa 5 — **Escrito e aceito em 2026-11-03** ([ADR-0009](adr/0009-visualizador-3d-com-model-viewer.md), Aceito) |
 | ADR da hospedagem (Vercel) e ADR do gateway (Mercado Pago) | `arquiteto-de-software`, `auditor-de-seguranca` | Etapa 9 |
 | Rascunho do aviso de privacidade | `auditor-de-seguranca` + `documentador-tecnico` | Etapa 9 |
-| Checklist da §14 com os desvios D2, D4, D5, D6 e o item "trocar dados fictícios": remover `DADOS_FICTICIOS_ATIVOS` e a trava do `next.config.ts` ao trocar os dados, e atualizar junto os testes unitários e e2e que citam os valores fictícios (CNPJ, endereço, frete, parcelas, produtor, ano) | `documentador-tecnico` | Etapa 9 |
+| Checklist da §14 com os desvios D4, D5, D6, a borda dos campos do P81 = B (substitui o D2, revogado em 2026-11-05) e o item "trocar dados fictícios": remover `DADOS_FICTICIOS_ATIVOS` e a trava do `next.config.ts` ao trocar os dados, e atualizar junto os testes unitários e e2e que citam os valores fictícios (CNPJ, endereço, frete, parcelas, produtor, ano) | `documentador-tecnico` | Etapa 9 |
 
 ---
 

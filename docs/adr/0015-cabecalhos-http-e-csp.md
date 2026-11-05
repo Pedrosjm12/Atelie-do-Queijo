@@ -1,7 +1,7 @@
 # ADR-0015 — Cabeçalhos HTTP de segurança e política de conteúdo (CSP)
 
-- **Status:** Proposto (aguarda a resposta do dono à pergunta P68 do `docs/PLANO.md`; a decisão abaixo é a opção recomendada, A)
-- **Data:** 2026-11-05
+- **Status:** Aceito (aprovado pelo dono em 2026-11-05: P68 = A do `docs/PLANO.md`, CSP estática com `'unsafe-inline'`)
+- **Data:** 2026-11-05 (proposto e aceito)
 - **Contexto da etapa:** 8 (rodada de qualidade; segurança)
 
 ## Contexto
@@ -26,7 +26,7 @@ Estado que pesa na escolha:
    - `Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()`;
    - `X-Frame-Options: DENY` (complemento do `frame-ancestors 'none'` para navegadores antigos);
    - `poweredByHeader: false`.
-2. **CSP estática, sem nonce:**
+2. **CSP estática, sem nonce, com `'unsafe-inline'` em `script-src` e `style-src`** (P68 = A, decidido pelo dono):
    `default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'`, mais `upgrade-insecure-requests` **só com `VERCEL_ENV=production`**. Em `next dev`, `script-src` ganha `'unsafe-eval'` (o React usa `eval` só em desenvolvimento, segundo a documentação).
    O ganho real, mesmo com `'unsafe-inline'`: nenhum script ou recurso de outro domínio, nenhum `<object>`, nenhum `<base>` injetado, formulários só para o próprio site, nenhuma moldura de outro site (clickjacking) e `connect-src` fechado (dados não saem para outro domínio por `fetch`).
 3. **Aplicada direto (não `Report-Only`).** Não há destino para relatórios de violação (seria coletar dados de navegação, com LGPD); a garantia vem dos e2e, que já falham com qualquer erro no console, e uma violação de CSP aparece no console.
@@ -46,4 +46,6 @@ Estado que pesa na escolha:
 - Qualquer recurso externo novo (fonte, script, imagem de CDN, análise) passa a exigir mudança explícita em `lib/cabecalhos.ts`, revisada pelo `auditor-de-seguranca`.
 - O JSON-LD (`<script type="application/ld+json">`) é bloco de dados, não é executado, e não é afetado pela política; o texto continua escapado (`<` como `<`).
 - Os e2e passam a conferir os cabeçalhos em uma página estática, uma dinâmica (`/queijos`), o checkout (Server Action) e a 404, e a ausência de `X-Powered-By`.
-- `'unsafe-inline'` em `script-src` é uma fraqueza conhecida e aceita até o ADR do gateway.
+- `'unsafe-inline'` em `script-src` é uma fraqueza conhecida, **aceita pelo dono em 2026-11-05** (P68 = A) até o ADR do gateway: a política não bloqueia um script *inline* injetado. A defesa contra isso continua sendo não refletir entrada de usuário no HTML (React escapa tudo; `dangerouslySetInnerHTML` só em `components/DadosEstruturados.tsx`, com `<` escapado, conferido pelo `revisor-de-codigo`).
+- A imagem de compartilhamento (`app/opengraph-image.tsx`, `next/og`, P70 = A) e o ícone (`app/icon.svg`) são servidos pelo próprio site: `img-src 'self'` basta, sem domínio novo. Os buscadores e as redes que leem a imagem não são afetados pela CSP (ela vale só para páginas abertas no navegador).
+- Respostas relacionadas da mesma rodada: o limite de taxa nas Server Actions fica **adiado** (P75 = A) e entra junto com esta revisão, no ADR do gateway; a `NEXT_PUBLIC_SITE_URL` é obrigatória e `https` em produção (P69 = A), o que mantém o `upgrade-insecure-requests` coerente com a URL canônica.
