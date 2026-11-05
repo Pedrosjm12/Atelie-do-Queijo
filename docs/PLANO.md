@@ -1,13 +1,13 @@
 # Plano de implementação — Ateliê do Queijo
 
 > Fonte da verdade: `ATELIE-DO-QUEIJO-SPEC.md`. Decisões técnicas: `docs/adr/`.
-> Última atualização: 2026-11-05 (fechamento da etapa 6). Etapas 1, 2, 3, 4, 5 e 6 **concluídas**; etapa 7 **a detalhar**. A loja segue **simulada**.
+> Última atualização: 2026-11-05 (detalhamento da etapa 7). Etapas 1, 2, 3, 4, 5 e 6 **concluídas**; etapa 7 **detalhada**, aguardando as respostas P53 a P67. A loja segue **simulada**.
 >
 > **AVISO: dados de negócio fictícios** (WhatsApp, CNPJ, endereço, frete, parcelas, produtor) estão em `data/ficticio.ts` e **precisam ser trocados antes da publicação**; o build de produção na Vercel falha enquanto a trava existir. Ver [Decisões do dono de 2026-11-03](#decisões-do-dono-de-2026-11-03-d1-a-d34).
 >
-> **RETOMADA (2026-11-05): a etapa 6 está concluída e a próxima é a etapa 7 (Presentes, Aprenda, Produtores e 404, textos da §12), ainda a detalhar** pelo `arquiteto-de-software`. O painel de atendimento tem assistente determinístico, horário em `America/Sao_Paulo` e links do WhatsApp ([ADR-0010](adr/0010-assistente-deterministico-e-whatsapp.md)); ver [Etapa 6](#etapa-6--assistente-com-roteiro-determinístico-horário-e-links-do-whatsapp).
+> **RETOMADA (2026-11-05): a etapa 6 está concluída e a etapa 7 (Presentes, Aprenda, Produtores e 404, textos da §12) está detalhada**, com [ADR-0011](adr/0011-paginas-de-conteudo-e-404.md) (Proposto) e as [perguntas P53 a P67](#perguntas-ao-dono-etapa-7) aguardando o dono; ver [Etapa 7](#etapa-7--páginas-restantes-presentes-aprenda-produtores-e-404). Hoje `/presentes`, `/aprenda` e `/produtores` não existem (menu, rodapé e Home levam à 404 padrão do Next, em inglês) e não há `app/not-found.tsx`.
 >
-> - **Próximo passo:** o `arquiteto-de-software` detalha a etapa 7 (tarefas, contratos, perguntas ao dono). **Pedir orçamento** de `/presentes` usa `LinkDoWhatsApp` com `{ tipo: 'corporativo' }` (já existe em `lib/whatsapp.ts`).
+> - **Próximo passo:** o dono responde P53 a P67; enquanto isso, o `frontend-nextjs` pode fazer as tarefas 1 e 2 do bloco A (dados de kits, artigos e produtores; cartões e cabeçalho compartilhados, sem mudança visual). A tarefa 3 (404) depende de P64 e P65. **Pedir orçamento** de `/presentes` usa `LinkDoWhatsApp` com `{ tipo: 'corporativo' }` (já existe em `lib/whatsapp.ts`). Commit deste detalhamento: `docs: detalha a etapa 7 e registra o ADR-0011` (ainda não feito).
 > - **Estado:** etapa 6 publicada nos commits `a744972` (bloco A) e `a37640c` (bloco B); ver [Commits da etapa 6](#commits-da-etapa-6). A etapa 5 está nos commits `92fb989` e `a990e3a`. **Nenhum queijo tem GLB**: o bloco C da etapa 5 (hero da Home e giro no cartão) segue **pendente, só com o 1º GLB** (P40 = B).
 > - **Lacunas do dono que seguem visíveis:** os 12 textos do assistente e o aviso de nova aba (`[A DEFINIR: …]`, P52) em `TEXTOS_DO_ROTEIRO` (`lib/roteiro.ts`) e `AVISO_DE_NOVA_ABA` (`lib/whatsapp.ts`). Como editar: [`docs/conteudo.md`](conteudo.md#assistente-horário-e-whatsapp). Pendências do bloco B (nova aba para quem enxerga, `depoisDaAcao`, erro do chunk, contraste da borda do campo, aba sem número) em [Verificação do bloco B](#verificação-do-bloco-b-etapa-6-correções-aplicadas-e-pendências).
 > - **Publicação (etapa 9):** o número do WhatsApp é resolvido só no servidor; publicar **somente na Vercel** ou garantir `VERCEL_ENV=production`, e conferir que `5520900000000` não aparece em `.next/static`. A etapa 9 também precisa de trava de build ou teste de CI que falhe em produção com `[A DEFINIR` em `TEXTOS_DO_ROTEIRO`, e de validação profissional do texto de saúde. Ver [`docs/ambiente.md`](ambiente.md).
@@ -36,11 +36,11 @@ Convenções deste plano:
 | 4 | Sacola (contexto + `localStorage`), frete simulado e checkout simulado em `lib/commerce.ts` | `engenheiro-de-ecommerce`, `frontend-nextjs`, `auditor-de-seguranca` | **Concluída** ([detalhe](#etapa-4--sacola-frete-simulado-e-checkout-simulado)); P24 a P38 decididos em 2026-10-27 e implementados; commits `48e6ebe` a `b06c604` |
 | 5 | Visualizador 3D (`CheeseViewer` com `@google/model-viewer`) e fallback SVG do Apêndice A | `especialista-3d-webgl` | **Concluída** ([detalhe](#etapa-5--visualizador-3d-com-fallback-svg)); blocos A e B publicados (`92fb989`, `a990e3a`), [ADR-0009](adr/0009-visualizador-3d-com-model-viewer.md) Aceito. **Bloco C pendente, só com o 1º GLB** |
 | 6 | Assistente com roteiro determinístico, horários e links do WhatsApp no painel de atendimento | `especialista-em-ia-conversacional`, `frontend-nextjs` | **Concluída** ([detalhe](#etapa-6--assistente-com-roteiro-determinístico-horário-e-links-do-whatsapp)); blocos A e B publicados (`a744972`, `a37640c`), [ADR-0010](adr/0010-assistente-deterministico-e-whatsapp.md) Aceito; P44 a P52 decididos em 2026-11-03. Os textos do P52 seguem como `[A DEFINIR: …]` até o dono escrever |
-| 7 | Páginas restantes: Presentes, Aprenda, Produtores, 404 (textos da §12) | `frontend-nextjs` | **Próxima.** A detalhar |
+| 7 | Páginas restantes: Presentes, Aprenda, Produtores, 404 (textos da §12) | `frontend-nextjs`, `guardiao-do-design`, `especialista-em-acessibilidade` | **Próxima. Detalhada** ([detalhe](#etapa-7--páginas-restantes-presentes-aprenda-produtores-e-404)); [ADR-0011](adr/0011-paginas-de-conteudo-e-404.md) Proposto; 4 blocos (A a D); P53 a P67 aguardam o dono |
 | 8 | Rodada de qualidade: testes, acessibilidade, performance e SEO, segurança | `testes-e-qualidade`, `especialista-em-acessibilidade`, `performance-e-seo`, `auditor-de-seguranca` | A detalhar; herda itens da etapa 4 ([seção](#etapa-8--rodada-de-qualidade-herança-da-etapa-4) e [lista](#fica-para-depois-segurança-e-lgpd)) |
 | 9 | CI completo, ambientes e checklist de aceite da §14 | `devops-e-deploy`, `documentador-tecnico` | A detalhar; herda itens da etapa 4 ([seção](#etapa-9--ci-completo-ambientes-e-aceite-herança-da-etapa-4) e [lista](#fica-para-depois-segurança-e-lgpd)) |
 
-As etapas 7 a 9 serão detalhadas pelo `arquiteto-de-software` no início de cada uma.
+As etapas 8 e 9 serão detalhadas pelo `arquiteto-de-software` no início de cada uma.
 
 ---
 
@@ -1864,7 +1864,7 @@ Cada tarefa termina com `lint`, `typecheck`, `format:check`, `test`, `modelos:va
 | Docs | Este detalhamento e o ADR-0010 | `docs: detalha a etapa 6 e registra o ADR-0010` | **Publicado** (`3da1c16`) |
 | A | Tarefas 1 a 4 | `feat(atendimento): adiciona o roteiro do assistente e as regras do WhatsApp` | **Publicado** (`a744972`) |
 | B | Tarefas 5 a 8 | `feat(atendimento): liga o assistente, o horário e os links do WhatsApp` | **Publicado** (`a37640c`) |
-| Docs | Tarefa 9 | `docs: fecha a etapa 6` | Escrito em 2026-11-05; a publicar (sessão principal) |
+| Docs | Tarefa 9 | `docs: fecha a etapa 6` | Publicado (`2b2922d`) |
 
 ### Critérios de pronto da etapa 6
 
@@ -1962,7 +1962,313 @@ Também para o checklist da etapa 9 (não é código): configurar no WhatsApp Bu
 
 ---
 
+## Etapa 7 — Páginas restantes: Presentes, Aprenda, Produtores e 404
+
+**Objetivo:** dar destino real a todos os links do menu, do rodapé e da Home (spec §10.5) com as páginas da §12 (`/presentes`, `/aprenda`, `/produtores` e a 404), montadas só com os componentes, tokens e espaçamentos que já existem, com os textos literais da spec e as lacunas visíveis.
+
+**Situação: detalhada em 2026-11-05; aguarda as respostas do dono às [perguntas P53 a P67](#perguntas-ao-dono-etapa-7).** O bloco A pode começar antes das respostas (só a 404 depende de P64 e P65); os blocos B, C e D dependem das perguntas indicadas em cada tarefa.
+
+**Pré-requisito:** etapa 6 concluída (`a744972`, `a37640c`, `2b2922d`).
+
+**Decisões:** [ADR-0011](adr/0011-paginas-de-conteudo-e-404.md) (**Proposto**: conteúdo em `data/`, páginas estáticas só no servidor, artigos em rota estática, sem filtros por ora, `app/not-found.tsx`, `classesDoBotao` para link externo, JSON-LD na etapa 8, sem dependência nova). Herdadas: P13 (padrão de `<title>`), D9 (texto da nota fiscal do presente), D18 (itens de Ajuda do rodapé sem link), D29 (produtor fictício), P49 (WhatsApp em nova aba), [ADR-0010](adr/0010-assistente-deterministico-e-whatsapp.md) (número só no servidor; sem número, nenhum link `wa.me`).
+
+**Skills:** antes de cada tarefa, conferir o mapa em `SKILLS-ATELIE-DO-QUEIJO.md` (`vercel-composition-patterns` para os cartões extraídos, `vercel-react-best-practices` para manter tudo no servidor, `seo` para os metadados, `accessibility` e `web-design-guidelines` na verificação). A `vercel-react-view-transitions`, listada como opcional para a etapa 7, **fica fora**: não está na spec e soma risco sem caso de uso. A spec vence em caso de conflito.
+
+### Estado atual dos links e das rotas (fim da etapa 6)
+
+Nenhuma das três rotas existe em `app/`, e não há `app/not-found.tsx`. Hoje todos os links abaixo levam à 404 padrão do Next, **em inglês** ("This page could not be found."), dentro do layout do site.
+
+| Onde | Link | Destino hoje | Muda na etapa 7 |
+| --- | --- | --- | --- |
+| Menu principal (`components/navegacao.ts`, desktop e celular) | Presentes · Aprenda · Nossos produtores | `/presentes`, `/aprenda`, `/produtores` (404) | Nenhum código muda: as rotas passam a existir. O `aria-current` já cobre subrotas (`startsWith`), então `/aprenda/<slug>` destaca **Aprenda** |
+| Rodapé, LOJA | Presentes | `/presentes` (404) | Rota passa a existir |
+| Rodapé, LOJA | Presentes corporativos | `/presentes` (404) | **Muda** para `/presentes#presentes-corporativos` (âncora do bloco corporativo) |
+| Rodapé, ATELIÊ | Sobre · Nossos produtores | `/produtores` (404), os dois | Rota passa a existir; os dois continuam no mesmo destino (comentário do `Footer.tsx`) |
+| Rodapé, ATELIÊ | Escola do Ateliê | `/aprenda` (404) | Rota passa a existir |
+| Rodapé, AJUDA | Entregas refrigeradas · Trocas e devoluções · Perguntas frequentes | Texto sem link (D18) | Nada muda |
+| Home, hero | **Montar um presente** | `/presentes` (404) | Rota passa a existir |
+| Home, §5.7 | **Ver todos os presentes →** | `/presentes` (404) | Rota passa a existir |
+| Home, §5.8 | Os três artigos (link inteiro) | `/aprenda` (404), os três | **Muda** para `/aprenda/<slug>` de cada artigo (se P59 = A) |
+| `/queijos/<slug inexistente>` | `notFound()` | 404 padrão em inglês | Passa a mostrar a 404 da §12 |
+| `e2e/_apoio/console.ts` | Filtro `ROTA_AINDA_INEXISTENTE` | Ignora os 404 de *prefetch* das três rotas | **Sai** (cada rota é tirada do filtro no bloco que a cria; o filtro inteiro some no bloco D) |
+
+### Escopo: o que entra e o que fica para depois
+
+| Item da spec | Etapa 7 | Depois |
+| --- | --- | --- |
+| Topo das páginas (§12: "mesmos cabeçalhos de seção") | Padrão do topo do catálogo (§6): sobretítulo (se houver, P53) + h1 (64 px, 38 px ≤ 768 px) + parágrafo 18 px `--palha`; contêiner `padding: 64px 32px 112px` | — |
+| **Presentes**: título **Para quem merece uma boa tábua.** | h1 literal, sem `<em>` (a spec não marca ênfase nesse título) | — |
+| **Presentes**: kits | Os três kits da §5.7 (**Primeira Degustação**, **Volta ao Mundo**, **Grande Cave**) com o mesmo cartão da Home, preço **R$ [PREÇO]**, sem botão (P55) | Mais kits, preços e página de kit quando o dono definir |
+| **Presentes**: filtros Ocasião · Faixa de preço · Tamanho (2 a 7 queijos) | Conforme P54 (recomendação: nenhum visível agora, desvio registrado na §14) | Com dados de ocasião e preço, no padrão do catálogo (`?parametro=` no servidor) |
+| **Presentes**: "Em todo kit: …" | Bloco com os quatro itens, conforme P56 | — |
+| **Presentes**: bloco corporativo + **Pedir orçamento** | Texto literal com a lacuna **[n]**; **Pedir orçamento** = `LinkDoWhatsApp` com `{ tipo: 'corporativo' }` (mensagem **Olá! Quero um orçamento de presentes para empresa.**), nova aba (P49); aparência conforme P57; sem número, conforme P58 | — |
+| **Aprenda**: título **Escola do Ateliê** e categorias | h1 literal; categorias **Primeiros passos · Harmonização · Servir e guardar · Regiões e produtores** conforme P61 | — |
+| **Aprenda**: artigos | Os três da §5.8, com o cartão da Home; página de artigo conforme P59 (corpo `[TEXTO DO ARTIGO]`) | Textos reais; MDX só com ADR, se os textos forem longos |
+| **Aprenda**: "Cada artigo termina com os queijos citados" (`ProductCard`) | Conforme P60 (recomendação: lacuna até o dono escolher) | — |
+| **Produtores**: título **Quem faz o queijo importa.** e texto | h1 e parágrafo literais | — |
+| **Produtores**: grade (foto, nome, região, "desde [ano]", link para os queijos) | Conforme P62 e P63 (recomendação: só o produtor do Canastra, fictício pelo D29, com link para o queijo) | Demais produtores quando o dono informar; página de produtor |
+| **404**: **Esta página foi maturar em outro lugar.** + **Volta para a cave** (→ `/`) | `app/not-found.tsx` para URLs sem rota e para `notFound()`; status 404; `noindex` automático do Next; conforme P64 e P65 | — |
+| §7.4 Abaixo da dobra do produto (P10 dizia "rever na etapa 7") | Conforme P67 (recomendação: continua fora) | Quando houver produtos de acompanhamento e avaliações reais |
+| SEO: `<title>` e description | `metadata` por página, conforme P66 | — |
+| SEO: JSON-LD, sitemap, `metadataBase`, canônicas | **Fora** (ADR-0011, decisão 8): nenhum tipo teria dados verdadeiros hoje | Etapa 8 (`performance-e-seo`) |
+| Fotos reais | `PhotoPlaceholder` com `[FOTO: …]` (220 px nos kits, 200 px nos artigos, 240 px nos produtores) | `next/image` quando houver fotos |
+
+**Fora, por regra do projeto:** nenhuma dependência nova, nenhuma variável de ambiente nova, nenhum Client Component novo, nenhuma requisição de rede, nada gravado.
+
+### Contratos
+
+#### `data/kits.ts` (sai de `app/_home/Presentes.tsx`)
+
+```ts
+import type { Centavos } from '@/lib/dinheiro';
+
+export type IdDoKit = 'primeira-degustacao' | 'volta-ao-mundo' | 'grande-cave';
+
+export interface Kit {
+  id: IdDoKit;                 // chave estável (React key, âncora, futura sacola)
+  nome: string;                // §5.7, literal
+  descricao: string;           // §5.7, literal
+  /** null = lacuna "R$ [PREÇO]". Nunca 0. Nada com preço null vai para a sacola (etapa 4). */
+  preco: Centavos | null;
+}
+
+export const KITS: readonly Kit[];   // ordem da §5.7
+```
+
+- Se P54 for B ou C, o tipo ganha só o campo que o filtro escolhido usar (`quantidadeDeQueijos: 3 | 5 | 7`, `ocasioes`); nada antecipado.
+
+#### `data/artigos.ts` (sai de `app/_home/Escola.tsx`)
+
+```ts
+import type { SlugDoQueijo } from './cheeses';
+
+export type CategoriaDoArtigo = 'primeiros-passos' | 'harmonizacao' | 'servir-e-guardar' | 'regioes-e-produtores';
+
+/** Ordem e nomes literais da §12. O sobretítulo em MAIÚSCULAS vem do CSS do Overline. */
+export const CATEGORIAS: readonly { id: CategoriaDoArtigo; nome: string }[];
+
+export type SlugDoArtigo = 'como-montar-uma-tabua-de-queijos' | 'queijo-e-vinho' | 'como-guardar-queijo-na-geladeira';
+
+export interface Artigo {
+  slug: SlugDoArtigo;
+  titulo: string;                          // §5.8, literal
+  categoria: CategoriaDoArtigo;
+  foto: string;                            // descrição do [FOTO: …] da §5.8
+  /** null = lacuna "[TEXTO DO ARTIGO]". */
+  corpo: readonly string[] | null;
+  /** null = lacuna (P60). Lista não vazia quando o dono definir; o tipo impede slug fora do catálogo. */
+  queijosCitados: readonly [SlugDoQueijo, ...SlugDoQueijo[]] | null;
+}
+
+export const ARTIGOS: readonly Artigo[];   // ordem da §5.8
+export function obterArtigo(slug: string): Artigo | undefined;
+```
+
+- Os slugs dos artigos são técnicos (sem acento, a partir dos títulos da §5.8) e podem mudar sem afetar texto visível.
+
+#### `data/produtores.ts`
+
+```ts
+import type { SlugDoQueijo } from './cheeses';
+
+export interface Produtor {
+  id: string;
+  nome: string;          // igual ao `detalhe.produtor` dos queijos dele (teste de consistência)
+  regiao: string;        // texto visível, ex.: "Serra da Canastra, MG" (P62)
+  /** Texto do ano, sem o "desde": o componente monta "desde {ano}". Lacuna: "[ano]". */
+  desde: string;
+  foto: string;          // descrição do [FOTO: …]
+  queijos: readonly [SlugDoQueijo, ...SlugDoQueijo[]];
+}
+
+export const PRODUTORES: readonly Produtor[];
+```
+
+- Nome e ano do Canastra vêm de `PRODUTOR_CANASTRA_FICTICIO` e `ANO_PRODUTOR_CANASTRA_FICTICIO` (`data/ficticio.ts`), nunca copiados: a troca dos dados fictícios continua num lugar só.
+
+#### Componentes compartilhados (Server Components)
+
+```ts
+/** Topo de página (§6 e §12): sobretítulo opcional, h1 e parágrafo. O catálogo passa a usá-lo, sem mudança visual. */
+export function CabecalhoDePagina(props: {
+  sobretitulo?: string; titulo: ReactNode; paragrafo?: string; idDoTitulo?: string;
+}): JSX.Element;
+
+/** Cartão de kit da §5.7 (foto 220, h 28/600, texto 14 `--palha`, preço 600 `--ouro`). */
+export function CartaoDeKit(props: { kit: Kit; nivelDoTitulo: 'h2' | 'h3' }): JSX.Element;
+
+/** Item da Escola (§5.8): link inteiro com foto 200, sobretítulo `--mofo` e título 26/600. */
+export function CartaoDeArtigo(props: { artigo: Artigo; href: string; nivelDoTitulo: 'h2' | 'h3' }): JSX.Element;
+
+/** Trilha genérica (sai de app/queijos/[slug]/_produto/Trilha.tsx); o produto passa a montá-la com os mesmos itens. */
+export function Trilha(props: { itens: readonly { href: string; texto: string }[]; atual: string }): JSX.Element;
+```
+
+- `components/Button.tsx` passa a exportar `classesDoBotao(opcoes: { variante: 'principal' | 'secundario' | 'contorno' | 'link'; tamanho?: 'padrao' | 'compacto' }): string`, usada pelo `Button` e pelo `className` do `LinkDoWhatsApp` em **Pedir orçamento**. O `Button` em si não muda de comportamento.
+- `nivelDoTitulo`: na Home os cartões ficam sob um h2 de seção (h3); nas páginas novas, conforme a hierarquia de cada uma (ver Acessibilidade).
+- `CabecalhoDeSecao` continua em `app/_home/` (só a Home usa).
+
+#### `components/FocoNoConteudo.tsx` (ajuste)
+
+- Ao navegar para uma URL com `#âncora` (ex.: **Presentes corporativos** do rodapé), o foco vai para o elemento da âncora (com `tabIndex={-1}`) em vez de `#conteudo`, e a página rola até ele. Sem âncora, o comportamento atual não muda.
+
+#### Rotas
+
+| Arquivo | Renderização | Metadados |
+| --- | --- | --- |
+| `app/presentes/page.tsx` (+ `_presentes/BlocoCorporativo.tsx`) | Estática | `metadata` (P66) |
+| `app/aprenda/page.tsx` | Estática | `metadata` (P66) |
+| `app/aprenda/[slug]/page.tsx` (se P59 = A) | Estática: `generateStaticParams` de `ARTIGOS`, `dynamicParams = false`; slug desconhecido → 404 | `generateMetadata`: título do artigo (P66) |
+| `app/produtores/page.tsx` | Estática | `metadata` (P66) |
+| `app/not-found.tsx` | Server Component, no layout raiz (com cabeçalho, rodapé e botão de atendimento) | `metadata` com o título do P64; `noindex` injetado pelo Next |
+
+### Fronteiras Server/Client
+
+| Peça | Tipo | Motivo |
+| --- | --- | --- |
+| As quatro páginas, `BlocoCorporativo`, `CabecalhoDePagina`, `CartaoDeKit`, `CartaoDeArtigo`, `Trilha` | Server | Só texto e links |
+| `LinkDoWhatsApp` em **Pedir orçamento** | Client (já existe, já no pacote compartilhado pelo painel) | Lê o número do provider (ADR-0010) |
+| `ProductCard` → `BotaoAdicionar` nos queijos citados e na página de produtores (se houver cartões) | Client (já existe) | Sacola |
+| `FocoNoConteudo` | Client (já existe; ajuste da âncora) | Foco após navegação |
+
+Orçamento: **nenhum kB novo** no pacote compartilhado; o JavaScript inicial de cada rota nova é igual ao compartilhado (as rotas não importam nada client que o layout já não importe). Medido com `npm run medir:pacote`; a linha de base muda só porque a interseção passa a incluir as rotas novas.
+
+### Acessibilidade
+
+- **Um h1 por página**, o primeiro conteúdo de `<main>`; o `FocoNoConteudo` já leva o foco a `#conteudo` após a navegação.
+- **Hierarquia sem saltos:** Presentes: h1 → h2 de cada kit (`CartaoDeKit` com `nivelDoTitulo="h2"`) → h2 **Em todo kit** (P56) → h2 do bloco corporativo (P57). Aprenda: h1 → h2 de cada categoria (P61) → h3 dos artigos. Artigo: h1 → h2 da seção de queijos citados → h3 dos `ProductCard`. Produtores: h1 → h2 de cada produtor. 404: só o h1.
+- **Seções com `aria-labelledby`** apontando para o próprio h2; grades em `<ul>`; cada cartão em `<article>`.
+- **Link inteiro do artigo:** o nome acessível é o sobretítulo + o título (como na Home); a foto é `decorativa`.
+- **Pedir orçamento:** `<a>` real com o aviso de nova aba do `LinkDoWhatsApp` (P49); alvo ≥ 44 px; foco dourado visível sobre o fundo do bloco.
+- **Âncora do corporativo:** o foco vai para o bloco ao chegar por `#presentes-corporativos` (teste e2e com teclado).
+- **Lacunas** (`[n]`, `R$ [PREÇO]`, `[TEXTO DO ARTIGO]`, `[A DEFINIR: …]`) são texto comum, lido pelo leitor de tela; nenhuma usa `--placeholder` como cor de texto importante (§13).
+- **Trilha do artigo** com `aria-current="page"` no item atual (igual ao produto).
+- **Reflow:** sem rolagem horizontal de 320 a 1920 px; o bloco corporativo quebra em coluna no celular.
+
+### Testes
+
+- **Unidade (`data/`):** `KITS` com os nomes, descrições literais da §5.7 e `preco === null`; `ARTIGOS` com títulos e categorias literais da §5.8, slugs únicos, `obterArtigo`; `CATEGORIAS` na ordem da §12; `PRODUTORES` com queijos que existem em `QUEIJOS`, `nome` igual ao `detalhe.produtor` de cada queijo e ano vindo de `data/ficticio.ts`.
+- **Componente:** `CabecalhoDePagina` (com e sem sobretítulo); `CartaoDeKit` mostra **R$ [PREÇO]** e não tem botão; `CartaoDeArtigo` tem `href` e nome acessível; `Trilha` genérica (os testes do produto continuam passando sem mudança); `BlocoCorporativo` com número: `href` decodificado igual a `https://wa.me/5520900000000?text=Olá! Quero um orçamento de presentes para empresa.`, `target="_blank"` e aviso; com `numeroDoWhatsApp={null}`: nenhum `wa.me` e o texto conforme P58; `classesDoBotao` igual às classes do `Button` da mesma variante; `FocoNoConteudo` com âncora.
+- **E2E (Playwright), por rota nova:** status 200; `<title>` conforme P66; h1 literal; sem rolagem horizontal a 320, 360, 390, 768, 1440 e 1920 px; console limpo **sem** o filtro de `ROTA_AINDA_INEXISTENTE`; `aria-current="page"` no item certo do menu; documento sem `id` duplicado.
+- **E2E da 404:** `/nao-existe`, `/queijos/nao-existe` e `/aprenda/nao-existe` (se P59 = A) respondem **404**, mostram **Esta página foi maturar em outro lugar.** e `meta[name="robots"]` com `noindex`; **Volta para a cave** leva a `/`. O teste atual `e2e/produto.spec.ts:7` (slug inexistente → 404) continua e passa a conferir o texto.
+- **E2E de navegação:** clicar em cada link do menu, do rodapé e da Home citados na tabela de estado leva a uma página com h1 (nenhum 404); **Presentes corporativos** com teclado deixa o foco no bloco corporativo; **Pedir orçamento** abre `wa.me` com a mensagem corporativa (sem navegar de fato).
+- **Home sem regressão:** os testes atuais de `e2e/home.spec.ts` (inclusive o de `/presentes` na linha 121) passam sem mudança, exceto o destino dos artigos da Escola (se P59 = A).
+
+### Tarefas
+
+Cada tarefa termina com `lint`, `typecheck`, `format:check`, `test`, `modelos:validar`, `build` e `test:e2e` passando. Estimativa de linhas entre parênteses.
+
+**Bloco A — Base compartilhada e 404 (commit 1)**
+
+1. **[frontend-nextjs] Dados: `data/kits.ts`, `data/artigos.ts`, `data/produtores.ts`** (~250 com testes)
+   - Contratos acima, com os textos literais e as lacunas; a Home passa a ler `KITS` e `ARTIGOS` (sem mudança visual nem de link ainda).
+   - **Pronto quando:** os testes de unidade de `data/` da seção de testes passam; `app/_home/Presentes.tsx` e `app/_home/Escola.tsx` não têm mais constantes de conteúdo; `e2e/home.spec.ts` passa sem mudança.
+
+2. **[frontend-nextjs] Componentes compartilhados** (~300 com testes)
+   - `CabecalhoDePagina` (o catálogo passa a usá-lo), `CartaoDeKit` e `CartaoDeArtigo` (a Home passa a usá-los), `Trilha` genérica (o produto passa a usá-la), `classesDoBotao`.
+   - **Pronto quando:** testes de componente passam; `e2e/home.spec.ts`, `e2e/catalogo.spec.ts` e `e2e/produto.spec.ts` passam sem mudança; o `guardiao-do-design` confirma Home, catálogo e produto idênticos a 1440 e 390 px.
+
+3. **[frontend-nextjs] `app/not-found.tsx`** (~120 com testes) — **depende de P64 e P65**
+   - Topo no padrão do P64, h1 literal e **Volta para a cave** (botão principal) para o destino do P65.
+   - **Pronto quando:** os e2e da 404 passam (status 404, texto, `noindex`, botão); a 404 padrão em inglês não aparece em nenhuma URL.
+
+4. **Verificação do bloco A:** `guardiao-do-design` (Home, catálogo e produto sem diferença; 404 a 1440 e 390 px), `especialista-em-acessibilidade` (404: h1, foco, botão), `testes-e-qualidade` → `revisor-de-codigo` → commit `feat(paginas): extrai os dados de kits e artigos e adiciona a página 404`.
+
+**Bloco B — Presentes (commit 2)**
+
+5. **[frontend-nextjs] `app/presentes/page.tsx`** (~250 com testes) — **depende de P53 a P56 e P66**
+   - Topo (P53), kits com `CartaoDeKit` (P55), filtros conforme P54, bloco **Em todo kit** (P56), metadados (P66). Tirar `presentes` de `ROTA_AINDA_INEXISTENTE`.
+   - **Pronto quando:** e2e da rota passa (status, título, h1 **Para quem merece uma boa tábua.**, três kits com **R$ [PREÇO]**, sem rolagem horizontal); textos idênticos à §12 e à §5.7.
+
+6. **[frontend-nextjs] Bloco corporativo e âncora** (~200 com testes) — **depende de P57 e P58**
+   - `BlocoCorporativo` com `id="presentes-corporativos"`, texto literal com **[n]**, **Pedir orçamento** como `LinkDoWhatsApp` com `{ tipo: 'corporativo' }` e `classesDoBotao` (P57), comportamento sem número (P58); `Footer.tsx`: **Presentes corporativos** → `/presentes#presentes-corporativos`; `FocoNoConteudo` com âncora.
+   - **Pronto quando:** o `href` decodificado de **Pedir orçamento** é `https://wa.me/5520900000000?text=Olá! Quero um orçamento de presentes para empresa.`; com o provider recebendo `null`, não há `wa.me` na página; o e2e com teclado a partir do rodapé deixa o foco no bloco; nenhum verde do WhatsApp fora do que a §3.1 permite.
+
+7. **Verificação do bloco B, em paralelo:** `guardiao-do-design` (1440 e 390 px; um principal por bloco; verde só onde a §3.1 permite), `especialista-em-acessibilidade` (hierarquia, link externo, âncora), `auditor-de-seguranca` (link externo: `rel`, nada digitado na URL, número só no servidor), `testes-e-qualidade` → `revisor-de-codigo` → commit `feat(presentes): adiciona a página de presentes com o pedido de orçamento`.
+
+**Bloco C — Aprenda (commit 3)**
+
+8. **[frontend-nextjs] `app/aprenda/page.tsx`** (~200 com testes) — **depende de P53, P61 e P66**
+   - Topo (P53), categorias (P61) e grade da §5.8 com `CartaoDeArtigo`; metadados. Tirar `aprenda` de `ROTA_AINDA_INEXISTENTE`.
+   - **Pronto quando:** e2e da rota passa; as quatro categorias da §12 aparecem na ordem e com o comportamento do P61; os três títulos da §5.8 são literais.
+
+9. **[frontend-nextjs] `app/aprenda/[slug]/page.tsx` e links da Home** (~250 com testes) — **depende de P59, P60 e P66**
+   - `Trilha` (Início / Aprenda / título), sobretítulo da categoria, h1, `PhotoPlaceholder` 200 px de artigo, corpo ou **[TEXTO DO ARTIGO]**, seção de queijos citados com `ProductCard` (contexto `catalogo`) ou a lacuna do P60; `generateMetadata`; os três itens da Escola na Home e na `/aprenda` passam a apontar para `/aprenda/<slug>`.
+   - **Pronto quando:** os três artigos respondem 200 e `/aprenda/nao-existe` responde 404; cada link da Escola na Home leva ao artigo certo; `aria-current` em **Aprenda** dentro do artigo.
+
+10. **Verificação do bloco C, em paralelo:** `guardiao-do-design`, `especialista-em-acessibilidade` (hierarquia h1 → h2 → h3, trilha, links inteiros), `testes-e-qualidade` → `revisor-de-codigo` → commit `feat(aprenda): adiciona a escola do ateliê e as páginas de artigo`.
+
+**Bloco D — Produtores e fechamento das rotas (commit 4)**
+
+11. **[frontend-nextjs] `app/produtores/page.tsx`** (~200 com testes) — **depende de P53, P62, P63 e P66**
+   - h1 e texto literais da §12; grade de produtores (P62) com foto, nome, região, **desde {ano}** e link para os queijos (P63); metadados. Remover `ROTA_AINDA_INEXISTENTE` inteiro de `e2e/_apoio/console.ts`.
+   - **Pronto quando:** e2e da rota passa; **Sobre** e **Nossos produtores** do rodapé chegam a ela; o link do produtor leva à página do queijo; nenhum filtro de 404 sobra no apoio do e2e.
+
+12. **Verificação do bloco D e da etapa, em paralelo:** `guardiao-do-design`, `especialista-em-acessibilidade`, `performance-e-seo` (metadados das quatro páginas, `npm run medir:pacote` sem kB novo, rotas estáticas no `next build`), `testes-e-qualidade` (e2e de navegação de todos os links da tabela de estado) → `revisor-de-codigo` → commit `feat(produtores): adiciona a página de produtores`.
+
+**Fechamento**
+
+13. **[documentador-tecnico] Fechamento da etapa 7**
+   - `docs/conteudo.md`: como editar kits, artigos (corpo e queijos citados), categorias e produtores, e onde estão as lacunas; CHANGELOG e README; neste plano: situação da etapa, desvios para o checklist da §14 (filtros de Presentes, se P54 = A; textos novos aprovados nos P53 a P66) e a lista de testes que citam dados fictícios (agora também `/produtores`) para a etapa 9.
+   - **Pronto quando:** commit `docs: fecha a etapa 7` publicado.
+
+### Commits da etapa 7
+
+| Bloco | Conteúdo | Mensagem | Situação |
+| --- | --- | --- | --- |
+| Docs | Este detalhamento e o ADR-0011 | `docs: detalha a etapa 7 e registra o ADR-0011` | A fazer |
+| A | Tarefas 1 a 4 | `feat(paginas): extrai os dados de kits e artigos e adiciona a página 404` | A fazer |
+| B | Tarefas 5 a 7 | `feat(presentes): adiciona a página de presentes com o pedido de orçamento` | A fazer |
+| C | Tarefas 8 a 10 | `feat(aprenda): adiciona a escola do ateliê e as páginas de artigo` | A fazer |
+| D | Tarefas 11 e 12 | `feat(produtores): adiciona a página de produtores` | A fazer |
+| Docs | Tarefa 13 | `docs: fecha a etapa 7` | A fazer |
+
+### Critérios de pronto da etapa 7
+
+- §12 atendida com os textos literais e as lacunas visíveis (`[n]`, `R$ [PREÇO]` e as do P53 a P63, conforme as respostas).
+- §10.5: todos os links do menu, do rodapé e da Home levam a uma página com h1; nenhum leva à 404.
+- Item "Textos idênticos" da §14 conferido nas quatro páginas; desvios aprovados registrados para o checklist.
+- Item "Sem rolagem horizontal de 360 px a 1920 px" da §14 vale também para as rotas novas.
+- URL sem rota, produto e artigo inexistentes respondem 404 com a página da §12 e `noindex`.
+- **Pedir orçamento** abre o WhatsApp com a mensagem corporativa; sem número, nenhum `wa.me`.
+- Nenhuma dependência nova, nenhum Client Component novo, nenhum kB novo no pacote compartilhado; filtro `ROTA_AINDA_INEXISTENTE` removido.
+
+### Riscos da etapa 7
+
+- **Páginas sem protótipo** (desvio visual por invenção) → só padrões existentes (topo do catálogo, cartões da Home, caixa de ajuda do catálogo); todo valor novo vira pergunta (P53 a P67); o `guardiao-do-design` confere contra tokens e padrões, não contra imagem.
+- **Páginas quase vazias por causa das lacunas** → comportamento pedido pelo `CLAUDE.md`; o site não é publicado antes da etapa 9.
+- **Regressão na Home, no catálogo ou no produto** com a extração dos cartões, do cabeçalho e da trilha → bloco A sem mudança visual, coberto pelos e2e atuais e pelo `guardiao-do-design`.
+- **Âncora do corporativo brigando com o `FocoNoConteudo`** (foco em `#conteudo` e rolagem ao topo) → ajuste do `FocoNoConteudo` e e2e com teclado (tarefa 6).
+- **Status 200 na 404** (se a 404 for servida depois do início do *streaming*) → páginas estáticas e `notFound()` antes de qualquer renderização; e2e confere o status nas três URLs.
+- **Dados fictícios do produtor em mais uma página** → continuam vindo de `data/ficticio.ts`, sob a trava `DADOS_FICTICIOS_ATIVOS`; os testes novos que citam esses valores entram na lista da etapa 9.
+- **`[n]` do bloco corporativo** não foi coberto pelos fictícios (D26 a D30) → continua como lacuna visível (P57).
+- **`medir:pacote` mudando a linha de base** porque a interseção inclui rotas novas → registrar a nova linha de base no fechamento; o critério é "nenhum kB novo por rota", não o número absoluto.
+
+### Perguntas ao dono (etapa 7)
+
+| # | Pergunta | Opções | Recomendação | Decisão do dono |
+| --- | --- | --- | --- | --- |
+| P53 | A §12 dá só o título de Presentes e de Aprenda (e o texto de Produtores). O que vai no sobretítulo e no parágrafo do topo? | **A)** Só textos que já existem na spec: Presentes com sobretítulo **PRESENTES** e o parágrafo da §5.7 (**Kits montados pelo nosso queijista, com tábua, acompanhamentos e cartão escrito à mão.**); Aprenda sem sobretítulo e com o parágrafo **O jeito certo de servir, guardar e harmonizar.** (h2 da §5.8); Produtores sem sobretítulo e com o texto da §12. **B)** Sobretítulo em todas, com lacuna `[A DEFINIR: sobretítulo]` onde a spec não tem. **C)** O dono escreve os textos | **A**: nenhum texto novo, e o topo segue o padrão do catálogo | Aguardando |
+| P54 | Filtros de Presentes (Ocasião · Faixa de preço · Tamanho). Hoje há três kits, todos com **R$ [PREÇO]** e sem ocasião definida | **A)** Nenhum filtro visível agora, como os "filtros previstos para quando o catálogo crescer" da §6; desvio registrado na §14. **B)** Só **Tamanho** (3, 5 e 7 queijos, tirados das descrições), em chips no padrão do catálogo, com `?tamanho=` na URL. **C)** Os três, com as ocasiões de cada kit definidas pelo dono e o filtro de preço oculto enquanto houver `[PREÇO]` | **A**: com três kits, um filtro não ajuda e o de preço seria falso. B ou C quando houver mais kits | Aguardando |
+| P55 | Os kits têm botão ou página própria? (o mapa do site cita "Kit (cartão, data)") | **A)** Cartão igual ao da Home, sem botão e sem página de kit (preço `null` não pode ir para a sacola, regra da etapa 4). **B)** Página `/presentes/[kit]` com lacunas. **C)** Botão por kit que abre o WhatsApp (texto e mensagem novos, fora da §8.3) | **A**: não há preço nem conteúdo para a página; o pedido de presente corporativo já tem caminho | Aguardando |
+| P56 | Como mostrar "Em todo kit: embalagem de presente, cartão com mensagem (até 200 caracteres), data de entrega escolhida, nota fiscal sem valor visível ao presenteado."? | **A)** Bloco com h2 **Em todo kit** e lista de quatro itens, iniciais maiúsculas: **Embalagem de presente** · **Cartão com mensagem (até 200 caracteres)** · **Data de entrega escolhida** · **Nota fiscal sem valor visível ao presenteado.** (texto do D9), em grade no padrão da faixa de confiança da Home, sem ícones. **B)** A frase literal da §12 como um parágrafo abaixo do topo. **C)** Faixa de confiança com ícones (só **presente** existe na §4.10; os outros seriam ícones novos) | **A**: legível, sem ícone novo, e o item 4 já foi aprovado no D9 | Aguardando |
+| P57 | Aparência do bloco corporativo e de **Pedir orçamento** | **A)** Caixa no padrão da caixa de ajuda do catálogo (§6: `--cave-quiz`, borda `--pedra`, raio 12, `padding: 28px 32px`): h2 Cormorant 26/600 **Presentes para equipes e clientes.**, texto 15 px `--palha` **Pedidos a partir de [n] kits com personalização.** e **Pedir orçamento** como botão principal dourado (altura 48), sem verde (a §3.1 só permite o verde no ícone e no botão **Falar com um queijista**). **B)** Igual, mas com botão secundário e ícone conversa em traço `--whatsapp`, como **Fale com um queijista** do produto. **C)** Caixa com borda `--ouro` (padrão do quiz) | **A**: um principal por bloco, nenhuma cor nova. O **[n]** continua lacuna (não entrou nos fictícios) | Aguardando |
+| P58 | Sem número do WhatsApp em produção, o que o bloco corporativo mostra? | **A)** Só o texto, sem botão (mesma regra do **Fale com um queijista**, que some). **B)** **Pedir orçamento** abre o painel de atendimento no lugar do WhatsApp. **C)** O bloco inteiro some | **A**: coerente com a etapa 6; produção sem número é erro de configuração que a etapa 9 vai travar | Aguardando |
+| P59 | Os três artigos da §5.8 ganham página própria? | **A)** Sim, `/aprenda/<slug>` estática, com trilha, categoria, título, foto `[FOTO: …]`, corpo **[TEXTO DO ARTIGO]** e queijos citados (P60); os links da Escola na Home passam a levar ao artigo. **B)** Não: só a listagem, e os itens continuam levando a `/aprenda` até haver texto | **A**: a §12 diz que cada artigo termina com os queijos citados, e o link da Home deixa de levar a uma página genérica | Aguardando |
+| P60 | Quais queijos cada artigo cita, e qual o título da seção? | **A)** O dono define; até lá, a seção mostra **[A DEFINIR: queijos citados]**. Título da seção: **Queijos citados** (palavras da §12). **B)** O arquiteto propõe a partir da §10.4 (tábua: Brie, Canastra curado, Cabra com cinzas; vinho: Canastra curado, Manchego, Parmigiano, Brie, Cabra com cinzas; guardar: nenhum) e o dono confirma | **A**: "citados" depende do texto do artigo, que ainda não existe | Aguardando |
+| P61 | Como mostrar as quatro categorias em `/aprenda`? (só três têm artigo; **Regiões e produtores** está vazia) | **A)** Uma seção por categoria, na ordem da §12, com h2 = nome da categoria e a grade da §5.8; a categoria vazia mostra **[A DEFINIR: artigos]**. **B)** Chips de filtro `?categoria=` no padrão do catálogo (exige texto novo para "nenhum artigo"). **C)** Grade única com a categoria no sobretítulo de cada artigo, como na Home, sem mostrar a categoria vazia | **A**: mostra todas as categorias da spec sem filtro nem texto de "nenhum resultado" | Aguardando |
+| P62 | Quem entra na grade de produtores? | **A)** Só o produtor do Canastra curado, com os dados fictícios do D29: **Queijaria Produtor Exemplo**, região **Serra da Canastra, MG**, **desde 1985**, foto `[FOTO: produtor na câmara de maturação, Serra da Canastra]` (texto da §5.5); os demais entram quando o dono informar. **B)** Um cartão por queijo brasileiro, com `[NOME DO PRODUTOR]`, `[REGIÃO]` e **desde [ano]** (supõe um produtor por queijo). **C)** Também as queijarias dos importados | **A**: nada inventado além do que o D29 já aprovou; B criaria seis cartões de lacuna com uma suposição | Aguardando |
+| P63 | Como é o "link para os queijos dele"? | **A)** O nome de cada queijo do produtor como link sublinhado com " →" para `/queijos/<slug>` (ex.: **Canastra curado →**), sem texto novo e sem página de produtor. **B)** Página `/produtores/<id>` com os `ProductCard` dos queijos dele (o mapa do site cita "Produtor (seus queijos)"). **C)** Link **Ver os queijos →** (texto novo) para a página do produtor | **A** agora; B quando houver mais produtores e textos | Aguardando |
+| P64 | Aparência e `<title>` da 404 | **A)** Topo no padrão do catálogo (alinhado à esquerda, h1 64 px), **Volta para a cave** como botão principal sem seta, `margin-top: 40px` (padrão dos botões do hero); `<title>` **Esta página foi maturar em outro lugar. — Ateliê do Queijo**. **B)** Mesmo layout, com `<title>` **Página não encontrada — Ateliê do Queijo** (texto novo). **C)** Conteúdo centralizado | **A**: sem texto novo e com o padrão de página já usado | Aguardando |
+| P65 | **Volta para a cave** leva a `/` (literal da §12), mas no resto do site "a cave" é o catálogo (**Explorar a cave** → `/queijos`; h1 **A cave**) | **A)** `/`, como diz a §12. **B)** `/queijos` | **A**: a spec é explícita; B só se o dono quiser corrigir a spec | Aguardando |
+| P66 | `<title>` e description das páginas novas | **A)** Títulos no padrão do P13 (rótulo do menu): **Presentes**, **Aprenda**, **Nossos produtores** e, nos artigos, o título do artigo (todos com " — Ateliê do Queijo"); descriptions com textos da spec: Presentes = parágrafo da §5.7, Aprenda = **O jeito certo de servir, guardar e harmonizar.**, Produtores = texto da §12 (≈ 230 caracteres; os buscadores cortam por volta de 155), artigos sem description própria (vale a do layout) até haver corpo. **B)** Títulos = h1 de cada página (**Para quem merece uma boa tábua.**, **Escola do Ateliê**, **Quem faz o queijo importa.**). **C)** O dono escreve títulos e descriptions | **A**: segue o P13 e não cria texto | Aguardando |
+| P67 | A §7.4 (Combina com este queijo, Avaliações, Outros queijos da mesma região) estava marcada no P10 para "rever na etapa 7". Entra agora? | **A)** Continua fora: mel e tábua não existem no catálogo, avaliações só reais, e "mesma região" hoje só liga os dois Canastras. **B)** Só **Outros queijos da mesma região**, com `ProductCard`, quando houver ao menos um outro queijo da região (hoje só nos dois Canastras) | **A**: fora do escopo da §12; volta quando o catálogo crescer | Aguardando |
+
+---
+
 ## Etapa 8 — Rodada de qualidade (herança da etapa 4)
+
+> **Herança da etapa 7 (ADR-0011, decisão 8):** JSON-LD por página quando houver dados verdadeiros (`Article` com corpo, `Offer` dos kits com preço, `Organization` com CNPJ e endereço reais, `BreadcrumbList` no produto e no artigo); sitemap com `/presentes`, `/aprenda`, `/aprenda/<slug>` e `/produtores` (a 404 fora); `metadataBase` e URLs canônicas.
 
 > A etapa 8 ainda será detalhada pelo `arquiteto-de-software`. Esta seção reúne o que a etapa 4 deixou para ela, copiado de [Fica para depois (segurança e LGPD)](#fica-para-depois-segurança-e-lgpd), de [Fica para depois (blocos C e D)](#fica-para-depois-blocos-c-e-d) e de [Fica para depois (bloco E)](#fica-para-depois-bloco-e). As tabelas originais continuam onde estão.
 
