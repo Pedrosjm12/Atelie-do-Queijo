@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { Button } from './Button';
+import { Button, classesDoBotao } from './Button';
 
 describe('Button', () => {
   it('renderiza um link quando recebe href', () => {
@@ -62,5 +62,28 @@ describe('Button tamanho', () => {
     const botao = screen.getByRole('button', { name: 'Brasil (7)' });
     expect(botao).not.toHaveAttribute('tamanho');
     expect(botao.className).toMatch(/compacto/);
+  });
+});
+
+describe('classesDoBotao', () => {
+  it('devolve as mesmas classes do Button para a mesma variante e tamanho', () => {
+    const { rerender } = render(
+      <Button href="/x" variante="secundario" tamanho="compacto" className="extra">
+        Ver
+      </Button>,
+    );
+    const classesDoLink = screen.getByRole('link', { name: 'Ver' }).className;
+    expect(
+      classesDoBotao({ variante: 'secundario', tamanho: 'compacto', className: 'extra' }),
+    ).toBe(classesDoLink);
+
+    rerender(<Button href="/x">Ver</Button>);
+    expect(classesDoBotao({ variante: 'principal' })).toBe(
+      screen.getByRole('link', { name: 'Ver' }).className,
+    );
+  });
+
+  it('sem argumentos equivale à variante principal', () => {
+    expect(classesDoBotao()).toBe(classesDoBotao({ variante: 'principal' }));
   });
 });

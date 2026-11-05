@@ -7,6 +7,9 @@ test.describe('página de produto', () => {
   test('slug inexistente responde 404', async ({ page }) => {
     const resposta = await page.goto('/queijos/nao-existe');
     expect(resposta?.status()).toBe(404);
+    await expect(
+      page.getByRole('heading', { level: 1, name: 'Esta página foi maturar em outro lugar.' }),
+    ).toBeVisible();
   });
 
   test('título, h1, trilha e textos do Canastra curado', async ({ page }) => {

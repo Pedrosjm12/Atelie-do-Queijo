@@ -1,0 +1,10 @@
+.sobretitulo {
+  margin-bottom: 12px;
+}
+
+.paragrafo {
+  max-width: 560px;
+  margin-top: 16px;
+  font-size: 18px;
+  color: var(--palha);
+}

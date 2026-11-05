@@ -1,31 +1,3 @@
-/* Trilha (§7.1) */
-.trilha {
-  max-width: var(--largura-conteiner);
-  margin: 0 auto;
-  padding: 20px var(--respiro-lateral) 0;
-  font-size: 13px;
-  color: var(--palha);
-}
-
-.trilhaLista {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0 8px;
-}
-
-.trilhaLista li {
-  display: inline-flex;
-  gap: 8px;
-}
-
-.trilhaLink:hover {
-  color: var(--ouro);
-}
-
-.trilhaAtual {
-  color: var(--creme);
-}
-
 /* Corpo principal (§7.2) */
 .corpo {
   display: flex;

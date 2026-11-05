@@ -1,6 +1,6 @@
 # ADR-0011 — Páginas de conteúdo (Presentes, Aprenda, Produtores) e página 404
 
-- **Status:** Proposto (passa a Aceito quando o dono responder P59, P62 e P63 do `docs/PLANO.md`; as respostas podem mudar só os itens 3 e 4)
+- **Status:** Aceito em 2026-11-05 (o dono aceitou a opção A, a recomendada, em todas as perguntas P53 a P67 do `docs/PLANO.md`; os itens 3 e 4 valem como escritos)
 - **Data:** 2026-11-05
 - **Contexto da etapa:** 7 (ver `docs/PLANO.md`)
 

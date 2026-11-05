@@ -1,0 +1,26 @@
+.trilha {
+  max-width: var(--largura-conteiner);
+  margin: 0 auto;
+  padding: 20px var(--respiro-lateral) 0;
+  font-size: 13px;
+  color: var(--palha);
+}
+
+.lista {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 8px;
+}
+
+.lista li {
+  display: inline-flex;
+  gap: 8px;
+}
+
+.link:hover {
+  color: var(--ouro);
+}
+
+.atual {
+  color: var(--creme);
+}

@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import { Trilha as TrilhaGenerica } from '@/components/Trilha';
 import type { Origem } from '@/data/cheeses';
 import estilos from './Produto.module.css';
 
@@ -9,33 +9,18 @@ type TrilhaProps = {
   nome: string;
 };
 
-/** Trilha de navegação (spec §7.1): Início / Queijos / Brasil / Canastra curado. */
+/** Trilha do produto (spec §7.1): Início / Queijos / Brasil / Canastra curado. Some no celular (§7.6). */
 export function Trilha({ origem, nome }: TrilhaProps) {
-  const itens = [
-    { href: '/', texto: 'Início' },
-    { href: '/queijos', texto: 'Queijos' },
-    { href: `/queijos?origem=${origem}`, texto: ROTULO_DA_ORIGEM[origem] },
-  ];
-
   return (
-    <nav aria-label="Você está em" className={estilos.trilha}>
-      <ol className={estilos.trilhaLista}>
-        {itens.map((item) => (
-          <li key={item.href}>
-            <Link href={item.href} className={estilos.trilhaLink}>
-              {item.texto}
-            </Link>
-            <span aria-hidden="true" className={estilos.separador}>
-              /
-            </span>
-          </li>
-        ))}
-        <li>
-          <span aria-current="page" className={estilos.trilhaAtual}>
-            {nome}
-          </span>
-        </li>
-      </ol>
-    </nav>
+    <div className={estilos.trilha}>
+      <TrilhaGenerica
+        itens={[
+          { href: '/', texto: 'Início' },
+          { href: '/queijos', texto: 'Queijos' },
+          { href: `/queijos?origem=${origem}`, texto: ROTULO_DA_ORIGEM[origem] },
+        ]}
+        atual={nome}
+      />
+    </div>
   );
 }

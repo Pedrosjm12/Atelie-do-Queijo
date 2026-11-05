@@ -1,0 +1,17 @@
+.item {
+  display: block;
+}
+
+.categoria {
+  display: block;
+  margin-top: 16px;
+}
+
+.nome {
+  margin-top: 6px;
+  color: var(--creme);
+}
+
+.item:hover .nome {
+  color: var(--ouro);
+}

@@ -2,17 +2,6 @@
   padding-block: 64px 112px;
 }
 
-.sobretitulo {
-  margin-bottom: 12px;
-}
-
-.paragrafo {
-  max-width: 560px;
-  margin-top: 16px;
-  font-size: 18px;
-  color: var(--palha);
-}
-
 .filtros {
   display: flex;
   flex-wrap: wrap;

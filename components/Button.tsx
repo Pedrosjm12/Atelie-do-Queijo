@@ -44,15 +44,11 @@ export type ButtonProps = PropsLink | PropsBotao | PropsOpcao;
  * 28 px na newsletter), definido por quem usa via `style`.
  */
 export function Button(props: ButtonProps) {
-  const variante = props.variante ?? 'principal';
-  const classes = [
-    estilos.botao,
-    estilos[variante],
-    props.tamanho === 'compacto' ? estilos.compacto : '',
-    props.className ?? '',
-  ]
-    .filter(Boolean)
-    .join(' ');
+  const classes = classesDoBotao({
+    variante: props.variante,
+    tamanho: props.tamanho,
+    className: props.className,
+  });
   const conteudo = (
     <>
       {props.children}
@@ -82,6 +78,29 @@ export function Button(props: ButtonProps) {
       {conteudo}
     </button>
   );
+}
+
+/**
+ * Classes do botão para quem não pode usar o `Button` (ex.: o `<a>` externo do `LinkDoWhatsApp`,
+ * que precisa de `target` e `rel`). Mesma aparência: o `Button` usa esta função.
+ */
+export function classesDoBotao({
+  variante = 'principal',
+  tamanho,
+  className,
+}: {
+  variante?: VarianteComLink | 'opcao';
+  tamanho?: 'padrao' | 'compacto';
+  className?: string;
+} = {}): string {
+  return [
+    estilos.botao,
+    estilos[variante],
+    tamanho === 'compacto' ? estilos.compacto : '',
+    className ?? '',
+  ]
+    .filter(Boolean)
+    .join(' ');
 }
 
 const PROPS_PROPRIAS = [
