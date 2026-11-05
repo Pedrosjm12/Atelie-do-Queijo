@@ -1,20 +1,20 @@
 # Plano de implementação — Ateliê do Queijo
 
 > Fonte da verdade: `ATELIE-DO-QUEIJO-SPEC.md`. Decisões técnicas: `docs/adr/`.
-> Última atualização: 2026-11-05 (detalhamento da etapa 7). Etapas 1, 2, 3, 4, 5 e 6 **concluídas**; etapa 7 **em andamento** (P53 a P67 respondidas com a opção A; bloco A implementado). A loja segue **simulada**.
+> Última atualização: 2026-11-05 (fechamento da etapa 7). Etapas 1, 2, 3, 4, 5, 6 e 7 **concluídas**; **próxima: etapa 8** (a detalhar pelo `arquiteto-de-software`). A loja segue **simulada**.
 >
 > **AVISO: dados de negócio fictícios** (WhatsApp, CNPJ, endereço, frete, parcelas, produtor) estão em `data/ficticio.ts` e **precisam ser trocados antes da publicação**; o build de produção na Vercel falha enquanto a trava existir. Ver [Decisões do dono de 2026-11-03](#decisões-do-dono-de-2026-11-03-d1-a-d34).
 >
-> **RETOMADA (2026-11-05): a etapa 6 está concluída e a etapa 7 (Presentes, Aprenda, Produtores e 404, textos da §12) está em andamento** (bloco A implementado), com [ADR-0011](adr/0011-paginas-de-conteudo-e-404.md) (Aceito) e as [perguntas P53 a P67](#perguntas-ao-dono-etapa-7) respondidas com a opção A; ver [Etapa 7](#etapa-7--páginas-restantes-presentes-aprenda-produtores-e-404). Hoje `/presentes`, `/aprenda` e `/produtores` não existem (menu, rodapé e Home levam à 404 padrão do Next, em inglês) (levam à 404 da §12, `app/not-found.tsx`).
+> **RETOMADA (2026-11-05): as etapas 1 a 7 estão concluídas; a próxima é a etapa 8 (rodada de qualidade), ainda a detalhar pelo `arquiteto-de-software`.** A etapa 7 entregou `/presentes`, `/aprenda`, `/aprenda/<slug>`, `/produtores` e a 404 da §12 (`app/not-found.tsx`), com [ADR-0011](adr/0011-paginas-de-conteudo-e-404.md) (Aceito) e as [perguntas P53 a P67](#perguntas-ao-dono-etapa-7) respondidas com a opção A. Todos os links do menu, do rodapé e da Home levam a uma página com h1. Ver [Etapa 7](#etapa-7--páginas-restantes-presentes-aprenda-produtores-e-404).
 >
-> - **Próximo passo:** os blocos A (404) e B (Presentes) estão verificados e publicado; o bloco C (Aprenda) também; seguir para o bloco D (Produtores). Pendências do bloco B: FocoNoConteudo foi enxugado e a folga de JS da Home é zero (qualquer código novo global estoura o orçamento); topo de /presentes com 64 px (a §5.7 fala em 128 px) aguarda o dono; renomear NEXT_PUBLIC_WHATSAPP_NUMBER e usar server-only fica para a etapa 8. O dono respondeu P53 a P67 com a opção A em 2026-11-05; as tarefas 1 a 3 do bloco A estão implementadas. **Pedir orçamento** de `/presentes` usa `LinkDoWhatsApp` com `{ tipo: 'corporativo' }` (já existe em `lib/whatsapp.ts`). Detalhamento publicado em `4e94cd4`. **Limitação a tratar na tarefa 6:** `FocoNoConteudo` só move o foco quando o caminho muda; quem já está em `/presentes` e usa o link do rodapé com âncora não recebe o foco (tratar no `Footer` ou ouvindo `hashchange`).
-> - **Estado:** etapa 6 publicada nos commits `a744972` (bloco A) e `a37640c` (bloco B); ver [Commits da etapa 6](#commits-da-etapa-6). A etapa 5 está nos commits `92fb989` e `a990e3a`. **Nenhum queijo tem GLB**: o bloco C da etapa 5 (hero da Home e giro no cartão) segue **pendente, só com o 1º GLB** (P40 = B).
+> - **Próximo passo:** pedir ao `arquiteto-de-software` que detalhe a [etapa 8](#etapa-8--rodada-de-qualidade-herança-da-etapa-4) (tarefas, responsáveis, critério de pronto). Ela já herda a [lista de SEO, acessibilidade e desempenho da etapa 7](#herança-da-etapa-7-para-a-etapa-8) e as [pendências do dono](#pendências-do-dono-ao-fim-da-etapa-7). Nada foi implementado dessa lista.
+> - **Estado:** etapa 7 publicada nos commits `0589676`, `6791989`/`eca43a5`, `7602c3d`/`22a508a` e `c5b514e` (ver [Commits da etapa 7](#commits-da-etapa-7)); etapa 6 em `a744972` e `a37640c` ([Commits da etapa 6](#commits-da-etapa-6)). A etapa 5 está nos commits `92fb989` e `a990e3a`. **Nenhum queijo tem GLB**: o bloco C da etapa 5 (hero da Home e giro no cartão) segue **pendente, só com o 1º GLB** (P40 = B).
 > - **Lacunas do dono que seguem visíveis:** os 12 textos do assistente e o aviso de nova aba (`[A DEFINIR: …]`, P52) em `TEXTOS_DO_ROTEIRO` (`lib/roteiro.ts`) e `AVISO_DE_NOVA_ABA` (`lib/whatsapp.ts`). Como editar: [`docs/conteudo.md`](conteudo.md#assistente-horário-e-whatsapp). Pendências do bloco B (nova aba para quem enxerga, `depoisDaAcao`, erro do chunk, contraste da borda do campo, aba sem número) em [Verificação do bloco B](#verificação-do-bloco-b-etapa-6-correções-aplicadas-e-pendências).
 > - **Publicação (etapa 9):** o número do WhatsApp é resolvido só no servidor; publicar **somente na Vercel** ou garantir `VERCEL_ENV=production`, e conferir que `5520900000000` não aparece em `.next/static`. A etapa 9 também precisa de trava de build ou teste de CI que falhe em produção com `[A DEFINIR` em `TEXTOS_DO_ROTEIRO`, e de validação profissional do texto de saúde. Ver [`docs/ambiente.md`](ambiente.md).
-> - **Tudo o que aguarda o dono** (textos novos, contrastes, comportamentos, LGPD) está em [Decisões e textos que aguardam o dono (fim da etapa 4)](#decisões-e-textos-que-aguardam-o-dono-fim-da-etapa-4), com as decisões D1 a D34 já aplicadas por cima. Nada ali bloqueia a etapa 7.
+> - **Tudo o que aguarda o dono** (textos novos, contrastes, comportamentos, LGPD) está em [Decisões e textos que aguardam o dono (fim da etapa 4)](#decisões-e-textos-que-aguardam-o-dono-fim-da-etapa-4), com as decisões D1 a D34 já aplicadas por cima. Nada ali bloqueia a etapa 8.
 > - **Como retomar:** abra o Claude Code na pasta do projeto, peça "continue de onde paramos" e ele lerá esta nota. Rode `git status` e `npm run lint && npm run typecheck && npm run format:check && npm test && npm run modelos:validar && npm run build && npm run test:e2e` para confirmar o estado antes de seguir.
 > - **Para a etapa 8 (teste instável):** `e2e/pagina-sacola.spec.ts:23` (e, em 2026-11-05, `e2e/checkout.spec.ts:13`) falhou uma vez, sob carga, e passou isolado e nas reexecuções (suspeita: corrida de hidratação). Dois testes do vitest também falharam uma vez na primeira execução; os limites de tempo de `lib/pedido.test.ts` foram relaxados por precaução. Investigar se voltarem. Também na etapa 8: dividir o contexto da conversa em dois (estado e ações) e instalar `axe-core` nos testes de acessibilidade.
-> - **Guias:** [`docs/conteudo.md`](conteudo.md) (queijos, modelos 3D, assistente, horário e WhatsApp) e [`docs/ambiente.md`](ambiente.md). Serão ampliados (frete, Pix, textos das páginas, gateway) nas etapas 7 e 9. O `CHANGELOG.md` registra as etapas 4, 5 e 6.
+> - **Guias:** [`docs/conteudo.md`](conteudo.md) (queijos, modelos 3D, assistente, horário e WhatsApp, kits, artigos e produtores) e [`docs/ambiente.md`](ambiente.md). O `conteudo.md` já cobre kits, artigos e produtores (etapa 7); frete, Pix e gateway entram na etapa 9. O `CHANGELOG.md` registra as etapas 4 a 7.
 >
 > Fluxo usado em cada bloco: `frontend-nextjs` (ou o especialista da tarefa) implementa → `guardiao-do-design` (porta 3000, build), `especialista-em-acessibilidade` (`next dev -p 3001`, sem build) e `revisor-de-codigo` conferem em paralelo, sem editar → correções pelo implementador → lint, typecheck, format:check, test, build e test:e2e → commit e push. Na etapa 4, o `auditor-de-seguranca` entrou nos blocos B, C e E. Reaproveitar `BotaoEmBreve` para controles sem ação (Avise-me, WhatsApp, 3D) e o token `--largura-conteiner` nos contêineres.
 
@@ -36,7 +36,7 @@ Convenções deste plano:
 | 4 | Sacola (contexto + `localStorage`), frete simulado e checkout simulado em `lib/commerce.ts` | `engenheiro-de-ecommerce`, `frontend-nextjs`, `auditor-de-seguranca` | **Concluída** ([detalhe](#etapa-4--sacola-frete-simulado-e-checkout-simulado)); P24 a P38 decididos em 2026-10-27 e implementados; commits `48e6ebe` a `b06c604` |
 | 5 | Visualizador 3D (`CheeseViewer` com `@google/model-viewer`) e fallback SVG do Apêndice A | `especialista-3d-webgl` | **Concluída** ([detalhe](#etapa-5--visualizador-3d-com-fallback-svg)); blocos A e B publicados (`92fb989`, `a990e3a`), [ADR-0009](adr/0009-visualizador-3d-com-model-viewer.md) Aceito. **Bloco C pendente, só com o 1º GLB** |
 | 6 | Assistente com roteiro determinístico, horários e links do WhatsApp no painel de atendimento | `especialista-em-ia-conversacional`, `frontend-nextjs` | **Concluída** ([detalhe](#etapa-6--assistente-com-roteiro-determinístico-horário-e-links-do-whatsapp)); blocos A e B publicados (`a744972`, `a37640c`), [ADR-0010](adr/0010-assistente-deterministico-e-whatsapp.md) Aceito; P44 a P52 decididos em 2026-11-03. Os textos do P52 seguem como `[A DEFINIR: …]` até o dono escrever |
-| 7 | Páginas restantes: Presentes, Aprenda, Produtores, 404 (textos da §12) | `frontend-nextjs`, `guardiao-do-design`, `especialista-em-acessibilidade` | **Em andamento** ([detalhe](#etapa-7--páginas-restantes-presentes-aprenda-produtores-e-404)); [ADR-0011](adr/0011-paginas-de-conteudo-e-404.md) Aceito; 4 blocos (A a D); P53 a P67 respondidas (opção A); bloco A implementado |
+| 7 | Páginas restantes: Presentes, Aprenda, Produtores, 404 (textos da §12) | `frontend-nextjs`, `guardiao-do-design`, `especialista-em-acessibilidade` | **Concluída** ([detalhe](#etapa-7--páginas-restantes-presentes-aprenda-produtores-e-404)); blocos A a D publicados (`0589676`, `eca43a5`, `7602c3d`, `c5b514e`), [ADR-0011](adr/0011-paginas-de-conteudo-e-404.md) Aceito; P53 a P67 decididas (opção A). Textos da §12 seguem com lacunas do dono |
 | 8 | Rodada de qualidade: testes, acessibilidade, performance e SEO, segurança | `testes-e-qualidade`, `especialista-em-acessibilidade`, `performance-e-seo`, `auditor-de-seguranca` | A detalhar; herda itens da etapa 4 ([seção](#etapa-8--rodada-de-qualidade-herança-da-etapa-4) e [lista](#fica-para-depois-segurança-e-lgpd)) |
 | 9 | CI completo, ambientes e checklist de aceite da §14 | `devops-e-deploy`, `documentador-tecnico` | A detalhar; herda itens da etapa 4 ([seção](#etapa-9--ci-completo-ambientes-e-aceite-herança-da-etapa-4) e [lista](#fica-para-depois-segurança-e-lgpd)) |
 
@@ -1966,7 +1966,7 @@ Também para o checklist da etapa 9 (não é código): configurar no WhatsApp Bu
 
 **Objetivo:** dar destino real a todos os links do menu, do rodapé e da Home (spec §10.5) com as páginas da §12 (`/presentes`, `/aprenda`, `/produtores` e a 404), montadas só com os componentes, tokens e espaçamentos que já existem, com os textos literais da spec e as lacunas visíveis.
 
-**Situação: em andamento (2026-11-05). O dono aceitou todas as recomendações (opção A) das [perguntas P53 a P67](#perguntas-ao-dono-etapa-7) em 2026-11-05.** Bloco A: tarefas 1, 2 e 3 implementadas (dados em `data/`, componentes compartilhados e `app/not-found.tsx`), aguardando a verificação da tarefa 4; blocos B, C e D a fazer.
+**Situação: CONCLUÍDA (2026-11-05).** O dono aceitou todas as recomendações (opção A) das [perguntas P53 a P67](#perguntas-ao-dono-etapa-7). Blocos A a D publicados (ver [Commits da etapa 7](#commits-da-etapa-7)); fechamento documental na tarefa 13. O que ficou aberto está em [Pendências do dono](#pendências-do-dono-ao-fim-da-etapa-7) e na [herança para a etapa 8](#herança-da-etapa-7-para-a-etapa-8).
 
 **Pré-requisito:** etapa 6 concluída (`a744972`, `a37640c`, `2b2922d`).
 
@@ -1974,9 +1974,11 @@ Também para o checklist da etapa 9 (não é código): configurar no WhatsApp Bu
 
 **Skills:** antes de cada tarefa, conferir o mapa em `SKILLS-ATELIE-DO-QUEIJO.md` (`vercel-composition-patterns` para os cartões extraídos, `vercel-react-best-practices` para manter tudo no servidor, `seo` para os metadados, `accessibility` e `web-design-guidelines` na verificação). A `vercel-react-view-transitions`, listada como opcional para a etapa 7, **fica fora**: não está na spec e soma risco sem caso de uso. A spec vence em caso de conflito.
 
-### Estado atual dos links e das rotas (fim da etapa 6)
+### Estado dos links e das rotas no início da etapa 7 (histórico)
 
-Nenhuma das três rotas existe em `app/`, e não há `app/not-found.tsx`. Hoje todos os links abaixo levam à 404 padrão do Next, **em inglês** ("This page could not be found."), dentro do layout do site.
+> Resolvido: as três rotas e `app/not-found.tsx` existem desde a etapa 7. A tabela abaixo descreve o ponto de partida.
+
+No início da etapa 7, nenhuma das três rotas existia em `app/`, e não havia `app/not-found.tsx`. Todos os links abaixo levam à 404 padrão do Next, **em inglês** ("This page could not be found."), dentro do layout do site.
 
 | Onde | Link | Destino hoje | Muda na etapa 7 |
 | --- | --- | --- | --- |
@@ -2218,20 +2220,21 @@ Cada tarefa termina com `lint`, `typecheck`, `format:check`, `test`, `modelos:va
 | --- | --- | --- | --- |
 | Docs | Este detalhamento e o ADR-0011 | `docs: detalha a etapa 7 e registra o ADR-0011` | Publicado (`4e94cd4`) |
 | A | Tarefas 1 a 4 | `feat(paginas): extrai os dados de kits e artigos e adiciona a página 404` | Publicado (`0589676`) |
-| B | Tarefas 5 a 7 | `feat(presentes): adiciona a página de presentes com o pedido de orçamento` | Publicado (`eca43a5`) |
-| C | Tarefas 8 a 10 | `feat(aprenda): adiciona a escola do ateliê e as páginas de artigo` | Publicado (`7602c3d`) |
-| D | Tarefas 11 e 12 | `feat(produtores): adiciona a página de produtores` | A fazer |
-| Docs | Tarefa 13 | `docs: fecha a etapa 7` | A fazer |
+| B | Tarefas 5 a 7 | `feat(presentes): adiciona a página de presentes com o pedido de orçamento` | Publicado (`eca43a5`; o hash foi registrado em `6791989`) |
+| C | Tarefas 8 a 10 | `feat(aprenda): adiciona a escola do ateliê e as páginas de artigo` | Publicado (`7602c3d`; o hash foi registrado em `22a508a`) |
+| D | Tarefas 11 e 12 | `feat(produtores): adiciona a página de produtores` | Publicado (`c5b514e`) |
+| Docs | Registros dos hashes dos blocos B e C | `docs: registra o hash do bloco B da etapa 7` (`6791989`), `docs: registra o hash do bloco C da etapa 7` (`22a508a`) | Publicado |
+| Docs | Tarefa 13 | `docs: fecha a etapa 7` | A fazer (commit feito pela sessão principal) |
 
 ### Critérios de pronto da etapa 7
 
-- §12 atendida com os textos literais e as lacunas visíveis (`[n]`, `R$ [PREÇO]` e as do P53 a P63, conforme as respostas).
-- §10.5: todos os links do menu, do rodapé e da Home levam a uma página com h1; nenhum leva à 404.
-- Item "Textos idênticos" da §14 conferido nas quatro páginas; desvios aprovados registrados para o checklist.
-- Item "Sem rolagem horizontal de 360 px a 1920 px" da §14 vale também para as rotas novas.
-- URL sem rota, produto e artigo inexistentes respondem 404 com a página da §12 e `noindex`.
-- **Pedir orçamento** abre o WhatsApp com a mensagem corporativa; sem número, nenhum `wa.me`.
-- Nenhuma dependência nova, nenhum Client Component novo, nenhum kB novo no pacote compartilhado; filtro `ROTA_AINDA_INEXISTENTE` removido.
+- [x] §12 atendida com os textos literais e as lacunas visíveis (`[n]`, `R$ [PREÇO]` e as do P53 a P63, conforme as respostas).
+- [x] §10.5: todos os links do menu, do rodapé e da Home levam a uma página com h1; nenhum leva à 404.
+- [x] Item "Textos idênticos" da §14 conferido nas quatro páginas; desvios aprovados registrados para o checklist (ver [Desvios para a §14](#desvios-para-o-checklist-da-14-etapa-7)).
+- [x] Item "Sem rolagem horizontal de 360 px a 1920 px" da §14 vale também para as rotas novas.
+- [x] URL sem rota, produto e artigo inexistentes respondem 404 com a página da §12 e `noindex`.
+- [x] **Pedir orçamento** abre o WhatsApp com a mensagem corporativa; sem número, nenhum `wa.me`.
+- [x] Nenhuma dependência nova, nenhum Client Component novo, nenhum kB novo no pacote compartilhado; filtro `ROTA_AINDA_INEXISTENTE` removido. (Observação: a folga de JavaScript da Home ficou em **zero**; `FocoNoConteudo`, que já era Client Component, foi enxugado para caber.)
 
 ### Riscos da etapa 7
 
@@ -2263,6 +2266,62 @@ Cada tarefa termina com `lint`, `typecheck`, `format:check`, `test`, `modelos:va
 | P65 | **Volta para a cave** leva a `/` (literal da §12), mas no resto do site "a cave" é o catálogo (**Explorar a cave** → `/queijos`; h1 **A cave**) | **A)** `/`, como diz a §12. **B)** `/queijos` | **A**: a spec é explícita; B só se o dono quiser corrigir a spec | **A** (aceita a recomendação, 2026-11-05) |
 | P66 | `<title>` e description das páginas novas | **A)** Títulos no padrão do P13 (rótulo do menu): **Presentes**, **Aprenda**, **Nossos produtores** e, nos artigos, o título do artigo (todos com " — Ateliê do Queijo"); descriptions com textos da spec: Presentes = parágrafo da §5.7, Aprenda = **O jeito certo de servir, guardar e harmonizar.**, Produtores = texto da §12 (≈ 230 caracteres; os buscadores cortam por volta de 155), artigos sem description própria (vale a do layout) até haver corpo. **B)** Títulos = h1 de cada página (**Para quem merece uma boa tábua.**, **Escola do Ateliê**, **Quem faz o queijo importa.**). **C)** O dono escreve títulos e descriptions | **A**: segue o P13 e não cria texto | **A** (aceita a recomendação, 2026-11-05) |
 | P67 | A §7.4 (Combina com este queijo, Avaliações, Outros queijos da mesma região) estava marcada no P10 para "rever na etapa 7". Entra agora? | **A)** Continua fora: mel e tábua não existem no catálogo, avaliações só reais, e "mesma região" hoje só liga os dois Canastras. **B)** Só **Outros queijos da mesma região**, com `ProductCard`, quando houver ao menos um outro queijo da região (hoje só nos dois Canastras) | **A**: fora do escopo da §12; volta quando o catálogo crescer | **A** (aceita a recomendação, 2026-11-05) |
+
+### Pendências do dono ao fim da etapa 7
+
+Nada abaixo bloqueia a etapa 8. Os textos seguem visíveis como lacuna, conforme o `CLAUDE.md`.
+
+| Assunto | Situação | Quem decide |
+| --- | --- | --- |
+| Topo de `/presentes`: **128 px** (a §5.7 fala em 128 px de respiro) ou **64 px** (padrão do catálogo, usado hoje) | Hoje 64 px, para manter o padrão das páginas de topo. Aguarda decisão | Dono |
+| Textos `[A DEFINIR: …]` | `[A DEFINIR: artigos]` (categoria **Regiões e produtores**, vazia) e `[A DEFINIR: queijos citados]` (P60) em `/aprenda` e nos artigos | Dono |
+| `[TEXTO DO ARTIGO]` | Corpo dos três artigos (`data/artigos.ts`, campo `corpo`) | Dono |
+| `[n]` | Quantidade mínima de kits do bloco corporativo (**Pedidos a partir de [n] kits com personalização.**); não entrou nos dados fictícios | Dono |
+| `R$ [PREÇO]` | Preço dos três kits (`data/kits.ts`, campo `preco`) | Dono |
+| Queijos citados de cada artigo | Campo `queijosCitados` de `data/artigos.ts` (sugestão do P60, opção B, se o dono quiser: tábua = Brie, Canastra curado, Cabra com cinzas; vinho = Canastra curado, Manchego, Parmigiano, Brie, Cabra com cinzas) | Dono |
+| Foto do produtor em `/produtores` | Está sem raio e sem borda (a §5.5 não define para essa foto). Decisão visual pendente | Dono |
+| Produtor fictício | **Queijaria Produtor Exemplo**, **desde 1985** (D29): trocar em `data/ficticio.ts` antes da publicação | Dono |
+| Descrição de `/produtores` | O texto da §12 tem cerca de 230 caracteres; os buscadores cortam por volta de 155. Uma descrição própria depende de texto aprovado | Dono |
+
+### Desvios para o checklist da §14 (etapa 7)
+
+- **P54 (sem filtros em Presentes):** a §12 lista os filtros Ocasião, Faixa de preço e Tamanho; o dono aceitou não mostrar filtro algum enquanto houver só três kits, todos com **R$ [PREÇO]**. **Registrar na §14** no fim do projeto. Os filtros voltam com mais kits ou com a decisão do dono (opções B e C do P54).
+- **P55:** os kits não têm botão nem página própria (cartão igual ao da Home).
+- **P63:** sem página de produtor; o link leva ao queijo (`/queijos/<slug>`).
+- **P67:** a §7.4 (Combina com este queijo, Avaliações, Outros queijos da mesma região) continua fora.
+- **Testes que citam dados fictícios** (para a etapa 9, junto dos demais): `e2e/produto.spec.ts` cita o produtor e o ano fictícios (conferir também os testes de `/produtores`, que leem `data/produtores.ts`); os testes do bloco corporativo (`app/presentes/page.test.tsx`, `e2e/presentes.spec.ts`) citam o número `5520900000000`.
+
+### Herança da etapa 7 para a etapa 8
+
+Registrada aqui, **sem implementar**. O `arquiteto-de-software` distribui estes itens ao detalhar a etapa 8.
+
+**SEO (`performance-e-seo`)**
+
+- `metadataBase` no layout raiz, a partir de `NEXT_PUBLIC_SITE_URL` (variável pública; documentar em `docs/ambiente.md`).
+- URL canônica (`alternates.canonical`) em todas as páginas indexáveis.
+- Open Graph e Twitter (título, descrição, imagem) por página.
+- `app/sitemap.ts` com `/`, `/queijos`, `/queijos/<slug>` (de `CHEESES`), `/presentes`, `/aprenda`, `/aprenda/<slug>` (de `ARTIGOS`) e `/produtores`; **sem** `/sacola`, `/checkout` e a 404.
+- `app/robots.ts` sem `Disallow` para `/sacola` e `/checkout` (o `noindex` delas precisa ser lido).
+- JSON-LD por página, com cuidado para não publicar lacuna como dado: `Offer` só com preço **não nulo** (os kits seguem com `preco: null`); `Article` sem campos vazios (corpo ainda é `null`); `Organization` só com CNPJ e endereço reais; `BreadcrumbList` no produto e no artigo.
+- Descrição própria de `/produtores` com até 160 caracteres (o texto da §12 tem cerca de 230; depende do dono).
+- Descrição do artigo: hoje é o primeiro parágrafo do `corpo` (`generateMetadata`); quando houver corpo, limitar a 160 caracteres.
+- `npm run medir:pacote` deve incluir as rotas novas (`/presentes`, `/aprenda`, `/aprenda/[slug]`, `/produtores`, a 404) e registrar a nova linha de base. A **folga de JavaScript da Home é zero**: qualquer código novo global estoura o orçamento.
+
+**Acessibilidade (`especialista-em-acessibilidade`)**
+
+- Instalar `axe-core` nos testes, com ADR (nova dependência), e cobrir as páginas novas; somar e2e de teclado (Tab) em `/presentes`, `/aprenda`, `/aprenda/<slug>`, `/produtores` e na 404.
+- A seta `→` dos links da Home (`SectionHeading`) precisa de `aria-hidden`.
+- Trilha: pendência de contraste e de tamanho do alvo (WCAG 2.5.8) dos links da trilha.
+- `hashchange`: o `FocoNoConteudo` já trata cliques em âncora da mesma rota e `hashchange`; conferir com e2e de teclado que o foco vai ao bloco **Presentes para equipes e clientes.** quando a pessoa já está em `/presentes`.
+
+**Segurança e configuração**
+
+- Renomear `NEXT_PUBLIC_WHATSAPP_NUMBER` para uma variável **sem** o prefixo `NEXT_PUBLIC_` e marcar o módulo com `server-only` (hoje o número é resolvido no servidor, mas o nome sugere variável pública).
+
+**Qualidade e testes (`testes-e-qualidade`)**
+
+- Instabilidade sob carga de `e2e/checkout.spec.ts:13` e `e2e/pagina-sacola.spec.ts:23` (3 ocorrências no total; passam isoladas e nas reexecuções; suspeita de corrida de hidratação).
+- Tipo do corpo do artigo: agora `readonly [string, ...string[]] | null`, ou seja, **não vazio**; lista vazia não compila. O mesmo vale para `queijosCitados` e `Produtor.queijos`.
 
 ---
 
@@ -2492,7 +2551,7 @@ Decisões técnicas a confirmar junto com os textos:
 #### C. Pontos técnicos pequenos, sem decisão do dono
 
 - Pausar o prazo do aviso em hover ou foco não foi feito: o aviso tem `pointer-events: none` e nenhum conteúdo focável, então não recebe hover nem foco (duração mantida em 4 s).
-- O filtro de 404 de prefetch (`_rsc=`) em `e2e/_apoio/console.ts` cobre hoje só `presentes`, `aprenda` e `produtores`; tirar cada uma quando a rota existir (etapa 7).
+- O filtro de 404 de prefetch (`_rsc=`) em `e2e/_apoio/console.ts` foi removido na etapa 7, quando as três rotas passaram a existir.
 - Colar "CEP 01310-100" e a reserva de 320 px da `/sacola`: ver [Etapa 8](#etapa-8--rodada-de-qualidade-herança-da-etapa-4).
 
 ### Textos novos dos blocos C e D (a confirmar pelo dono)

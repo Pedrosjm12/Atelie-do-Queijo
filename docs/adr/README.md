@@ -21,4 +21,4 @@ Cada decisão técnica relevante do Ateliê do Queijo fica registrada aqui, em `
 | [0008](0008-sacola-frete-e-checkout-simulados.md) | Sacola persistida, frete e checkout simulados: fronteiras e persistência | Aceito | 2026-10-27 |
 | [0009](0009-visualizador-3d-com-model-viewer.md) | Visualizador 3D com `@google/model-viewer`, carregamento tardio e fallback em SVG | Aceito (aprovado pelo dono em 2026-11-03) | 2026-11-03 |
 | [0010](0010-assistente-deterministico-e-whatsapp.md) | Assistente com roteiro determinístico, horário e links do WhatsApp | Aceito | 2026-11-03 |
-| [0011](0011-paginas-de-conteudo-e-404.md) | Páginas de conteúdo (Presentes, Aprenda, Produtores) e página 404 | Proposto | 2026-11-05 |
+| [0011](0011-paginas-de-conteudo-e-404.md) | Páginas de conteúdo (Presentes, Aprenda, Produtores) e página 404 | Aceito | 2026-11-05 |

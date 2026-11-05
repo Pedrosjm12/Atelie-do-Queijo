@@ -47,10 +47,15 @@ Antes de abrir um PR (ou de commitar), rode nesta ordem: `npm run lint`, `npm ru
 | `/queijos/[slug]` | Página de produto. Gera 10 rotas estáticas, uma por queijo; outro slug responde 404 |
 | `/sacola` | Sacola: lista, quantidade, remover, subtotal, barra de frete grátis (a partir de R$ 180,00), embalagem para presente. `noindex` |
 | `/checkout` | Checkout **simulado** em três etapas na mesma rota: Entrega, Pagamento (Pix ou Cartão, sem dado de cartão) e Confirmação. `noindex` |
+| `/presentes` | Três kits (sem filtros nem botão), "Em todo kit" e bloco para empresas com **Pedir orçamento** (WhatsApp). Âncora `#presentes-corporativos` |
+| `/aprenda` | Escola do Ateliê: uma seção por categoria, com os artigos |
+| `/aprenda/[slug]` | Artigo (3 rotas estáticas): trilha, categoria, foto, corpo e queijos citados; outro slug responde 404 |
+| `/produtores` | Nossos produtores: texto de abertura e um cartão por produtor, com link para os queijos dele |
+| 404 | `app/not-found.tsx`: **Esta página foi maturar em outro lugar.**, com **Volta para a cave** (`/`) e `noindex` |
 
 Os 10 slugs: `canastra-curado`, `canastra-meia-cura-premiado`, `creme-do-marajo`, `penadinho-de-bufala`, `cabra-com-cinzas`, `gorgonzola-dolce`, `tipo-gruyere`, `brie-frances`, `parmigiano-reggiano` e `manchego`.
 
-Presentes, Aprenda, Produtores e a página 404 própria entram na etapa 7.
+As quatro páginas novas são estáticas e só rodam no servidor ([ADR-0011](docs/adr/0011-paginas-de-conteudo-e-404.md)). Os textos que dependem do dono aparecem como lacuna (`R$ [PREÇO]`, `[TEXTO DO ARTIGO]`, `[n]`, `[A DEFINIR: …]`). Como editar kits, artigos e produtores: [`docs/conteudo.md`](docs/conteudo.md#páginas-de-conteúdo-kits-artigos-e-produtores).
 
 ## Sacola, frete e checkout simulados
 
@@ -91,6 +96,9 @@ Como entregar um modelo: [`docs/conteudo.md`](docs/conteudo.md#como-entregar-um-
 | `AtendimentoProvider` e `SupportPanel` | Painel de atendimento em `<dialog>` modal, aberto pelo botão flutuante, por "Fale conosco" (rodapé) e por "Pedir ajuda" (catálogo). Guarda a conversa em memória e carrega o motor (`lib/roteiro.ts`) sob demanda |
 | `LinkDoWhatsApp` | Link `wa.me` em nova aba, com a mensagem fixa da §8.3 por motivo (geral, produto, pedido). Não renderiza nada sem número |
 | `ProductCard`, `CheeseIllustration`, `components/ilustracoes/` | Cartão de queijo e ilustrações do Apêndice A da spec |
+| `CabecalhoDePagina`, `CartaoDeKit`, `CartaoDeArtigo`, `Trilha` | Compartilhados entre Home, catálogo, produto e as páginas da etapa 7: topo de página (sobretítulo opcional, h1, parágrafo), cartões de kit e de artigo e a trilha `Você está em` |
+| `classesDoBotao` (em `components/Button.tsx`) | Devolve as classes de um `Button` para quem precisa de um `<a>` próprio (por exemplo o link externo do `LinkDoWhatsApp`), com a mesma aparência |
+| `FocoNoConteudo` | A cada troca de rota, move o foco para `#conteudo`; se a URL tem `#âncora`, foca o elemento dela. Também trata clique e `hashchange` de âncora na mesma rota |
 
 O único controle sem função é o **Avise-me** (P15), com o padrão `aria-disabled="true"`: continua focável e visível, mas não faz nada. Fale com um queijista, o campo de mensagem e os botões do WhatsApp funcionam desde a etapa 6. Girar, Aproximar e Tela cheia funcionam desde a etapa 5 (Girar sem GLB fica `aria-disabled`, pois o SVG não gira). Buscar e Minha conta foram removidos do cabeçalho até existirem as funções (D19). A lista completa está em [`docs/PLANO.md`](docs/PLANO.md#controles-ao-fim-da-etapa-4).
 
@@ -108,7 +116,7 @@ A etapa 6 ligou o painel de atendimento, decidida no [ADR-0010](docs/adr/0010-as
 ```
 app/            rotas e layout (Next.js App Router)
 components/     componentes de interface
-data/           dados do catálogo (ex.: cheeses.ts)
+data/           dados do catálogo e das páginas (cheeses.ts, kits.ts, artigos.ts, produtores.ts, ficticio.ts)
 lib/            funções utilitárias e regras (ex.: format.ts, sacola.ts, commerce.ts; pedido.server.ts só roda no servidor)
 public/models/  modelos 3D (GLB), vazia por enquanto
 scripts/        validar-modelos.mjs e medir-pacote.mjs

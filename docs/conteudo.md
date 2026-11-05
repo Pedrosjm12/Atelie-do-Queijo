@@ -1,6 +1,6 @@
 # Guia de conteúdo (para o dono da loja)
 
-Este guia explica como cuidar do que aparece na loja, sem precisar programar. Ele cresce a cada etapa do projeto. Hoje cobre **queijos**, **modelos 3D** e o **assistente, o horário e o WhatsApp**. O que ainda não está aqui está listado no fim, em [O que ainda não está neste guia](#o-que-ainda-não-está-neste-guia).
+Este guia explica como cuidar do que aparece na loja, sem precisar programar. Ele cresce a cada etapa do projeto. Hoje cobre **queijos**, **modelos 3D**, o **assistente, o horário e o WhatsApp**, e as páginas **Presentes (kits)**, **Aprenda (artigos)** e **Nossos produtores**. O que ainda não está aqui está listado no fim, em [O que ainda não está neste guia](#o-que-ainda-não-está-neste-guia).
 
 > **Aviso.** A loja é **simulada**. Alguns dados são **fictícios** (WhatsApp, CNPJ, endereço, frete, prazo, parcelas e produtor do Canastra). Eles ficam todos no arquivo `data/ficticio.ts` e **precisam ser trocados antes de a loja ir ao ar**. O sistema barra a publicação enquanto houver dados fictícios.
 
@@ -185,12 +185,94 @@ O número aparece nos botões verdes e em **Fale com um queijista**. Hoje é **f
 
 O que vai na mensagem do WhatsApp é sempre um texto fixo da especificação (geral, de um queijo, de um pedido ou de empresa). **O que a pessoa digitou no chat nunca vai para o link.**
 
+## Páginas de conteúdo: kits, artigos e produtores
+
+Presentes, Aprenda e Nossos produtores leem os textos de três arquivos da pasta `data/`. Como nos queijos, mexer neles é mexer em código: **peça ajuda a quem mantém o projeto** para salvar a alteração. Esta seção diz o que reunir antes de pedir. O que ainda não tem texto aparece na loja entre colchetes (`[PREÇO]`, `[TEXTO DO ARTIGO]`...) de propósito. **Não apague nem invente**: troque pelo texto real.
+
+### Onde ficam os textos de cada página
+
+| Página | Onde mudar |
+| --- | --- |
+| Presentes: título, parágrafo, "Em todo kit", bloco para empresas | `app/presentes/page.tsx` e `app/presentes/_presentes/` (textos da especificação; só mude com aprovação) |
+| Presentes: nome, descrição e preço de cada kit | `data/kits.ts` |
+| Aprenda: título e parágrafo | `app/aprenda/page.tsx` |
+| Aprenda: título, categoria, foto, texto e queijos de cada artigo | `data/artigos.ts` |
+| Nossos produtores: título e texto de abertura | `app/produtores/page.tsx` |
+| Nossos produtores: nome, região, ano, foto e queijos de cada produtor | `data/produtores.ts` (nome e ano do produtor de exemplo ficam em `data/ficticio.ts`) |
+| Página não encontrada (404) | `app/not-found.tsx` |
+
+### Kits de presente (`data/kits.ts`)
+
+Os mesmos três kits aparecem na Home e em `/presentes`. Campos:
+
+| Campo | O que é | Exemplo |
+| --- | --- | --- |
+| `id` | Nome técnico, sem acento e com hífen | `primeira-degustacao` |
+| `nome` | Nome do kit | `Primeira Degustação` |
+| `descricao` | Frase curta do que vem no kit | `3 queijos suaves, mel de flores e guia de degustação.` |
+| `preco` | Preço em **centavos**, sem vírgula. `null` mostra `R$ [PREÇO]` | `null` (hoje) ou `18900` para R$ 189,00 |
+
+Para informar o preço de um kit, troque `preco: null` por um número em centavos (R$ 189,00 vira `18900`). **Nunca use `0`.** Os kits não têm botão de compra nem página própria: o cartão só mostra nome, descrição e preço. Para pedidos de empresa, o botão **Pedir orçamento** abre o WhatsApp com uma mensagem pronta (precisa do número configurado, ver [Número do WhatsApp](#número-do-whatsapp)). A quantidade mínima do bloco para empresas (`[n]`) está em `app/presentes/_presentes/BlocoCorporativo.tsx`.
+
+Não há filtros em Presentes: com três kits eles não ajudariam (decisão P54).
+
+### Artigos da Escola do Ateliê (`data/artigos.ts`)
+
+Cada artigo é um bloco com:
+
+| Campo | O que é | Exemplo |
+| --- | --- | --- |
+| `slug` | Final do endereço (`/aprenda/<slug>`). Sem acento, com hífen | `queijo-e-vinho` |
+| `titulo` | Título do artigo | `Queijo e vinho: um guia sem regras chatas` |
+| `categoria` | Uma de: `primeiros-passos`, `harmonizacao`, `servir-e-guardar`, `regioes-e-produtores` | `harmonizacao` |
+| `foto` | Descrição da foto que ainda vai existir | `queijo e taça de vinho` |
+| `corpo` | O texto: uma lista de parágrafos, **ao menos um**. `null` mostra `[TEXTO DO ARTIGO]` | veja abaixo |
+| `queijosCitados` | Queijos que o artigo cita, pelo `slug` do queijo, **ao menos um**. `null` mostra `[A DEFINIR: queijos citados]` | veja abaixo |
+
+Exemplo preenchido:
+
+```ts
+{
+  slug: 'queijo-e-vinho',
+  titulo: 'Queijo e vinho: um guia sem regras chatas',
+  categoria: 'harmonizacao',
+  foto: 'queijo e taça de vinho',
+  corpo: [
+    'Primeiro parágrafo do artigo.',
+    'Segundo parágrafo do artigo.',
+  ],
+  queijosCitados: ['canastra-curado', 'manchego', 'brie-frances'],
+},
+```
+
+Regras:
+
+- Cada texto entre aspas é **um parágrafo**. Separe os parágrafos por vírgula. Uma lista vazia (`[]`) não é aceita: use `null` enquanto não houver texto.
+- Os `slug` dos queijos são os da lista em [Rotas do README](../README.md#rotas) (por exemplo `canastra-curado`). Um slug que não existe é recusado na verificação do código.
+- O primeiro parágrafo do `corpo` também vira a descrição do artigo nos resultados de busca. Escreva-o como um resumo de até 160 caracteres.
+- A categoria **Regiões e produtores** não tem artigo ainda e mostra `[A DEFINIR: artigos]`.
+- Para **criar um artigo novo** (além dos três da especificação), peça ajuda a quem mantém o código: o `slug` precisa ser registrado também no tipo `SlugDoArtigo`. O artigo novo aparece na Escola da Home e em `/aprenda`.
+- As fotos ainda são espaços reservados com a descrição `[FOTO: …]`.
+
+### Produtores (`data/produtores.ts`)
+
+| Campo | O que é | Exemplo |
+| --- | --- | --- |
+| `id` | Nome técnico, sem acento | `canastra` |
+| `nome` | Nome do produtor. Deve ser **igual** ao campo `produtor` do queijo dele em `data/cheeses.ts` | `Queijaria Produtor Exemplo` |
+| `regiao` | Região, como aparece | `Serra da Canastra, MG` |
+| `desde` | Só o ano; a loja escreve "desde" antes. Use `[ano]` se não souber | `1985` |
+| `foto` | Descrição da foto | `produtor na câmara de maturação, Serra da Canastra` |
+| `queijos` | Queijos dele (`slug`), **ao menos um**. Cada um vira um link `Nome do queijo →` | `['canastra-curado']` |
+
+Hoje só há um produtor, e o **nome e o ano são fictícios** (ficam em `data/ficticio.ts`, junto dos demais dados de teste). Troque antes de a loja ir ao ar. Cada produtor novo é mais um bloco na lista. Não existe página individual de produtor: o link leva ao queijo.
+
 ## O que ainda não está neste guia
 
 Entram quando as etapas correspondentes forem concluídas, sem prometer data:
 
 - trocar fotos, preços e o valor do frete grátis e o desconto do Pix;
-- onde ficam os textos de cada página (Presentes, Aprenda e Produtores vêm na etapa 7);
+- onde ficam os textos das demais páginas (Home, catálogo, produto, sacola e checkout);
 - cadastro de queijos por uma plataforma, se um dia houver.
 
 As variáveis de configuração estão em [`docs/ambiente.md`](ambiente.md).

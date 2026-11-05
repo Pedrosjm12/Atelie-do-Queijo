@@ -48,6 +48,13 @@ O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 - ADR-0010 (assistente determinístico e WhatsApp, sem dependência nova). Motor em *chunk* tardio, fora do JavaScript inicial.
 - Guia do dono ampliado com o assistente, o horário e as palavras-chave (`docs/conteudo.md`).
 - Aviso: 12 textos do assistente e o aviso de nova aba seguem como `[A DEFINIR: …]` até o dono escrever (P52).
+- Etapa 7 (`0589676`, `eca43a5`, `7602c3d`, `c5b514e`): páginas `/presentes`, `/aprenda`, `/aprenda/<slug>` (3 rotas estáticas) e `/produtores`, e página 404 própria (`app/not-found.tsx`, **Esta página foi maturar em outro lugar.**, com **Volta para a cave** e `noindex`). Todos os links do menu, do rodapé e da Home passam a levar a uma página.
+- Dados em `data/kits.ts`, `data/artigos.ts` (corpo e `queijosCitados` não vazios quando preenchidos) e `data/produtores.ts`.
+- Componentes compartilhados: `CabecalhoDePagina`, `CartaoDeKit`, `CartaoDeArtigo` e `Trilha` genérica (Home, catálogo e produto passam a usá-los, sem mudança visual), e `classesDoBotao` em `components/Button.tsx`, para links externos com a aparência dos botões.
+- **Pedir orçamento** em `/presentes` abre o WhatsApp com a mensagem corporativa (`LinkDoWhatsApp`); sem número, só o texto aparece (P58).
+- `FocoNoConteudo` passa a levar o foco à `#âncora` da URL (inclusive em clique e `hashchange` na mesma rota), usado por **Presentes corporativos** do rodapé (`/presentes#presentes-corporativos`).
+- Os três artigos da Escola na Home levam a `/aprenda/<slug>`.
+- ADR-0011 (páginas de conteúdo e 404, sem dependência nova). Guia do dono ampliado com kits, artigos e produtores (`docs/conteudo.md`).
 
 ### Alterado
 
