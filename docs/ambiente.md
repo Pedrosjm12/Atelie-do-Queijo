@@ -27,6 +27,10 @@ Quem usa o número: `app/layout.tsx` (servidor) chama `numeroDoWhatsApp()` e pas
 
 Para liberar a publicação: troque todos os dados de `data/ficticio.ts` pelos reais, remova `DADOS_FICTICIOS_ATIVOS` e a chamada de `exigirSemDadosFicticiosEmProducao` no `next.config.ts`, e atualize os testes que citam os valores fictícios. Este passo é item do checklist de aceite da etapa 9 em [`docs/PLANO.md`](PLANO.md).
 
+## Robots e `VERCEL_ENV` no build
+
+`app/robots.ts` usa `ehProducao()` (`lib/site.ts`), que lê `VERCEL_ENV`. O `robots.txt` é gerado no build, então o valor vale o do ambiente **do build**: só com `VERCEL_ENV=production` ele libera tudo e aponta para o sitemap; em prévia e local é `Disallow: /`. Um build de produção feito fora da Vercel (sem `VERCEL_ENV`) bloqueia a indexação.
+
 ## Fora do escopo por enquanto
 
 Chaves do gateway (Mercado Pago), segredos de webhook, chave de criptografia das Server Actions e demais variáveis de hospedagem serão documentadas na etapa 9, com os ADRs de hospedagem e gateway.

@@ -7,6 +7,8 @@ import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
 import { SacolaProvider } from '@/components/SacolaProvider';
 import { SupportFab } from '@/components/SupportFab';
+import { urlDoSite } from '@/lib/site';
+import { DESCRICAO_DO_SITE, NOME_DO_SITE } from '@/lib/seo';
 import { numeroDoWhatsApp } from '@/lib/whatsapp.server';
 import './globals.css';
 
@@ -26,8 +28,9 @@ const manrope = Manrope({
 });
 
 export const metadata: Metadata = {
-  title: { default: 'Ateliê do Queijo', template: '%s — Ateliê do Queijo' },
-  description: 'Queijos de autor, escolhidos à mão.',
+  metadataBase: urlDoSite(),
+  title: { default: NOME_DO_SITE, template: `%s — ${NOME_DO_SITE}` },
+  description: DESCRICAO_DO_SITE,
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

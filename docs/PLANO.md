@@ -2410,7 +2410,7 @@ Tudo o que as etapas 4, 6 e 7 deixaram para cá, com o destino de cada item.
 #### `lib/site.ts` (servidor e build; sem `'use client'`)
 
 ```ts
-/** URL pública do site (sem caminho, query ou hash), validada com zod/mini na primeira chamada. */
+/** URL pública do site (sem caminho, query ou hash), validada com `new URL` (sem zod) a cada chamada. */
 export function urlDoSite(ambiente?: {
   NEXT_PUBLIC_SITE_URL?: string;
   VERCEL_ENV?: string;
@@ -2443,7 +2443,7 @@ export function metadadosDaPagina(opcoes: {
 export function descricaoCurta(texto: string, limite?: number /* 160 */): string;
 ```
 
-- `openGraph`: `title`, `description`, `url` (= canônica), `siteName: NOME_DO_SITE`, `locale: 'pt_BR'`, `type`. A imagem vem do arquivo `app/opengraph-image.tsx` (P70 = A: `ImageResponse` de `next/og`, 1200 × 630, fundo `--cave` e o bloco "símbolo sobre dourado" do Apêndice A.2 ao centro, **sem texto** e sem fonte nova), que tem prioridade sobre o objeto e vale para todas as rotas. Ícone: `app/icon.svg` com o símbolo A.1.
+- `openGraph`: `title`, `description`, `url` (= canônica), `siteName: NOME_DO_SITE`, `locale: 'pt_BR'`, `type`. A imagem vem do arquivo `app/opengraph-image.tsx` (P70 = A: `ImageResponse` de `next/og`, 1200 × 630, fundo `--cave` e o bloco "símbolo sobre dourado" do Apêndice A.2 ao centro, **sem texto** e sem fonte nova), que vale só para as rotas que não definem `openGraph`; como o merge do Next é raso, `metadadosDaPagina` repete a imagem em `openGraph.images` e `twitter.images` (constante `IMAGEM_DE_COMPARTILHAMENTO`, `/opengraph-image`, 1200 × 630). Ícone: `app/icon.svg` com o símbolo A.1.
 - `twitter`: `card: 'summary_large_image'` (P70 = A).
 - `/sacola`, `/checkout` e a 404 **não** usam `metadadosDaPagina` e continuam com `robots: { index: false, follow: false }` (a 404 recebe `noindex` do Next).
 - Descrições (P72 = A/A): `/produtores` usa só a primeira frase literal da §12 (**O Ateliê nasceu da vontade de levar até você queijos que só se encontravam na porta da fazenda ou nas melhores queijarias da Europa.**). `Artigo` ganha o campo opcional `descricao?: string` (escrito pelo dono em `data/artigos.ts`); sem ele, `descricaoCurta` do primeiro parágrafo do corpo; sem corpo, a descrição do layout.

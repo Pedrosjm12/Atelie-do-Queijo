@@ -2,12 +2,17 @@ import type { Metadata } from 'next';
 import { CabecalhoDePagina } from '@/components/CabecalhoDePagina';
 import { CartaoDeArtigo } from '@/components/CartaoDeArtigo';
 import { ARTIGOS, CATEGORIAS } from '@/data/artigos';
+import { metadadosDaPagina } from '@/lib/seo';
 import estilos from './_aprenda/Aprenda.module.css';
 
 const PARAGRAFO = 'O jeito certo de servir, guardar e harmonizar.';
 
 // O título completo ("Aprenda — Ateliê do Queijo") vem do template do layout raiz (P13, P66).
-export const metadata: Metadata = { title: 'Aprenda', description: PARAGRAFO };
+export const metadata: Metadata = {
+  title: 'Aprenda',
+  description: PARAGRAFO,
+  ...metadadosDaPagina({ caminho: '/aprenda', titulo: 'Aprenda', descricao: PARAGRAFO }),
+};
 
 /** Escola do Ateliê (spec §12 e §5.8): uma seção por categoria; a vazia mostra a lacuna (P61). */
 export default function PaginaDeAprenda() {

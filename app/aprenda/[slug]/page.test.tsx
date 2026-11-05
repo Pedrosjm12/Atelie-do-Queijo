@@ -19,9 +19,11 @@ describe('página /aprenda/[slug]', () => {
   });
 
   it('metadados: título do artigo; slug desconhecido não gera título', async () => {
-    expect(await generateMetadata(props('queijo-e-vinho'))).toEqual({
-      title: 'Queijo e vinho: um guia sem regras chatas',
-    });
+    const meta = await generateMetadata(props('queijo-e-vinho'));
+    expect(meta.title).toBe('Queijo e vinho: um guia sem regras chatas');
+    expect(meta.alternates?.canonical).toBe('/aprenda/queijo-e-vinho');
+    expect(meta.openGraph).toMatchObject({ type: 'article', locale: 'pt_BR' });
+    expect((meta.description as string).length).toBeLessThanOrEqual(160);
     expect(await generateMetadata(props('nao-existe'))).toEqual({});
   });
 

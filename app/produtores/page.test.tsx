@@ -9,7 +9,12 @@ const TEXTO =
 describe('página /produtores', () => {
   it('metadados: título do menu (P13/P66) e o texto da §12', () => {
     expect(metadata.title).toBe('Nossos produtores');
-    expect(metadata.description).toBe(TEXTO);
+    // P72: a descrição é só a primeira frase literal da §12.
+    expect(metadata.description).toBe(
+      'O Ateliê nasceu da vontade de levar até você queijos que só se encontravam na porta da fazenda ou nas melhores queijarias da Europa.',
+    );
+    expect(metadata.description?.length).toBeLessThanOrEqual(160);
+    expect(metadata.alternates?.canonical).toBe('/produtores');
   });
 
   it('h1 e texto literais da §12, sem sobretítulo', () => {

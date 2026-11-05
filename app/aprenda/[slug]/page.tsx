@@ -6,6 +6,7 @@ import { ProductCard } from '@/components/ProductCard';
 import { Trilha } from '@/components/Trilha';
 import { ARTIGOS, nomeDaCategoria, obterArtigo } from '@/data/artigos';
 import { obterQueijo } from '@/lib/catalogo';
+import { descricaoDoArtigo, metadadosDaPagina } from '@/lib/seo';
 import estilos from '../_aprenda/Aprenda.module.css';
 
 /** Estática (ADR-0011): os slugs de `ARTIGOS` são gerados no build e qualquer outro recebe 404. */
@@ -21,9 +22,18 @@ export async function generateMetadata({
 }: PageProps<'/aprenda/[slug]'>): Promise<Metadata> {
   const artigo = obterArtigo((await params).slug);
   if (!artigo) return {};
-  // Sem corpo (lacuna), a descrição do layout raiz continua valendo.
-  const descricao = artigo.corpo?.[0];
-  return descricao ? { title: artigo.titulo, description: descricao } : { title: artigo.titulo };
+  // `descricao` do dono; senão o início do corpo; sem corpo, a descrição do site (P72).
+  const descricao = descricaoDoArtigo(artigo);
+  return {
+    title: artigo.titulo,
+    description: descricao,
+    ...metadadosDaPagina({
+      caminho: `/aprenda/${artigo.slug}`,
+      titulo: artigo.titulo,
+      descricao,
+      tipo: 'article',
+    }),
+  };
 }
 
 /** Página de artigo (spec §12): termina com os queijos citados (P59, P60). */

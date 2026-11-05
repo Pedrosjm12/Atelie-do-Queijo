@@ -26,6 +26,11 @@ export interface Artigo {
   corpo: readonly [string, ...string[]] | null;
   /** `null` = lacuna (P60). Lista não vazia quando o dono definir. */
   queijosCitados: readonly [SlugDoQueijo, ...SlugDoQueijo[]] | null;
+  /**
+   * Descrição para buscadores e redes (P72), escrita pelo dono; até 160 caracteres. Opcional:
+   * sem ela, vale o início do corpo, cortado em palavra inteira.
+   */
+  descricao?: string;
 }
 
 /** Artigos da Escola do Ateliê, na ordem da spec §5.8. */

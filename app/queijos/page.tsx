@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { contarPorOrigem, filtrarPorOrigem, lerOrigem } from '@/lib/catalogo';
+import { metadadosDaPagina } from '@/lib/seo';
 import { CaixaDeAjuda } from './_catalogo/CaixaDeAjuda';
 import { CabecalhoDoCatalogo } from './_catalogo/CabecalhoDoCatalogo';
 import { FiltroOrigem } from './_catalogo/FiltroOrigem';
@@ -8,9 +9,13 @@ import estilos from './_catalogo/Catalogo.module.css';
 import { fraseDoCatalogo } from './_catalogo/textos';
 
 // O título completo ("Queijos — Ateliê do Queijo") vem do template do layout raiz (P13).
+// Canônica sem query: /queijos?origem=brasil aponta para /queijos.
+const DESCRICAO = fraseDoCatalogo(contarPorOrigem().todos);
+
 export const metadata: Metadata = {
   title: 'Queijos',
-  description: fraseDoCatalogo(contarPorOrigem().todos),
+  description: DESCRICAO,
+  ...metadadosDaPagina({ caminho: '/queijos', titulo: 'Queijos', descricao: DESCRICAO }),
 };
 
 /**

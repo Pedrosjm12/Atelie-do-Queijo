@@ -1,5 +1,7 @@
+import type { Metadata } from 'next';
 import { formatoDeVitrine, listarQueijos } from '@/lib/catalogo';
 import { maiorFormatoEmGramas } from '@/lib/quiz';
+import { DESCRICAO_DO_SITE, metadadosDaPagina } from '@/lib/seo';
 import { BrasilEMundo } from './_home/BrasilEMundo';
 import { Escola } from './_home/Escola';
 import { Garantias } from './_home/Garantias';
@@ -8,6 +10,12 @@ import { NaCave } from './_home/NaCave';
 import { Newsletter } from './_home/Newsletter';
 import { Presentes } from './_home/Presentes';
 import { Quiz, type ResumoDoQueijo } from './_home/Quiz';
+
+export const metadata: Metadata = metadadosDaPagina({
+  caminho: '/',
+  titulo: null,
+  descricao: DESCRICAO_DO_SITE,
+});
 
 /** Home (spec §5): as nove seções na ordem. Só o Quiz e a Newsletter rodam no navegador. */
 export default function Home() {

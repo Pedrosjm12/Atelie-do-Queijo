@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { CheeseViewer } from '@/components/CheeseViewer';
 import { listarQueijos, obterQueijo } from '@/lib/catalogo';
+import { descricaoCurta, metadadosDaPagina } from '@/lib/seo';
 import { CabecalhoDoProduto } from './_produto/CabecalhoDoProduto';
 import { PainelDeCompra } from './_produto/PainelDeCompra';
 import { ProductTabs } from './_produto/ProductTabs';
@@ -24,7 +25,16 @@ export async function generateMetadata({
 }: PageProps<'/queijos/[slug]'>): Promise<Metadata> {
   const queijo = obterQueijo((await params).slug);
   if (!queijo) return {};
-  return { title: queijo.nome, description: queijo.nota };
+  const descricao = descricaoCurta(queijo.nota);
+  return {
+    title: queijo.nome,
+    description: descricao,
+    ...metadadosDaPagina({
+      caminho: `/queijos/${queijo.slug}`,
+      titulo: queijo.nome,
+      descricao,
+    }),
+  };
 }
 
 /** Página de produto (spec §7). */

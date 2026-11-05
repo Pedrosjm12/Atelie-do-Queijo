@@ -5,13 +5,25 @@ import { Overline } from '@/components/Overline';
 import { PhotoPlaceholder } from '@/components/PhotoPlaceholder';
 import { PRODUTORES } from '@/data/produtores';
 import { obterQueijo } from '@/lib/catalogo';
+import { metadadosDaPagina } from '@/lib/seo';
 import estilos from './_produtores/Produtores.module.css';
 
 const TEXTO =
   'O Ateliê nasceu da vontade de levar até você queijos que só se encontravam na porta da fazenda ou nas melhores queijarias da Europa. Conhecemos cada produtor, provamos cada lote e só vendemos o que serviríamos em casa.';
 
 // O título completo ("Nossos produtores — Ateliê do Queijo") vem do template do layout raiz (P13, P66).
-export const metadata: Metadata = { title: 'Nossos produtores', description: TEXTO };
+// Descrição = só a primeira frase literal da §12 (P72).
+const DESCRICAO = TEXTO.slice(0, TEXTO.indexOf('.') + 1);
+
+export const metadata: Metadata = {
+  title: 'Nossos produtores',
+  description: DESCRICAO,
+  ...metadadosDaPagina({
+    caminho: '/produtores',
+    titulo: 'Nossos produtores',
+    descricao: DESCRICAO,
+  }),
+};
 
 const nomeDoQueijo = (slug: string) => obterQueijo(slug)?.nome ?? slug;
 
