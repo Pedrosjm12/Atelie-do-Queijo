@@ -1,4 +1,4 @@
-import { render } from '@testing-library/react';
+import { fireEvent, render } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { FocoNoConteudo } from './FocoNoConteudo';
 
@@ -100,6 +100,105 @@ describe('FocoNoConteudo', () => {
     rerender(<FocoNoConteudo />);
     expect(alvo).toHaveAttribute('tabindex', '0');
     expect(alvo).toHaveFocus();
+  });
+
+  describe('na mesma rota (pathname não muda)', () => {
+    function montarComLink(href: string, atributos: Record<string, string> = {}) {
+      usePathname.mockReturnValue('/presentes');
+      window.history.replaceState(null, '', '/presentes');
+      const principal = document.createElement('main');
+      principal.id = 'conteudo';
+      principal.tabIndex = -1;
+      const bloco = document.createElement('section');
+      bloco.id = 'bloco';
+      const link = document.createElement('a');
+      link.href = href;
+      link.textContent = 'ir';
+      for (const [nome, valor] of Object.entries(atributos)) link.setAttribute(nome, valor);
+      // Como o `Link` do Next: cancela a navegação do navegador.
+      link.addEventListener('click', (e) => e.preventDefault());
+      document.body.append(principal, bloco, link);
+      render(<FocoNoConteudo />);
+      return { bloco, link, principal };
+    }
+
+    afterEach(() => {
+      vi.useRealTimers();
+      document.querySelectorAll('a').forEach((a) => a.remove());
+    });
+
+    it('clique num link com #âncora da mesma rota leva o foco ao elemento', () => {
+      vi.useFakeTimers();
+      const { bloco, link } = montarComLink('/presentes#bloco');
+      fireEvent.click(link);
+      vi.runAllTimers();
+      expect(bloco).toHaveFocus();
+      expect(bloco).toHaveAttribute('tabindex', '-1');
+    });
+
+    it('âncora que aponta para um campo nativo foca sem tirá-lo da ordem do Tab', () => {
+      vi.useFakeTimers();
+      const { link } = montarComLink('/presentes#campo');
+      const campo = document.createElement('input');
+      campo.id = 'campo';
+      document.body.append(campo);
+      fireEvent.click(link);
+      vi.runAllTimers();
+      expect(campo).toHaveFocus();
+      expect(campo).not.toHaveAttribute('tabindex');
+      campo.remove();
+    });
+
+    it('link de outra rota, sem âncora ou com tecla modificadora não mexe no foco', () => {
+      vi.useFakeTimers();
+      const { bloco, link } = montarComLink('/queijos#bloco');
+      fireEvent.click(link);
+      vi.runAllTimers();
+      expect(bloco).not.toHaveFocus();
+      link.href = '/presentes';
+      fireEvent.click(link);
+      link.href = '/presentes#bloco';
+      fireEvent.click(link, { ctrlKey: true });
+      vi.runAllTimers();
+      expect(bloco).not.toHaveFocus();
+    });
+
+    it('link em nova aba não mexe no foco', () => {
+      vi.useFakeTimers();
+      const { bloco, link } = montarComLink('/presentes#bloco', { target: '_blank' });
+      fireEvent.click(link);
+      vi.runAllTimers();
+      expect(bloco).not.toHaveFocus();
+    });
+
+    it('clique no filho do link também conta', () => {
+      vi.useFakeTimers();
+      const { bloco, link } = montarComLink('/presentes#bloco');
+      const filho = document.createElement('span');
+      link.append(filho);
+      fireEvent.click(filho);
+      vi.runAllTimers();
+      expect(bloco).toHaveFocus();
+    });
+
+    it('hashchange (voltar/avançar, link comum) foca o elemento da nova âncora', () => {
+      const { bloco } = montarComLink('/presentes#bloco');
+      window.history.replaceState(null, '', '/presentes#bloco');
+      fireEvent(window, new HashChangeEvent('hashchange'));
+      expect(bloco).toHaveFocus();
+    });
+
+    it('remove os ouvintes ao desmontar', () => {
+      usePathname.mockReturnValue('/presentes');
+      const bloco = document.createElement('section');
+      bloco.id = 'bloco';
+      document.body.append(bloco);
+      const { unmount } = render(<FocoNoConteudo />);
+      unmount();
+      window.history.replaceState(null, '', '/presentes#bloco');
+      fireEvent(window, new HashChangeEvent('hashchange'));
+      expect(bloco).not.toHaveFocus();
+    });
   });
 
   it('com # vazio na URL cai no #conteudo', () => {

@@ -16,7 +16,7 @@ const colunas = [
     links: [
       { href: '/queijos', rotulo: 'Queijos' },
       { href: '/presentes', rotulo: 'Presentes' },
-      { href: '/presentes', rotulo: 'Presentes corporativos' },
+      { href: '/presentes#presentes-corporativos', rotulo: 'Presentes corporativos' },
     ],
   },
   {

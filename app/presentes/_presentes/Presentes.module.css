@@ -1,0 +1,55 @@
+.pagina {
+  padding-block: 64px 112px;
+}
+
+.grade {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  margin-top: 40px;
+}
+
+.emTodoKit {
+  margin-top: 56px;
+  padding-block: 28px;
+  border-top: var(--borda-padrao);
+  border-bottom: var(--borda-padrao);
+}
+
+.itens {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px 28px;
+  margin-top: 16px;
+  font-size: 15px;
+  color: var(--palha);
+}
+
+.corporativo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 56px;
+  padding: 28px 32px;
+  border: var(--borda-padrao);
+  border-radius: 12px;
+  background: var(--cave-quiz);
+}
+
+.tituloDaCaixa {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 600;
+  line-height: 1.6;
+}
+
+.textoDaCaixa {
+  font-size: 15px;
+  color: var(--palha);
+}
+
+.botao {
+  --botao-padding-x: 26px;
+}

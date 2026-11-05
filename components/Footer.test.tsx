@@ -21,6 +21,15 @@ describe('Footer', () => {
     expect(nav).toContainElement(screen.getByRole('button', { name: 'Fale conosco' }));
   });
 
+  it('Presentes corporativos leva à âncora do bloco corporativo', () => {
+    renderizar();
+    expect(screen.getByRole('link', { name: 'Presentes corporativos' })).toHaveAttribute(
+      'href',
+      '/presentes#presentes-corporativos',
+    );
+    expect(screen.getByRole('link', { name: 'Presentes' })).toHaveAttribute('href', '/presentes');
+  });
+
   it('itens sem destino não são links', () => {
     renderizar();
     for (const nome of ['Entregas refrigeradas', 'Trocas e devoluções', 'Perguntas frequentes']) {
