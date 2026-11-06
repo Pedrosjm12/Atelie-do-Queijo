@@ -2337,6 +2337,14 @@ Registrada aqui, **sem implementar**. **Distribuída** em 2026-11-05 no [mapa da
 - **P79 = A** com **ação do dono**: instalar o Docker Desktop antes da tarefa 19; se não puder, vale o **plano B = D** (*workflow* manual no GitHub Actions).
 - **P84 = variante do C**: o arquiteto propõe os três textos e o dono escolhe ([propostas](#propostas-de-texto-p84-aguardando-aprovação)); até lá seguem como lacuna e **não bloqueiam** nenhum bloco.
 
+**Ponto de parada (2026-11-05):**
+
+- **Bloco A (tarefas 1 a 3):** concluído e publicado (`0b638b9`), com revisão ✅. O `guardiao-do-design` aprovou a imagem de compartilhamento e o ícone. A ampliação 3× do A.2 num container quadrado é decisão de implementação, porque a spec não fixa a largura.
+- **Teste instável corrigido:** `Pagamento.test.tsx`, "fale com a gente" abre o painel.
+  - **Causa:** o clique com `delay: null` rodava num `act` síncrono. O `lazy` do painel suspendia dentro dele e, com a suíte cheia, o `import()` terminava depois de o `act` fechar. O React 19 não retomava o Suspense.
+  - **Correção:** `act` assíncrono aguardado nesse clique. A suíte completa passou 4 de 4 vezes.
+- **Próximo passo:** bloco B, tarefa 4 (cabeçalhos HTTP e CSP, `devops-e-deploy`).
+
 **Pré-requisito:** etapa 7 concluída (`c5b514e`, `50fbf93`) e o painel sob demanda com o *gate* de hidratação dos e2e (`24d8de4`, ADR-0012).
 
 **Decisões:** [ADR-0014](adr/0014-dependencias-da-rodada-de-qualidade.md) (**Aceito** em 2026-11-05: `@axe-core/playwright` e `@vitest/coverage-v8`, só de desenvolvimento, zero kB no site; Lighthouse manual; regressão visual na imagem Docker oficial do Playwright); [ADR-0015](adr/0015-cabecalhos-http-e-csp.md) (**Aceito** em 2026-11-05: cabeçalhos estáticos e CSP estática com `'unsafe-inline'`, sem nonce, páginas continuam estáticas). Respostas P68 a P84 do dono em 2026-11-05. Herdadas: [ADR-0012](adr/0012-folga-do-orcamento-de-js.md) (medição sem `noModule`, limite = medido + 3 kB por rota; `global-error` próprio recusado pelo dono), [ADR-0013](adr/0013-numero-do-whatsapp-so-no-servidor.md) (`WHATSAPP_NUMBER` só no servidor), [ADR-0011](adr/0011-paginas-de-conteudo-e-404.md) (JSON-LD só com dados verdadeiros), [ADR-0010](adr/0010-assistente-deterministico-e-whatsapp.md) e [ADR-0009](adr/0009-visualizador-3d-com-model-viewer.md) (requisitos de CSP do 3D). Do dono: D2 (borda dos campos mantida; **revogado pelo P81 = B em 2026-11-05**), D3 (opacidade `.65`), D19 (sem busca), D25 (newsletter não grava), D26 a D29 (fictícios), D31 (Vercel), D33 (rascunho de privacidade na etapa 9), D34 (`--placeholder` provisório).

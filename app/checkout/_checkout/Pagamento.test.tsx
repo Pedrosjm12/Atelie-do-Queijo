@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { AtendimentoProvider } from '@/components/Atendimento';
 import { SacolaProvider } from '@/components/SacolaProvider';
@@ -423,7 +423,13 @@ describe('confirmar pedido', () => {
     await waitFor(() => expect(alertaDaFalha()).not.toBeEmptyDOMElement());
     const alerta = alertaDaFalha();
     expect(screen.queryByRole('dialog', { name: 'Assistente do Ateliê' })).not.toBeInTheDocument();
-    await usuario.click(within(alerta).getByRole('button', { name: 'fale com a gente' }));
+    // O clique abre o painel, que é um `lazy` (ADR-0012) e suspende. Com `delay: null` o clique
+    // roda num `act` síncrono; se o import() resolve depois de ele fechar (suíte cheia, máquina
+    // ocupada), o React 19 não retoma o Suspense e o painel fica no aviso "Abrindo o atendimento…".
+    // Um `act` assíncrono aguardado deixa o React esperar o lazy e retomar a renderização.
+    await act(async () => {
+      await usuario.click(within(alerta).getByRole('button', { name: 'fale com a gente' }));
+    });
     expect(await screen.findByRole('dialog', { name: 'Assistente do Ateliê' })).toBeInTheDocument();
   });
 
