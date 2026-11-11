@@ -27,7 +27,7 @@ function ehClient(fonte: string): boolean {
   return /^\s*(['"])use client\1/.test(semComentarios);
 }
 
-const MODULOS = '(?:site|seo|dadosEstruturados|cabecalhos|lacunas)';
+const MODULOS = '(?:site|seo|dadosEstruturados|DadosEstruturados|cabecalhos|lacunas)';
 const IMPORTA_MODULO_DE_SERVIDOR = [
   // `from '<qualquer prefixo>/lib/site'`, `from './seo'`, `from '../seo'`, `from '@/lib/seo'`...
   new RegExp(String.raw`from\s*['"][^'"]*/${MODULOS}['"]`),
@@ -55,6 +55,8 @@ describe('módulos de SEO e site só no servidor', () => {
       `import { x } from '../lib/seo';`,
       `import { x } from './site';`,
       `const m = await import('@/lib/seo');`,
+      `import { x } from '@/lib/dadosEstruturados';`,
+      `import { DadosEstruturados } from '@/components/DadosEstruturados';`,
     ]) {
       expect(IMPORTA_MODULO_DE_SERVIDOR.some((r) => r.test(ruim))).toBe(true);
     }

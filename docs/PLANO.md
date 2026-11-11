@@ -2344,7 +2344,8 @@ Registrada aqui, **sem implementar**. **Distribuída** em 2026-11-05 no [mapa da
   - **Causa:** o clique com `delay: null` rodava num `act` síncrono. O `lazy` do painel suspendia dentro dele e, com a suíte cheia, o `import()` terminava depois de o `act` fechar. O React 19 não retomava o Suspense.
   - **Correção:** `act` assíncrono aguardado nesse clique. A suíte completa passou 4 de 4 vezes.
 - **Bloco B (tarefas 4 a 7):** concluído em 2026-11-11, com auditoria (tarefa 6, registrada em [Verificação do bloco B](#verificação-do-bloco-b-etapa-8)), correções da auditoria e da revisão (CI com `PERMITIR_DADOS_FICTICIOS` no `env` do workflow, porque o `next typegen` do `typecheck` carrega a config na fase de build) e revisão ✅.
-- **Próximo passo:** bloco C, tarefa 8 (JSON-LD, `performance-e-seo`).
+- **Bloco B publicado em `00f9abb`.** Bloco C (tarefas 8 e 9, JSON-LD) concluído em 2026-11-11 ([verificação](#verificação-do-bloco-c-etapa-8)); falta só rodar o validador do Google no Preview.
+- **Próximo passo:** bloco D, tarefa 10 (varredura com axe, `testes-e-qualidade` + `especialista-em-acessibilidade`).
 
 **Pré-requisito:** etapa 7 concluída (`c5b514e`, `50fbf93`) e o painel sob demanda com o *gate* de hidratação dos e2e (`24d8de4`, ADR-0012).
 
@@ -2470,13 +2471,13 @@ export type DadoEstruturado = { '@context': 'https://schema.org'; '@type': strin
 
 export function organizacao(site: URL): DadoEstruturado;          // name, url, logo (ícone A.1 do P70); sem CNPJ, endereço e telefone (P71 = A)
 export function siteWeb(site: URL): DadoEstruturado;              // name, url, inLanguage 'pt-BR'; sem SearchAction (D19)
-export function produto(queijo: Cheese, site: URL): DadoEstruturado; // name, description (nota), url, offers[]
+export function produto(queijo: Cheese, site: URL): DadoEstruturado | null; // name, description (nota), url, offers[]; null quando o nome não é verdadeiro
 export function trilhaDeNavegacao(
   itens: readonly { href: string; texto: string }[],
   atual: { href: string; texto: string },
   site: URL,
-): DadoEstruturado;                                               // BreadcrumbList, os mesmos itens da Trilha
-export function artigo(artigo: Artigo, site: URL): DadoEstruturado | null; // null enquanto corpo === null
+): DadoEstruturado | null;                                        // BreadcrumbList, os mesmos itens da Trilha; null quando nenhum item é verdadeiro
+export function artigo(artigo: Artigo, site: URL): DadoEstruturado | null; // null enquanto corpo === null ou sem título verdadeiro
 
 /** JSON.stringify com '<' trocado por < (nada fecha o <script>). */
 export function serializar(dado: DadoEstruturado | readonly DadoEstruturado[]): string;
@@ -2485,7 +2486,7 @@ export function serializar(dado: DadoEstruturado | readonly DadoEstruturado[]): 
 export function DadosEstruturados(props: { dados: DadoEstruturado | readonly DadoEstruturado[] }): JSX.Element;
 ```
 
-- **Regra única:** nenhum campo recebe texto com `[` (lacuna) nem valor de `data/ficticio.ts`; o construtor **omite** o campo em vez de publicá-lo. `Offer`: `price` como texto com ponto (`"136.00"`, a partir de `Centavos`), `priceCurrency: 'BRL'`, `availability` `InStock` ou `OutOfStock` conforme `estoque`, `url` do produto. Nunca `Offer` com preço nulo.
+- **Regra única:** nenhum campo recebe texto com `[` (lacuna) nem valor de `data/ficticio.ts` (busca por trecho, só dos textos exportados com 5 caracteres ou mais); o construtor **omite** o campo em vez de publicá-lo. `Offer`: `price` como texto com ponto (`"136.00"`, a partir de `Centavos`), `priceCurrency: 'BRL'`, `availability` `InStock` ou `OutOfStock` conforme `estoque`, `url` do produto. Nunca `Offer` com preço nulo ou zero; sem preço válido, `offers` é omitido.
 - Onde entra: Home (`organizacao` + `siteWeb`), produto (`produto` + `trilhaDeNavegacao`), artigo (`trilhaDeNavegacao` + `artigo` quando houver corpo). Kits e produtores: **nada** até haver preço e dados reais (P71 = A).
 - A `Trilha` não muda de visual; a página que a monta passa os mesmos itens aos dois componentes (o JSON-LD não fica dentro da `Trilha`, que segue só visual).
 
@@ -2721,6 +2722,14 @@ Auditoria da tarefa 6 (`auditor-de-seguranca`, 2026-11-11), somente leitura, sob
 
 Conferência: nenhum `console.*` em código de servidor (o único `console.error`, em `components/PainelDoAtendimento.tsx:114`, é de cliente e só fora de produção); nenhum `fetch`, `sendBeacon` ou cookie; nenhum `dangerouslySetInnerHTML`; nenhum segredo versionado (árvore e histórico); única variável `NEXT_PUBLIC_` é `NEXT_PUBLIC_SITE_URL`.
 
+### Verificação do bloco C (etapa 8)
+
+Tarefa 9 (2026-11-11): `testes-e-qualidade` (fronteiras de estoque, preço e lacuna; os 10 queijos e todas as rotas indexáveis no e2e, sem valor fictício nem `[`), `auditor-de-seguranca` (nada crítico, alto ou médio; escape de `<` para a sequência unicode `u003c` com barra invertida, igual à documentação do Next 16.4.3; dados só de `data/`) e `revisor-de-codigo` (⚠️ resolvido). Ajustes aplicados: o construtor recusa valores de `data/ficticio.ts`; `produto()`, `trilhaDeNavegacao()` e `artigo()` devolvem `null` sem nome/título/itens verdadeiros; `Offer` só com preço > 0; `engines.node` = `24.x` (aviso da Vercel) com o `package-lock.json` sincronizado.
+
+- **Validador do Google (critério da tarefa 8): pendente do Preview público.** Só roda com página pública; fazer no Preview da `main` depois do push (Deployment Protection desligada) com o [Teste de pesquisa aprimorada](https://search.google.com/test/rich-results) em `/` e `/queijos/canastra-curado`. Resultado esperado: **"Product snippets" válido com avisos** (`image`, `brand`, `review`/`aggregateRating`); **"Merchant listings" com erro por falta de `image`** (o produto não entra em listagens de comerciante até haver foto) e sugestões de `shippingDetails` e `hasMerchantReturnPolicy`; `BreadcrumbList` válido (o item `/queijos?origem=brasil` é URL absoluta rastreável do mesmo site, aceito mesmo com canônica `/queijos`).
+- **Decisão do dono (sugestão do revisor):** estoque `ultimas` publica `InStock` (contrato); o schema.org aceita `LimitedAvailability`, mais fiel. Muda o contrato só se o dono quiser.
+- **Para a tarefa 21 (`docs/conteudo.md`):** ao trocar os dados fictícios pelos reais, **remover** os valores de `data/ficticio.ts` em vez de substituí-los ali; senão o filtro do JSON-LD passa a esconder dados reais (ex.: o produtor verdadeiro numa descrição).
+
 ### Commits da etapa 8
 
 | Bloco | Conteúdo | Mensagem | Situação |
@@ -2729,7 +2738,7 @@ Conferência: nenhum `console.*` em código de servidor (o único `console.error
 | Docs | Respostas P68 a P84, revogação do D2, ADRs 0014 e 0015 aceitos, propostas de texto do P84 | `docs: registra as respostas p68 a p84 e aceita os adrs 0014 e 0015` | Publicado (`ddf8d59`) |
 | A | Tarefas 1 a 3 | `feat(seo): adiciona url base, canônicas, open graph, sitemap e robots` | Publicado (`0b638b9`) |
 | B | Tarefas 4 a 7 | `feat(seguranca): adiciona cabeçalhos http, csp e travas de publicação` | Publicado (revisão ✅ em 2026-11-11) |
-| C | Tarefas 8 e 9 | `feat(seo): adiciona dados estruturados json-ld` | A fazer |
+| C | Tarefas 8 e 9 | `feat(seo): adiciona dados estruturados json-ld` | Publicado (revisão ⚠️ resolvida em 2026-11-11) |
 | D | Tarefas 10 a 13 | `fix(acessibilidade): adiciona a varredura com axe e corrige os achados` | A fazer |
 | E | Tarefas 14 a 16 | `perf: amplia o orçamento por rota e mede os core web vitals` | A fazer |
 | F | Tarefas 17 a 20 | `test: adiciona cobertura e regressão visual` | A fazer |

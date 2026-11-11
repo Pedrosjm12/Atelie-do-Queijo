@@ -1,7 +1,8 @@
 import Link from 'next/link';
+import type { ItemDeTrilha } from '@/lib/dadosEstruturados';
 import estilos from './Trilha.module.css';
 
-export type ItemDaTrilha = { href: string; texto: string };
+export type ItemDaTrilha = ItemDeTrilha;
 
 type TrilhaProps = {
   /** Itens com link, na ordem; o último (a página atual) vai em `atual`. */

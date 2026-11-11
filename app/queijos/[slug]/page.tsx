@@ -1,14 +1,17 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { CheeseViewer } from '@/components/CheeseViewer';
+import { DadosEstruturados } from '@/components/DadosEstruturados';
 import { listarQueijos, obterQueijo } from '@/lib/catalogo';
+import { produto, trilhaDeNavegacao } from '@/lib/dadosEstruturados';
 import { descricaoCurta, metadadosDaPagina } from '@/lib/seo';
+import { urlDoSite } from '@/lib/site';
 import { CabecalhoDoProduto } from './_produto/CabecalhoDoProduto';
 import { PainelDeCompra } from './_produto/PainelDeCompra';
 import { ProductTabs } from './_produto/ProductTabs';
 import { SensoryProfile } from './_produto/SensoryProfile';
 import { ShippingCalculator } from './_produto/ShippingCalculator';
-import { Trilha } from './_produto/Trilha';
+import { Trilha, itensDaTrilhaDoProduto } from './_produto/Trilha';
 import { paineisDoProduto } from './_produto/paineisDoProduto';
 import estilos from './_produto/Produto.module.css';
 
@@ -42,8 +45,19 @@ export default async function PaginaDoProduto({ params }: PageProps<'/queijos/[s
   const queijo = obterQueijo((await params).slug);
   if (!queijo) notFound();
 
+  const site = urlDoSite();
   return (
     <>
+      <DadosEstruturados
+        dados={[
+          produto(queijo, site),
+          trilhaDeNavegacao(
+            itensDaTrilhaDoProduto(queijo.origem),
+            { href: `/queijos/${queijo.slug}`, texto: queijo.nome },
+            site,
+          ),
+        ]}
+      />
       <Trilha origem={queijo.origem} nome={queijo.nome} />
       <div className={estilos.corpo}>
         <div className={estilos.visualizador}>

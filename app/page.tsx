@@ -1,7 +1,10 @@
 import type { Metadata } from 'next';
+import { DadosEstruturados } from '@/components/DadosEstruturados';
 import { formatoDeVitrine, listarQueijos } from '@/lib/catalogo';
 import { maiorFormatoEmGramas } from '@/lib/quiz';
+import { organizacao, siteWeb } from '@/lib/dadosEstruturados';
 import { DESCRICAO_DO_SITE, metadadosDaPagina } from '@/lib/seo';
+import { urlDoSite } from '@/lib/site';
 import { BrasilEMundo } from './_home/BrasilEMundo';
 import { Escola } from './_home/Escola';
 import { Garantias } from './_home/Garantias';
@@ -27,8 +30,10 @@ export default function Home() {
     maiorFormatoEmGramas: maiorFormatoEmGramas(q.formatos),
   }));
 
+  const site = urlDoSite();
   return (
     <>
+      <DadosEstruturados dados={[organizacao(site), siteWeb(site)]} />
       <Hero />
       <Garantias />
       <NaCave />

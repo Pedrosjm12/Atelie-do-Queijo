@@ -1,12 +1,15 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { CabecalhoDePagina } from '@/components/CabecalhoDePagina';
+import { DadosEstruturados } from '@/components/DadosEstruturados';
 import { PhotoPlaceholder } from '@/components/PhotoPlaceholder';
 import { ProductCard } from '@/components/ProductCard';
 import { Trilha } from '@/components/Trilha';
 import { ARTIGOS, nomeDaCategoria, obterArtigo } from '@/data/artigos';
 import { obterQueijo } from '@/lib/catalogo';
+import { artigo as artigoEstruturado, trilhaDeNavegacao } from '@/lib/dadosEstruturados';
 import { descricaoDoArtigo, metadadosDaPagina } from '@/lib/seo';
+import { urlDoSite } from '@/lib/site';
 import estilos from '../_aprenda/Aprenda.module.css';
 
 /** Estática (ADR-0011): os slugs de `ARTIGOS` são gerados no build e qualquer outro recebe 404. */
@@ -43,15 +46,24 @@ export default async function PaginaDoArtigo({ params }: PageProps<'/aprenda/[sl
 
   const citados = (artigo.queijosCitados ?? []).flatMap((slug) => obterQueijo(slug) ?? []);
 
+  const site = urlDoSite();
+  const itensDaTrilha = [
+    { href: '/', texto: 'Início' },
+    { href: '/aprenda', texto: 'Aprenda' },
+  ];
+  const dados = [
+    trilhaDeNavegacao(
+      itensDaTrilha,
+      { href: `/aprenda/${artigo.slug}`, texto: artigo.titulo },
+      site,
+    ),
+    artigoEstruturado(artigo, site),
+  ];
+
   return (
     <>
-      <Trilha
-        itens={[
-          { href: '/', texto: 'Início' },
-          { href: '/aprenda', texto: 'Aprenda' },
-        ]}
-        atual={artigo.titulo}
-      />
+      <DadosEstruturados dados={dados} />
+      <Trilha itens={itensDaTrilha} atual={artigo.titulo} />
       <div className={`conteudo ${estilos.pagina}`}>
         <CabecalhoDePagina sobretitulo={nomeDaCategoria(artigo.categoria)} titulo={artigo.titulo} />
         <div className={estilos.foto}>
