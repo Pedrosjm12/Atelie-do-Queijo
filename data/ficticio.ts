@@ -29,6 +29,53 @@ export function exigirSemDadosFicticiosEmProducao(
   }
 }
 
+/** Variáveis que decidem se os dados fictícios podem ser usados (P74 = B). */
+export interface AmbienteDosFicticios {
+  NODE_ENV?: string | undefined;
+  VERCEL_ENV?: string | undefined;
+  PERMITIR_DADOS_FICTICIOS?: string | undefined;
+}
+
+function ambienteAtual(): AmbienteDosFicticios {
+  return {
+    NODE_ENV: process.env.NODE_ENV,
+    VERCEL_ENV: process.env.VERCEL_ENV,
+    PERMITIR_DADOS_FICTICIOS: process.env.PERMITIR_DADOS_FICTICIOS,
+  };
+}
+
+/**
+ * Verdadeiro em `next dev` (NODE_ENV=development), no Vitest (NODE_ENV=test) ou com
+ * `PERMITIR_DADOS_FICTICIOS=1`; NUNCA com `VERCEL_ENV=production`.
+ */
+export function dadosFicticiosPermitidos(
+  ambiente: AmbienteDosFicticios = ambienteAtual(),
+): boolean {
+  if (ambiente.VERCEL_ENV === 'production') return false;
+  return (
+    ambiente.NODE_ENV === 'development' ||
+    ambiente.NODE_ENV === 'test' ||
+    ambiente.PERMITIR_DADOS_FICTICIOS === '1'
+  );
+}
+
+/**
+ * Trava de `next build` (qualquer ambiente): com dados fictícios ativos e sem permissão, falha dizendo
+ * o que definir. IGNORA `NODE_ENV` (o `next build` aceita `test` e `development`): na fase de build só
+ * vale `PERMITIR_DADOS_FICTICIOS=1`. Com `VERCEL_ENV=production` não faz nada: a trava `exigirSemDadosFicticiosEmProducao`
+ * (também no `next.config.ts`) já cobre, com a mensagem de produção.
+ */
+export function exigirDadosFicticiosPermitidos(
+  ambiente: AmbienteDosFicticios = ambienteAtual(),
+  ficticiosAtivos: boolean = DADOS_FICTICIOS_ATIVOS,
+): void {
+  if (!ficticiosAtivos || dadosFicticiosPermitidos({ ...ambiente, NODE_ENV: 'production' })) return;
+  if (ambiente.VERCEL_ENV === 'production') return;
+  throw new Error(
+    'Build bloqueado: data/ficticio.ts ainda tem dados fictícios (WhatsApp, CNPJ, endereço, frete, parcelas, produtor). Para buildar localmente ou na CI, defina PERMITIR_DADOS_FICTICIOS=1 (no .env.local, no ambiente do comando ou, na Vercel, só em Preview; nunca em Production). Para publicar, troque os dados pelos reais e remova DADOS_FICTICIOS_ATIVOS.',
+  );
+}
+
 // --- WhatsApp (spec §8.3: formato internacional, só dígitos) ----------------------------------
 
 // FICTÍCIO: substituir antes da publicação (DDD 20 não existe: o número não pode ser de ninguém)

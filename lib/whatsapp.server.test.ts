@@ -26,6 +26,17 @@ describe('numeroDoWhatsApp', () => {
     }
   });
 
+  it('build sem PERMITIR_DADOS_FICTICIOS (NODE_ENV=production): null; com a variável: fictício', () => {
+    vi.stubEnv('NODE_ENV', 'production');
+    vi.stubEnv('WHATSAPP_NUMBER', undefined);
+    vi.stubEnv('PERMITIR_DADOS_FICTICIOS', undefined);
+    expect(numeroDoWhatsApp()).toBeNull();
+    vi.stubEnv('PERMITIR_DADOS_FICTICIOS', '1');
+    expect(numeroDoWhatsApp()).toBe(NUMERO_WHATSAPP_FICTICIO);
+    vi.stubEnv('VERCEL_ENV', 'production');
+    expect(numeroDoWhatsApp()).toBeNull();
+  });
+
   it('em produção (VERCEL_ENV): variável ausente ou inválida → null; válida → o número', () => {
     vi.stubEnv('VERCEL_ENV', 'production');
     vi.stubEnv('WHATSAPP_NUMBER', undefined);

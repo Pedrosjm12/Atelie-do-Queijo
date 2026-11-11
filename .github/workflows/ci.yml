@@ -11,6 +11,8 @@ permissions:
 
 env:
   LEFTHOOK: 0
+  # P74: `next build` e `next typegen` (typecheck) exigem a permissão enquanto houver dados fictícios.
+  PERMITIR_DADOS_FICTICIOS: '1'
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}

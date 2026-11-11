@@ -1,4 +1,5 @@
 import { test as base, type Page } from '@playwright/test';
+import { ehViolacaoDeCsp } from './csp';
 
 /**
  * `test` dos specs: igual ao do Playwright, mas `page.goto` e `page.reload` só devolvem depois de
@@ -29,7 +30,21 @@ async function hidratada(page: Page) {
   await aguardarHidratacao(page);
 }
 
-export const test = base.extend({
+export const test = base.extend<{ vigiaDeCsp: void }>({
+  // Automática: nenhum e2e pode registrar violação de CSP no console.
+  vigiaDeCsp: [
+    async ({ page }, usar) => {
+      const violacoes: string[] = [];
+      page.on('console', (m) => {
+        if (ehViolacaoDeCsp(m.text())) violacoes.push(m.text());
+      });
+      await usar();
+      if (violacoes.length > 0) {
+        throw new Error(['violação de CSP no console:', ...violacoes].join('\n'));
+      }
+    },
+    { auto: true },
+  ],
   page: async ({ page }, usar) => {
     const goto = page.goto.bind(page);
     const reload = page.reload.bind(page);

@@ -8,7 +8,7 @@
 > **RETOMADA (2026-11-05): as etapas 1 a 7 estão concluídas; a etapa 8 (rodada de qualidade) está DETALHADA, com as [perguntas P68 a P84](#perguntas-ao-dono-etapa-8) respondidas pelo dono em 2026-11-05 e os ADRs 0014 e 0015 aceitos. Pronta para começar pelo bloco A.** A etapa 7 entregou `/presentes`, `/aprenda`, `/aprenda/<slug>`, `/produtores` e a 404 da §12 (`app/not-found.tsx`), com [ADR-0011](adr/0011-paginas-de-conteudo-e-404.md) (Aceito) e as [perguntas P53 a P67](#perguntas-ao-dono-etapa-7) respondidas com a opção A. Todos os links do menu, do rodapé e da Home levam a uma página com h1. Ver [Etapa 7](#etapa-7--páginas-restantes-presentes-aprenda-produtores-e-404).
 >
 > - **Próximo passo:** a sessão principal segue as [tarefas da etapa 8](#etapa-8--rodada-de-qualidade-testes-acessibilidade-desempenho-seo-e-segurança) na ordem dos blocos A a F. ADRs [0014](adr/0014-dependencias-da-rodada-de-qualidade.md) (dependências: `@axe-core/playwright` e cobertura do Vitest) e [0015](adr/0015-cabecalhos-http-e-csp.md) (cabeçalhos HTTP e CSP) **aceitos** em 2026-11-05. **Ações do dono:** escolher os três textos do P84 ([propostas](#propostas-de-texto-p84-aguardando-aprovação)) e, antes da tarefa 19, instalar o Docker Desktop (P79; sem ele, vale o plano B, o *workflow* manual D). O P81 = B **revogou o D2**: a borda dos campos passa a `--placeholder`. Toda a herança (etapas 4, 6 e 7) foi distribuída no [mapa da herança](#mapa-da-herança-da-etapa-8). Nada da etapa 8 foi implementado ainda.
-> - **Ponto de parada (2026-11-05, sessão encerrada pelo dono):** a etapa 8 está decidida (P68 a P84) e os textos do P84 foram escolhidos (1.1, 2.1, 3.1). O **bloco A (tarefas 1 e 2, SEO de base) foi delegado ao `frontend-nextjs` e ainda não tinha sido commitado**: ao retomar, rode `git status`. Se houver alterações não commitadas em `lib/site.ts`, `lib/seo.ts`, `app/sitemap.ts`, `app/robots.ts`, `app/layout.tsx` ou `data/artigos.ts`, são trabalho parcial desse bloco: confira com lint, typecheck, `npm test`, build, `medir:pacote` e Playwright antes de seguir (depois, `performance-e-seo` verifica, `revisor-de-codigo` revisa e o commit é `feat(seo): ...` conforme a tabela de commits da etapa 8). Se a árvore estiver limpa, recomece a tarefa 1. **Ações do dono pendentes:** (1) criar `WHATSAPP_NUMBER` no `.env.local` e na Vercel (Production e Preview) e apagar `NEXT_PUBLIC_WHATSAPP_NUMBER` (ADR-0013); (2) definir `NEXT_PUBLIC_SITE_URL` (https) na Vercel antes de publicar (P69); (3) definir `PERMITIR_DADOS_FICTICIOS=1` no `.env.local` quando a tarefa 5 entrar (P74); (4) abrir o Docker Desktop antes da tarefa 19 (regressão visual, P79; o Docker já está instalado, mas o serviço estava parado); (5) atualizar a spec (§8.3 e §14), que ainda cita `NEXT_PUBLIC_WHATSAPP_NUMBER`.
+> - **Ponto de parada (2026-11-05, sessão encerrada pelo dono):** a etapa 8 está decidida (P68 a P84) e os textos do P84 foram escolhidos (1.1, 2.1, 3.1). O **bloco A (tarefas 1 e 2, SEO de base) foi delegado ao `frontend-nextjs` e ainda não tinha sido commitado**: ao retomar, rode `git status`. Se houver alterações não commitadas em `lib/site.ts`, `lib/seo.ts`, `app/sitemap.ts`, `app/robots.ts`, `app/layout.tsx` ou `data/artigos.ts`, são trabalho parcial desse bloco: confira com lint, typecheck, `npm test`, build, `medir:pacote` e Playwright antes de seguir (depois, `performance-e-seo` verifica, `revisor-de-codigo` revisa e o commit é `feat(seo): ...` conforme a tabela de commits da etapa 8). Se a árvore estiver limpa, recomece a tarefa 1. **Ações do dono (situação em 2026-11-11):** (1) `.env.local` criado com `WHATSAPP_NUMBER` vazio (vale o número fictício em desenvolvimento; o dono preenche o real quando tiver o WhatsApp Business) e `PERMITIR_DADOS_FICTICIOS=1` (P74) ✅; (2) **Vercel (2026-11-11):** projeto criado pelo dono a partir do GitHub; `NEXT_PUBLIC_SITE_URL=https://atelie-do-queijo.vercel.app` em Production e Preview e `PERMITIR_DADOS_FICTICIOS=1` **só em Preview**; `WHATSAPP_NUMBER` só quando houver o número real (sem ela, os links do WhatsApp ficam ocultos em produção). **Decisão do dono: a branch de produção da Vercel passa a ser `producao`** (a `main` gera Preview, que roda com os dados fictícios e com `Disallow: /`). A branch `producao` já existe no GitHub (a Vercel exigiu; criada pelo dono no mesmo commit `553cafd`, **sem deploy**) e **não recebe push** dos agentes: só quando o conteúdo real estiver pronto e o dono aprovar a publicação (as travas do bloco B impedem o build de produção antes disso); (3) Docker Desktop rodando (29.8.1) ✅, deixar aberto para a tarefa 19 (P79); (4) spec §8.3 atualizada para `WHATSAPP_NUMBER` com aprovação do dono ✅ (a §14 não citava a variável).
 > - **Estado:** etapa 7 publicada nos commits `0589676`, `6791989`/`eca43a5`, `7602c3d`/`22a508a` e `c5b514e` (ver [Commits da etapa 7](#commits-da-etapa-7)); etapa 6 em `a744972` e `a37640c` ([Commits da etapa 6](#commits-da-etapa-6)). A etapa 5 está nos commits `92fb989` e `a990e3a`. **Nenhum queijo tem GLB**: o bloco C da etapa 5 (hero da Home e giro no cartão) segue **pendente, só com o 1º GLB** (P40 = B).
 > - **Lacunas do dono que seguem visíveis:** os 12 textos do assistente e o aviso de nova aba (`[A DEFINIR: …]`, P52) em `TEXTOS_DO_ROTEIRO` (`lib/roteiro.ts`) e `AVISO_DE_NOVA_ABA` (`lib/whatsapp.ts`). Como editar: [`docs/conteudo.md`](conteudo.md#assistente-horário-e-whatsapp). Pendências do bloco B (nova aba para quem enxerga, `depoisDaAcao`, erro do chunk, contraste da borda do campo, aba sem número) em [Verificação do bloco B](#verificação-do-bloco-b-etapa-6-correções-aplicadas-e-pendências); todas decididas em 2026-11-05 (P81, P83 e P84 da etapa 8): a nova aba fica só para leitor de tela, a borda dos campos vai para `--placeholder` (tarefa 11) e os três textos têm propostas aguardando a escolha do dono.
 > - **Publicação (etapa 9):** o número do WhatsApp é resolvido só no servidor; publicar **somente na Vercel** ou garantir `VERCEL_ENV=production`, e conferir que `5520900000000` não aparece em `.next/static`. A trava de build contra `[A DEFINIR` em produção e a conferência automática do número em `.next/static` foram **antecipadas para a etapa 8** (tarefa 5, P73 e P74); a validação profissional do texto de saúde continua na etapa 9. Ver [`docs/ambiente.md`](ambiente.md).
@@ -2343,7 +2343,8 @@ Registrada aqui, **sem implementar**. **Distribuída** em 2026-11-05 no [mapa da
 - **Teste instável corrigido:** `Pagamento.test.tsx`, "fale com a gente" abre o painel.
   - **Causa:** o clique com `delay: null` rodava num `act` síncrono. O `lazy` do painel suspendia dentro dele e, com a suíte cheia, o `import()` terminava depois de o `act` fechar. O React 19 não retomava o Suspense.
   - **Correção:** `act` assíncrono aguardado nesse clique. A suíte completa passou 4 de 4 vezes.
-- **Próximo passo:** bloco B, tarefa 4 (cabeçalhos HTTP e CSP, `devops-e-deploy`).
+- **Bloco B (tarefas 4 a 7):** concluído em 2026-11-11, com auditoria (tarefa 6, registrada em [Verificação do bloco B](#verificação-do-bloco-b-etapa-8)), correções da auditoria e da revisão (CI com `PERMITIR_DADOS_FICTICIOS` no `env` do workflow, porque o `next typegen` do `typecheck` carrega a config na fase de build) e revisão ✅.
+- **Próximo passo:** bloco C, tarefa 8 (JSON-LD, `performance-e-seo`).
 
 **Pré-requisito:** etapa 7 concluída (`c5b514e`, `50fbf93`) e o painel sob demanda com o *gate* de hidratação dos e2e (`24d8de4`, ADR-0012).
 
@@ -2675,14 +2676,59 @@ Cada tarefa termina com `lint`, `typecheck`, `format:check`, `test`, `modelos:va
     - `docs/ambiente.md` (`NEXT_PUBLIC_SITE_URL` obrigatória e `https` em produção, `PERMITIR_DADOS_FICTICIOS=1` obrigatória em qualquer build de produção enquanto houver dados fictícios, cabeçalhos e CSP: como liberar um domínio novo, Docker Desktop para a regressão visual); `docs/conteudo.md` (o que aparece no JSON-LD quando o dono preencher preço, corpo, foto e produtor; campo `descricao` dos artigos; o que a trava de lacunas lista; onde ficam os textos do P84); README (scripts `test:cobertura`, `test:visual`, `medir:pacote`); CHANGELOG; neste plano, a situação da etapa e os [desvios para o checklist da §14](#desvios-para-o-checklist-da-14-etapa-8); `CHANGELOG.md` registra a revogação do D2 (a entrada antiga da etapa 4 não é reescrita).
     - **Pronto quando:** commit `docs: fecha a etapa 8` publicado.
 
+### Verificação do bloco B (etapa 8)
+
+Auditoria da tarefa 6 (`auditor-de-seguranca`, 2026-11-11), somente leitura, sobre a árvore com as tarefas 4 e 5 ainda sem commit. Nada crítico ou alto.
+
+#### Triagem do `npm audit`
+
+| Comando | Resultado | Decisão |
+| --- | --- | --- |
+| `npm audit --omit=dev` | 0 vulnerabilidades | — (critério do plano atendido) |
+| `npm audit signatures` | 450 pacotes com assinatura verificada; 123 com atestação | — |
+| `npm audit` (com dev) | 7 moderadas, todas da mesma causa: `minimatch` 10.2.6 (GHSA-g3hv-75wg-m249, DoS por expansão de glob, CWE-405) em `@typescript-eslint/typescript-estree` 8.72.0, via `eslint-config-next` → `typescript-eslint` | **Aceita com motivo:** só desenvolvimento (ESLint), sem entrada de terceiros (só os padrões da nossa configuração); sem correção dentro do semver (`typescript-estree` exige `minimatch ^10.2.2`, a correção é `>=11.0.1`; `npm audit fix --dry-run` não muda nada; `typescript-eslint` 8.72.2, a mais nova, continua no intervalo). Sem `overrides` para versão maior. Reavaliar quando o `typescript-eslint` corrigir (Dependabot ou Renovate na etapa 9). |
+
+#### Achados e destino
+
+| Gravidade | Achado | Destino |
+| --- | --- | --- |
+| Média | Newsletter sem `method="post"` (`app/_home/Newsletter.tsx:57`): envio antes da hidratação põe o e-mail na URL (`/?email=…`), no histórico e nos logs da Vercel | `frontend-nextjs`, no commit do bloco B |
+| Baixa | Trava de build P74 aceita `NODE_ENV=test` ou `development` no `next build` (o Next não força `production`): passa sem `PERMITIR_DADOS_FICTICIOS` e publica CNPJ, endereço e frete fictícios fora da Vercel (o número vira `null`) | `devops-e-deploy`: na fase de build, exigir só `PERMITIR_DADOS_FICTICIOS=1`, com teste |
+| Baixa | Toolbar da Vercel em Preview gera violação de CSP (`vercel.live`) | Dono: desligar o Toolbar em Pre-Production (Settings → General) ou `VERCEL_PREVIEW_FEEDBACK_ENABLED=0` em Preview; ADR-0015 sem mudança |
+| Baixa | Lacunas fixas no JSX a partir de `null` ou lista vazia (`[A DEFINIR: queijos citados]`, `[A DEFINIR: artigos]`, perfil sensorial) não são detectadas pela trava P73 | `devops-e-deploy`: `postbuild` que, com `VERCEL_ENV=production`, procura `[A DEFINIR` em `.next/server/app` |
+| Baixa | Conferência do número fictício em `.next/static` só no `medir:pacote` manual (fora da CI e da Vercel) | `devops-e-deploy`: levar ao mesmo `postbuild` ou à CI |
+| Info | Comentário de `lib/whatsapp.server.ts:13-14` e `docs/ambiente.md:31` desatualizados após o P74 | `devops-e-deploy`, no commit do bloco B |
+| Info | Produção da Vercel | Resolvido pelo dono em 2026-11-11: branch de produção = `producao`; a `main` gera Preview (conferir a Deployment Protection em Preview, que publica dados fictícios) |
+
+#### Server Actions (base do P75 = A)
+
+`consultarFrete` e `confirmarPedido` continuam **sem efeito colateral**: só chamam `calcularFrete` e `criarPedido` simulados (`lib/pedido.server.ts`). Nada é gravado, enviado (sem `fetch` ou e-mail) nem cobrado, e não há `console.*`. Toda exceção é capturada, a entrada não é repetida na resposta, o limite de corpo é `32kb` e o preço é recalculado no servidor. O adiamento do limite de taxa para o ADR do gateway se mantém.
+
+#### Inventário LGPD (para o rascunho do aviso, D33, etapa 9)
+
+| Fluxo | Dado pessoal recebido | Onde vive | Sai do navegador? | Log, URL ou armazenamento |
+| --- | --- | --- | --- | --- |
+| Newsletter (§5.9) | E-mail | Só o campo do formulário; validação de formato no navegador | Não: nada é gravado nem enviado (D25/P9) | Sem log nem armazenamento. **URL: risco antes da hidratação (achado médio), a corrigir** |
+| Calculadora de frete (produto e checkout) | CEP | Estado do componente | Sim: Server Action `consultarFrete` (corpo POST) | Sem log; resposta sem a entrada; formulário `method="post"` |
+| Checkout (etapas 1 a 3) | Nome, e-mail, telefone, endereço (CEP, rua, número, complemento, bairro, cidade, UF); se for presente, mensagem do cartão e data de entrega; forma de pagamento (Pix ou cartão, **sem dado de cartão**) | Só em memória (React, P37); recarregar a página apaga | Sim: Server Action `confirmarPedido` (corpo POST), validada com Zod, usada em memória e descartada | Sem log, sem persistência, sem URL; a resposta devolve só número, e-mail e totais |
+| Assistente (chat) | Texto livre digitado (a pessoa pode escrever dado pessoal) | Só em memória; motor determinístico no navegador | Não. Os links `wa.me` levam mensagens fixas por motivo, nunca o texto digitado; ao clicar, a pessoa vai por conta própria ao WhatsApp (Meta), que deve ser citado no aviso | Sem log nem armazenamento |
+| `localStorage` (`CHAVE_DA_SACOLA`) | Nenhum: itens (`slug`, `formatoId`, `quantidade`) e `presente: boolean` | Navegador | Não | — |
+| `sessionStorage` (`atelie:bolha-atendimento-vista`) | Nenhum: só `'1'` | Navegador | Não | — |
+| Cookies, análise, fontes e scripts de terceiros | Nenhum (CSP `connect-src 'self'`, fontes servidas pelo próprio site, sem análise) | — | — | — |
+| Hospedagem (Vercel) | IP, user-agent e caminho de cada requisição (logs do provedor) | Vercel (operadora) | — | Citar no aviso; validação jurídica na etapa 9 |
+
+**Para o checklist da etapa 9 (publicação):** seguir a lista "Para liberar a publicação" de `docs/ambiente.md`: remover `exigirDadosFicticiosPermitidos` e `exigirSemDadosFicticiosEmProducao` do `next.config.ts`, ajustar ou remover `conferirNumeroFicticio` (`scripts/conferir-build.mjs` e `scripts/medir-pacote.mjs`) e tirar `PERMITIR_DADOS_FICTICIOS` da Vercel (Preview), da CI e do Playwright.
+
+Conferência: nenhum `console.*` em código de servidor (o único `console.error`, em `components/PainelDoAtendimento.tsx:114`, é de cliente e só fora de produção); nenhum `fetch`, `sendBeacon` ou cookie; nenhum `dangerouslySetInnerHTML`; nenhum segredo versionado (árvore e histórico); única variável `NEXT_PUBLIC_` é `NEXT_PUBLIC_SITE_URL`.
+
 ### Commits da etapa 8
 
 | Bloco | Conteúdo | Mensagem | Situação |
 | --- | --- | --- | --- |
 | Docs | Este detalhamento e os ADRs 0014 e 0015 | `docs: detalha a etapa 8 e propõe os adrs 0014 e 0015` | Publicado (`e147dbd`) |
-| Docs | Respostas P68 a P84, revogação do D2, ADRs 0014 e 0015 aceitos, propostas de texto do P84 | `docs: registra as respostas p68 a p84 e aceita os adrs 0014 e 0015` | A fazer (sessão principal) |
-| A | Tarefas 1 a 3 | `feat(seo): adiciona url base, canônicas, open graph, sitemap e robots` | A fazer |
-| B | Tarefas 4 a 7 | `feat(seguranca): adiciona cabeçalhos http, csp e travas de publicação` | A fazer |
+| Docs | Respostas P68 a P84, revogação do D2, ADRs 0014 e 0015 aceitos, propostas de texto do P84 | `docs: registra as respostas p68 a p84 e aceita os adrs 0014 e 0015` | Publicado (`ddf8d59`) |
+| A | Tarefas 1 a 3 | `feat(seo): adiciona url base, canônicas, open graph, sitemap e robots` | Publicado (`0b638b9`) |
+| B | Tarefas 4 a 7 | `feat(seguranca): adiciona cabeçalhos http, csp e travas de publicação` | Publicado (revisão ✅ em 2026-11-11) |
 | C | Tarefas 8 e 9 | `feat(seo): adiciona dados estruturados json-ld` | A fazer |
 | D | Tarefas 10 a 13 | `fix(acessibilidade): adiciona a varredura com axe e corrige os achados` | A fazer |
 | E | Tarefas 14 a 16 | `perf: amplia o orçamento por rota e mede os core web vitals` | A fazer |

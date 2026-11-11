@@ -19,6 +19,7 @@ import { readdir, readFile } from 'node:fs/promises';
 import { spawn, spawnSync } from 'node:child_process';
 import { gzipSync } from 'node:zlib';
 import { fileURLToPath } from 'node:url';
+import { conferirNumeroFicticio } from './conferir-build.mjs';
 
 const raiz = fileURLToPath(new URL('../', import.meta.url));
 const pastaApp = `${raiz}.next/server/app`;
@@ -350,4 +351,8 @@ async function medirWebVitals() {
 }
 
 if (process.argv.includes('--web-vitals')) await medirWebVitals();
-else await medirPacote();
+else {
+  await medirPacote();
+  // P74: o número fictício não pode estar em nenhum arquivo servido ao navegador.
+  if (!(await conferirNumeroFicticio(raiz))) process.exitCode = 1;
+}

@@ -1,3 +1,4 @@
+// Importado pelo next.config.ts (carregado pelo Node antes do build): sem CSS, sem server-only, sem React.
 import type { SlugDoQueijo } from '@/data/cheeses';
 import type { CartaoDoChat } from './assistant';
 import type { QueijoDoQuiz } from './quiz';

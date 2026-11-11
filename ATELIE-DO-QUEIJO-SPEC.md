@@ -598,7 +598,7 @@ Abre a partir do botão flutuante. **Desktop**: painel ancorado no canto inferio
 - Nesta primeira versão, implemente o roteiro com respostas pré-definidas (árvore de opções) e um ponto de integração `lib/assistant.ts` para a IA futura.
 
 ### 8.3 WhatsApp
-- Número em variável de ambiente `NEXT_PUBLIC_WHATSAPP_NUMBER` (formato internacional, só dígitos). Links no formato `https://wa.me/<numero>?text=<mensagem codificada>`.
+- Número em variável de ambiente `WHATSAPP_NUMBER`, lida só no servidor, sem o prefixo `NEXT_PUBLIC_` (formato internacional, só dígitos; ADR-0013). Links no formato `https://wa.me/<numero>?text=<mensagem codificada>`.
 - Mensagens pré-preenchidas:
   - Geral: **Olá! Vim pelo site do Ateliê do Queijo e queria ajuda para escolher.**
   - Produto: **Olá! Tenho uma dúvida sobre o [nome do queijo].**

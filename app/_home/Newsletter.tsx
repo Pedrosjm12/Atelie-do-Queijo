@@ -54,7 +54,7 @@ export function Newsletter() {
               {MENSAGEM_DE_SUCESSO}
             </p>
           ) : (
-            <form className={estilos.formulario} onSubmit={aoEnviar} noValidate>
+            <form className={estilos.formulario} method="post" onSubmit={aoEnviar} noValidate>
               <div className={estilos.campo}>
                 <label htmlFor={idDoCampo} className={estilos.rotulo}>
                   Seu e-mail

@@ -19,5 +19,7 @@ export default defineConfig({
     url: 'http://localhost:3000',
     reuseExistingServer: !emCI,
     timeout: 180_000,
+    // P74: o build local e o da CI usam dados fictícios e precisam desta permissão.
+    env: { PERMITIR_DADOS_FICTICIOS: '1' },
   },
 });

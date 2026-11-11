@@ -1,3 +1,4 @@
+// Importado pelo next.config.ts (carregado pelo Node antes do build): sem CSS, sem server-only, sem React.
 import {
   RESPOSTAS_INICIAIS,
   TAMANHO_MAXIMO_DA_MENSAGEM_DO_CLIENTE,

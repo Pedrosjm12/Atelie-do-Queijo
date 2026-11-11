@@ -24,6 +24,12 @@ describe('Newsletter', () => {
     expect(screen.getByRole('button', { name: 'Quero receber' })).toBeInTheDocument();
   });
 
+  it('usa method="post" para o e-mail nunca ir para a URL se enviado antes da hidratação (LGPD)', () => {
+    const { container } = render(<Newsletter />);
+    const formulario = container.querySelector('form');
+    expect(formulario).toHaveAttribute('method', 'post');
+  });
+
   it.each(['', 'sem-arroba', 'a@b', 'a b@c.com'])('recusa o e-mail inválido %j', async (valor) => {
     const usuario = userEvent.setup();
     render(<Newsletter />);
