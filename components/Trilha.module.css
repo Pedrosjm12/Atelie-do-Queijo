@@ -9,12 +9,29 @@
 .lista {
   display: flex;
   flex-wrap: wrap;
-  gap: 0 8px;
+  /* 4 px entre as linhas, só quando a trilha quebra: as zonas de toque (24 px) não se sobrepõem. */
+  gap: 4px 8px;
 }
 
 .lista li {
   display: inline-flex;
   gap: 8px;
+}
+
+/* Zona de toque invisível (WCAG 2.5.8, P82 = A): 24 px de altura, centrada no texto e com a
+   largura do próprio link; não muda o visual nem invade o separador "/" nem o link vizinho. */
+.link {
+  position: relative;
+}
+
+.link::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: 0;
+  left: 0;
+  height: 24px;
+  transform: translateY(-50%);
 }
 
 .link:hover {

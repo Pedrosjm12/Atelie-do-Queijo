@@ -22,6 +22,15 @@ beforeEach(() => {
 });
 
 describe('ShippingCalculator', () => {
+  it('colar "CEP 01310-100" resulta em 01310-100', async () => {
+    const usuario = userEvent.setup();
+    render(<ShippingCalculator />);
+    const campo = screen.getByLabelText('Calcule o frete e o prazo');
+    await usuario.click(campo);
+    await usuario.paste('CEP 01310-100');
+    expect(campo).toHaveValue('01310-100');
+  });
+
   it('é um formulário POST com campo de CEP configurado e botão de envio', () => {
     render(<ShippingCalculator />);
     const formulario = campo().closest('form');

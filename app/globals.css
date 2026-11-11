@@ -10,7 +10,7 @@
 
   /* Linhas */
   --pedra: #2e2823; /* bordas e divisórias padrão */
-  --pedra-clara: #4a4038; /* borda de botões secundários e campos */
+  --pedra-clara: #4a4038; /* borda de botões secundários, chips e controles (não de campos: P81) */
   --pedra-ardosia: #3a322c; /* contorno da ardósia e de amostras escuras */
 
   /* Texto */
@@ -45,7 +45,10 @@
   --raio-pilula: 999px;
   --raio-campo: 10px;
   --borda-padrao: 1px solid var(--pedra);
-  --borda-campo: 1px solid var(--pedra-clara);
+  /* Campos de formulário (P81 = B, revoga o D2): 1.4.11, contraste de componente >= 3:1. */
+  --borda-campo: 1px solid var(--placeholder);
+  /* Controles que não são campos: seletor de quantidade, respostas rápidas. */
+  --borda-controle: 1px solid var(--pedra-clara);
   --borda-destaque: 1px solid var(--ouro);
   --alvo-toque: 44px;
   /* Barra fixa de compra do produto (celular): 14 + 52 + 22 px de respiro + 1 px de borda. */
@@ -107,6 +110,11 @@ textarea {
 
 button {
   cursor: pointer;
+}
+
+/* Gatilho do painel enquanto o chunk baixa depois do clique (P80 = A); sem outra mudança visual. */
+:is(button, a)[aria-busy='true'] {
+  cursor: progress;
 }
 
 img,

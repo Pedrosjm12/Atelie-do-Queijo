@@ -6,6 +6,10 @@ import type { EntradaDoCliente, EstadoDaConversa, MensagemDoChat } from '@/lib/a
  * o lerem sem importar `Atendimento.tsx` (que importa o painel): evita ciclo de módulos.
  */
 
+/** Erro ao carregar o atendimento (P84, 2.1, aprovado em 2026-11-05): texto literal. */
+export const TEXTO_ATENDIMENTO_INDISPONIVEL =
+  'Não conseguimos abrir o atendimento agora. Confira sua conexão e tente de novo em instantes.';
+
 export type OpcoesDeFechamento = {
   /** `false` quando a ação já leva o foco a outro lugar (ex.: navegar para o produto). */
   devolverFoco?: boolean;
@@ -24,6 +28,8 @@ export type ConversaDoChat = {
 
 export type ValorDoAtendimento = {
   aberto: boolean;
+  /** `true` só enquanto o chunk do painel baixa depois de um clique (P80 = A): `aria-busy` nos gatilhos. */
+  carregando: boolean;
   /** `origem` é o gatilho que recebe o foco ao fechar; sem ela vale o elemento ativo. */
   abrir: (origem?: HTMLElement) => void;
   fechar: (opcoes?: OpcoesDeFechamento) => void;

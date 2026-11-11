@@ -90,6 +90,17 @@ export function mascararTelefone(entrada: string): string {
   return `(${ddd}) ${resto.slice(0, corte)}-${resto.slice(corte)}`;
 }
 
+/**
+ * Telefone colado com o código do país ("+55 11 91234-5678"): com 12 ou 13 dígitos começando em
+ * 55, o 55 sai, para a máscara não tomá-lo por DDD. Só vale para texto colado.
+ */
+export function telefoneColado(texto: string): string {
+  const digitos = texto.slice(0, 40).replace(/\D/g, '');
+  return (digitos.length === 12 || digitos.length === 13) && digitos.startsWith('55')
+    ? digitos.slice(2)
+    : texto;
+}
+
 /** Mesma contagem do esquema: trim, `\r\n` e `\r` viram `\n`; conta por ponto de código (emoji = 1). */
 export function medirMensagem(texto: string): { caracteres: number; linhas: number } {
   const normalizado = texto.trim().replace(/\r\n?/g, '\n');

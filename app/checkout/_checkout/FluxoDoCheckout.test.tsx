@@ -118,6 +118,26 @@ describe('FluxoDoCheckout: estrutura', () => {
     expect(screen.queryByLabelText(/cpf|cart[aã]o|cvv/i)).not.toBeInTheDocument();
   });
 
+  it('colar "+55 11 91234-5678" no telefone resulta em (11) 91234-5678', async () => {
+    semear();
+    renderizar();
+    const telefone = await screen.findByLabelText('Telefone');
+    const usuario = userEvent.setup();
+    await usuario.click(telefone);
+    await usuario.paste('+55 11 91234-5678');
+    expect(telefone).toHaveValue('(11) 91234-5678');
+  });
+
+  it('colar "CEP 01310-100" no campo de CEP resulta em 01310-100', async () => {
+    semear();
+    renderizar();
+    const cep = await screen.findByLabelText('CEP');
+    const usuario = userEvent.setup();
+    await usuario.click(cep);
+    await usuario.paste('CEP 01310-100');
+    expect(cep).toHaveValue('01310-100');
+  });
+
   it('aplica a máscara de CEP e de telefone', async () => {
     const usuario = userEvent.setup({ delay: null });
     renderizar();

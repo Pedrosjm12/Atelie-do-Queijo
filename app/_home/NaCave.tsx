@@ -13,7 +13,7 @@ export function NaCave() {
         idDoTitulo="titulo-na-cave"
         paragrafo="Queijos que chegaram ao ponto ideal. Gire, olhe por dentro e escolha o seu."
         larguraDoParagrafo={520}
-        link={{ href: '/queijos', texto: 'Ver todos os queijos →' }}
+        link={{ href: '/queijos', texto: 'Ver todos os queijos' }}
       />
       <ul className={estilos.grade}>
         {destaquesDaSemana().map((queijo) => (

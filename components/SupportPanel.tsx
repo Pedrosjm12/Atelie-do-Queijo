@@ -27,6 +27,10 @@ import { LinkDoWhatsApp } from './LinkDoWhatsApp';
 import { useAbas } from './useAbas';
 import estilos from './SupportPanel.module.css';
 
+/** Aba Queijista sem número configurado (P84, 3.1, aprovado em 2026-11-05): texto literal. */
+export const TEXTO_SEM_WHATSAPP =
+  'O atendimento pelo WhatsApp não está disponível por aqui no momento. O Assistente do Ateliê responde na hora, 24 horas.';
+
 const ABAS = ['assistente', 'queijista'] as const;
 
 // O gerador A.6 só é necessário para os cartões que não são o do Canastra (A.7): fica fora do
@@ -306,12 +310,17 @@ function ConteudoDoPainel({
 
       <div
         {...abas.propsDoPainel('queijista')}
-        tabIndex={undefined}
+        // Sem número não há link no painel: ele mesmo entra no Tab, para o teclado alcançar o texto (APG).
+        tabIndex={numeroDoWhatsApp === null ? 0 : undefined}
         className={estilos.painelDoQueijista}
       >
         <p className={estilos.horario}>
           {horario.humanoAberto ? TEXTO_DO_HORARIO : TEXTO_DA_CAVE_FECHADA}
         </p>
+        {/* Sem número e dentro do horário (P84, 3.1); com a cave fechada, só o texto da §8.3. */}
+        {numeroDoWhatsApp === null && horario.humanoAberto && (
+          <p className={estilos.horario}>{TEXTO_SEM_WHATSAPP}</p>
+        )}
         {botaoDoWhatsapp}
       </div>
     </>

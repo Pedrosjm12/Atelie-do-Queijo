@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { AtendimentoProvider, BotaoAbrirAtendimento } from './Atendimento';
+import { TEXTO_ATENDIMENTO_INDISPONIVEL } from './atendimento.contexto';
 import { SacolaProvider } from './SacolaProvider';
 
 vi.mock('next/navigation', () => ({ usePathname: () => '/' }));
@@ -34,21 +35,26 @@ describe('Atendimento: chunk do painel indisponível', () => {
     const erros = () => vi.mocked(console.error).mock.calls.length;
 
     await usuario.click(gatilho);
-    expect(screen.getByText(AVISO)).toBeInTheDocument();
-    await vi.waitFor(() => expect(screen.queryByText(AVISO)).toBeNull());
+    // Falha rápida: o aviso de "abrindo" só nasce depois de ~200 ms e nem chega a aparecer.
+    await vi.waitFor(() => expect(erros()).toBeGreaterThan(0));
+    expect(screen.queryByText(AVISO)).toBeNull();
     expect(screen.queryByRole('dialog', { name: 'Assistente do Ateliê' })).not.toBeInTheDocument();
     expect(screen.getByText('conteúdo da página')).toBeInTheDocument();
     expect(gatilho).toHaveFocus();
+    // P84, 2.1: com o painel fechado, o aviso vai à região de status (a do "Adicionado à sacola").
+    const aviso = document.querySelector('[data-aviso-da-sacola]');
+    await vi.waitFor(() => expect(aviso).toHaveTextContent(TEXTO_ATENDIMENTO_INDISPONIVEL));
+    expect(aviso).toHaveAttribute('role', 'status');
     const errosDaPrimeira = erros();
     expect(errosDaPrimeira).toBeGreaterThan(0);
 
     // O painel foi descartado por inteiro: o clique seguinte monta um lazy novo e tenta de novo
     // (aparece o aviso de novo) em vez de ficar preso no import rejeitado do lazy antigo.
     await usuario.click(gatilho);
-    expect(screen.getByText(AVISO)).toBeInTheDocument();
-    await vi.waitFor(() => expect(screen.queryByText(AVISO)).toBeNull());
-    expect(erros()).toBeGreaterThan(errosDaPrimeira);
+    // Falha rápida: o aviso de "abrindo" só nasce depois de ~200 ms e nem chega a aparecer.
+    await vi.waitFor(() => expect(erros()).toBeGreaterThan(errosDaPrimeira));
+    await vi.waitFor(() => expect(gatilho).toHaveFocus());
+    expect(screen.queryByText(AVISO)).toBeNull();
     expect(screen.getByText('conteúdo da página')).toBeInTheDocument();
-    expect(gatilho).toHaveFocus();
   });
 });

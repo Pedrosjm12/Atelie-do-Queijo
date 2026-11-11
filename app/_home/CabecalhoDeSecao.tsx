@@ -35,7 +35,7 @@ export function CabecalhoDeSecao({
         </p>
       </div>
       <Button href={link.href} variante="link">
-        {link.texto}
+        {link.texto} <span aria-hidden="true">→</span>
       </Button>
     </div>
   );

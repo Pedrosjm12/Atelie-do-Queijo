@@ -26,6 +26,7 @@ import {
   ORDEM_DOS_CAMPOS,
   ROTULOS,
   mascararTelefone,
+  telefoneColado,
   montarEntrada,
   type CampoDeEntrega,
   type DadosDaEntrega,
@@ -250,6 +251,7 @@ export function EtapaDeEntrega({
               onChange={(v) => mudar('telefone', v)}
               mensagem={mensagemDe('telefone')}
               mascara={mascararTelefone}
+              normalizarColado={telefoneColado}
               autoComplete="tel-national"
               inputMode="tel"
               maxLength={15}

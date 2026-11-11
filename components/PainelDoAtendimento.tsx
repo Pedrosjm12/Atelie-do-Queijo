@@ -12,6 +12,7 @@ import {
 import {
   ContextoDaConversa,
   type ConversaDoChat,
+  TEXTO_ATENDIMENTO_INDISPONIVEL,
   type OpcoesDeFechamento,
 } from './atendimento.contexto';
 import { TEXTO_ADICIONADO, useAcoesDaSacola } from './SacolaProvider';
@@ -69,9 +70,16 @@ export default function PainelDoAtendimento({
   const enviar = useCallback(
     (entrada: EntradaDoCliente): Promise<boolean> => {
       let entregue = false;
+      let baixou = true;
+      let motor: Assistente;
       const tarefa = fila.current
         .then(async () => {
-          const motor = await obterAssistente();
+          try {
+            motor = await obterAssistente();
+          } catch (erro) {
+            baixou = false;
+            throw erro;
+          }
           const resposta = await motor.responder(conversaAtual.current.estado, entrada);
           // Entrada ignorada (resposta rápida antiga, texto vazio): nada muda, nada a reenviar.
           if (resposta.mensagens.length === 0) {
@@ -84,6 +92,7 @@ export default function PainelDoAtendimento({
             ...resposta.mensagens,
           ];
           // Ações só nascem de uma resposta rápida escolhida pela pessoa (ADR-0010, decisão 2).
+          let acaoFalhou = false;
           for (const acao of resposta.acoes) {
             if (acao.tipo !== 'adicionar-a-sacola') continue;
             const adicionado = adicionar({
@@ -92,6 +101,7 @@ export default function PainelDoAtendimento({
               quantidade: acao.quantidade,
               presente: acao.presente,
             });
+            if (!adicionado) acaoFalhou = true;
             // O aviso visual fica fora do <dialog> (inerte): quem usa leitor de tela o recebe aqui.
             if (adicionado) {
               mensagens = [
@@ -104,14 +114,41 @@ export default function PainelDoAtendimento({
               ];
             }
           }
+          // O texto de depois da ação (P84, 1.1) só vale se a sacola recebeu o item.
+          // Só as mensagens DESTA resposta: o texto de ações anteriores que deram certo fica.
+          if (acaoFalhou) {
+            const dessaResposta = new Set(resposta.mensagens.map((m) => m.id));
+            mensagens = mensagens.filter(
+              (m) => m.tipo !== 'assistente' || !m.aposAcao || !dessaResposta.has(m.id),
+            );
+          }
           const proxima: ConversaDoChat = { mensagens, estado: resposta.estado };
           conversaAtual.current = proxima;
           setConversa(proxima);
           entregue = true;
         })
-        // Falha ao baixar o motor: a conversa fica como estava e a próxima entrada tenta de novo.
+        // Falha ao baixar o motor: a próxima entrada tenta de novo. O painel está aberto, então o
+        // aviso (P84, 2.1, "confira sua conexão") entra como mensagem do assistente no
+        // `role="log"`; cada tentativa que falha o anuncia de novo. Só vale para a falha do
+        // download: outras exceções (motor, sacola) não têm texto aprovado, e dizer "confira sua
+        // conexão" seria enganoso; nelas a conversa fica como estava e o texto digitado permanece.
         .catch((erro: unknown) => {
           if (process.env.NODE_ENV !== 'production') console.error(erro);
+          if (baixou) return;
+          const atual = conversaAtual.current;
+          const proxima: ConversaDoChat = {
+            ...atual,
+            mensagens: [
+              ...atual.mensagens,
+              {
+                id: `indisponivel-${atual.estado.proximoId}-${atual.mensagens.length}`,
+                tipo: 'assistente',
+                texto: TEXTO_ATENDIMENTO_INDISPONIVEL,
+              },
+            ],
+          };
+          conversaAtual.current = proxima;
+          setConversa(proxima);
         })
         .then(() => entregue);
       // A fila segue por `Promise<void>`: uma falha nunca trava as entradas seguintes.

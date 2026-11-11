@@ -32,7 +32,9 @@ import { AVISO_DE_NOVA_ABA, lerNumeroDoPedido, type MotivoDoContato } from './wh
  *
  * TEXTOS: todo texto visível do roteiro está em `TEXTOS_DO_ROTEIRO` (ou vem de `lib/quiz.ts`, dos
  * rótulos das respostas rápidas e dos dados dos cartões). Os que a spec não traz ficam como
- * `[A DEFINIR: …]` até o dono escrever (P52, decidido em 2026-11-03). O agente não propõe texto.
+ * `[A DEFINIR: …]` até o dono escrever (P52, decidido em 2026-11-03). O agente não propõe texto,
+ * salvo a exceção do P84: o `depoisDaAcao` (1.1) foi proposto pelo agente e aprovado pelo dono em
+ * 2026-11-05.
  */
 
 const A_DEFINIR = (descricao: string) => `[A DEFINIR: ${descricao}]`;
@@ -59,7 +61,9 @@ export const TEXTOS_DO_ROTEIRO = {
   harmonizar: A_DEFINIR('texto antes da pergunta "Vai acompanhar com…" e dos cartões'),
   outrasOpcoes: A_DEFINIR('texto ao escolher "Ver outras opções" (Manchego DOP e Parmigiano)'),
   presenteFormato: A_DEFINIR('pergunta do formato antes de pôr o presente na sacola'),
-  depoisDaAcao: A_DEFINIR('texto depois de pôr na sacola'),
+  /** P84, item 1.1 (aprovado pelo dono em 2026-11-05). Só aparece se a ação de pôr na sacola der certo. */
+  depoisDaAcao:
+    'Pronto, vai com embalagem de presente. A mensagem do cartão você escreve no checkout, com até 200 caracteres. Posso ajudar em mais alguma coisa?',
   continuar: A_DEFINIR('texto depois de cada sugestão, antes das respostas rápidas iniciais'),
   naoEntendi: A_DEFINIR('texto quando a mensagem não é reconhecida'),
   saude: A_DEFINIR(
@@ -159,8 +163,8 @@ function criarConstrutor(estado: EstadoDaConversa) {
   return {
     mensagens,
     proximoId: () => proximoId,
-    assistente(texto: string) {
-      mensagens.push({ id: id(), tipo: 'assistente', texto });
+    assistente(texto: string, opcoes?: { aposAcao: true }) {
+      mensagens.push({ id: id(), tipo: 'assistente', texto, ...opcoes });
     },
     cliente(texto: string) {
       mensagens.push({ id: id(), tipo: 'cliente', texto });
@@ -387,7 +391,8 @@ function responderComRespostaRapida(estado: EstadoDaConversa, id: string): Respo
       const formato = FORMATOS_DO_CANASTRA_NO_CHAT.find((f) => idDaOpcao('formato', f.id) === id);
       if (!formato) return ignorar(estado);
       c.cliente(formato.rotulo);
-      c.assistente(TEXTOS_DO_ROTEIRO.depoisDaAcao);
+      // `aposAcao`: o painel só mostra esta mensagem se a ação de pôr na sacola tiver sucesso.
+      c.assistente(TEXTOS_DO_ROTEIRO.depoisDaAcao, { aposAcao: true });
       c.respostas(RESPOSTAS_INICIAIS);
       return montar(c, estado, {
         etapa: 'inicio',

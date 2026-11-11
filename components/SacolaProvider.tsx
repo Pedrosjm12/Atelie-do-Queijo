@@ -12,7 +12,12 @@ import {
 } from 'react';
 import type { SlugDoQueijo } from '@/data/cheeses';
 import { AvisoDaSacola } from './AvisoDaSacola';
-import { ContextoDoAviso, type AvisoAtual } from './avisoDaSacola.contexto';
+import {
+  ContextoDoAnunciador,
+  ContextoDoAviso,
+  type Anunciar,
+  type AvisoAtual,
+} from './avisoDaSacola.contexto';
 import {
   CHAVE_DA_SACOLA,
   QUANTIDADE_MAXIMA_POR_ITEM,
@@ -154,6 +159,11 @@ export function SacolaProvider({ children }: { children: ReactNode }) {
     [despachar],
   );
 
+  const anunciar = useCallback<Anunciar>((texto, opcoes) => {
+    contadorDoAviso.current += 1;
+    setAviso({ texto, id: contadorDoAviso.current, duracaoMs: opcoes?.duracaoMs });
+  }, []);
+
   const esconderAviso = useCallback(() => setAviso(null), []);
 
   const acoes = useMemo<AcoesDaSacola>(
@@ -177,7 +187,7 @@ export function SacolaProvider({ children }: { children: ReactNode }) {
     <ContextoDasAcoes value={acoes}>
       <ContextoDoEstado value={estado}>
         <ContextoDoAviso value={aviso}>
-          {children}
+          <ContextoDoAnunciador value={anunciar}>{children}</ContextoDoAnunciador>
           <AvisoDaSacola aoExpirar={esconderAviso} />
         </ContextoDoAviso>
       </ContextoDoEstado>

@@ -7,6 +7,7 @@ import {
   useRef,
   useState,
   type ChangeEvent,
+  type ClipboardEvent,
   type FormEvent,
 } from 'react';
 import { consultarFrete } from '@/app/_acoes/frete';
@@ -23,7 +24,7 @@ import {
   MENSAGEM_FORA_DE_AREA,
   textoDoPrazo,
 } from '@/lib/freteNaTela';
-import { digitosAte, posicaoAposDigitos } from '@/lib/mascara';
+import { colarComMascara, digitosAte, posicaoAposDigitos } from '@/lib/mascara';
 import estilos from './Compra.module.css';
 
 // Textos aprovados (spec §7.2 item 10; P25) em `lib/freteNaTela.ts`. O de CEP inválido vem de
@@ -85,6 +86,27 @@ export function ShippingCalculator() {
     });
     // O resultado (ou o cálculo) era de outro CEP: sai da tela assim que o CEP muda.
     if (mascarado !== campo.texto) setEstado({ tipo: 'ocioso' });
+  }
+
+  // Colar "CEP 01310-100" (ou com espaços e quebras) resulta em "01310-100": o `maxLength` cortaria
+  // o texto colado antes da máscara, por isso o evento é tratado aqui.
+  function aoColar(evento: ClipboardEvent<HTMLInputElement>) {
+    const colado = evento.clipboardData.getData('text');
+    if (colado === '') return;
+    evento.preventDefault();
+    const no = evento.currentTarget;
+    const { texto, cursor } = colarComMascara(
+      campo.texto,
+      no.selectionStart ?? campo.texto.length,
+      no.selectionEnd ?? campo.texto.length,
+      colado,
+      mascararCep,
+    );
+    if (texto !== campo.texto) {
+      consultaAtual.current++;
+      setEstado({ tipo: 'ocioso' });
+    }
+    setCampo({ texto, cursor });
   }
 
   async function aoEnviar(evento: FormEvent<HTMLFormElement>) {
@@ -164,6 +186,7 @@ export function ShippingCalculator() {
           className={estilos.campoDeCep}
           value={campo.texto}
           onChange={aoDigitar}
+          onPaste={aoColar}
           aria-invalid={invalido || undefined}
           aria-describedby={invalido ? idDoResultado : undefined}
         />

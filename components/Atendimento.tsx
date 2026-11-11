@@ -13,8 +13,10 @@ import {
   type CSSProperties,
   type ReactNode,
 } from 'react';
+import { useAnunciar } from './avisoDaSacola.contexto';
 import {
   ContextoDoAtendimento,
+  TEXTO_ATENDIMENTO_INDISPONIVEL,
   useAtendimento,
   type OpcoesDeFechamento,
   type ValorDoAtendimento,
@@ -31,6 +33,35 @@ type DestinoDoFoco = 'gatilho' | 'conteudo' | 'nenhum';
 // aparecer na hora; nada disso entra nos <script> do HTML.
 const importarPainel = () => import('./PainelDoAtendimento');
 const criarPainel = () => lazy(importarPainel);
+
+/** Quanto o chunk precisa demorar para os gatilhos ficarem `aria-busy` (P80 = A). */
+export const ATRASO_DO_ESTADO_OCUPADO_MS = 200;
+
+/** O aviso de erro do chunk (P84, 2.1) fica mais tempo que o "Adicionado à sacola" (4 s, P26). */
+const DURACAO_DO_ERRO_MS = 10_000;
+
+/**
+ * Fallback do `Suspense` do painel: existe só enquanto o chunk baixa depois de um clique. Liga e
+ * desliga o `aria-busy` dos gatilhos (P80 = A). Não escreve nada na tela: o aviso de leitor de
+ * tela fica numa região já montada, no provider.
+ */
+function BaixandoOPainel({ aoMudar }: { aoMudar: (baixando: boolean) => void }) {
+  // Só depois de uns instantes: com o chunk já em cache o fallback dura um quadro, e piscar
+  // `aria-busy`, cursor e aviso de leitor de tela seria ruído.
+  useEffect(() => {
+    let ligado = false;
+    const prazo = setTimeout(() => {
+      ligado = true;
+      aoMudar(true);
+    }, ATRASO_DO_ESTADO_OCUPADO_MS);
+    return () => {
+      clearTimeout(prazo);
+      if (ligado) aoMudar(false);
+    };
+  }, [aoMudar]);
+
+  return null;
+}
 
 /**
  * Borda de erro mínima: se o chunk do painel não carregar (sem rede, deploy novo), o lazy lança no
@@ -69,11 +100,14 @@ export function AtendimentoProvider({
   numeroDoWhatsApp: string | null;
 }) {
   const [aberto, setAberto] = useState(false);
+  // `true` só enquanto o chunk baixa depois de um clique (P80 = A); alimenta o `aria-busy` dos gatilhos.
+  const [carregando, setCarregando] = useState(false);
   // Vira `true` na primeira abertura e não volta: o painel segue montado, com a conversa.
   const [painelPedido, setPainelPedido] = useState(false);
   // Cada tentativa recria o lazy: um import que rejeitou fica rejeitado para sempre no mesmo lazy.
   const [tentativa, setTentativa] = useState(0);
   const [PainelDoAtendimento, setPainelDoAtendimento] = useState(criarPainel);
+  const anunciar = useAnunciar();
   const gatilho = useRef<HTMLElement | null>(null);
   const destinoDoFoco = useRef<DestinoDoFoco>('gatilho');
 
@@ -125,8 +159,15 @@ export function AtendimentoProvider({
     setPainelPedido(false);
     setTentativa((t) => t + 1);
     setPainelDoAtendimento(criarPainel);
-    if (alvo?.isConnected) alvo.focus();
-  }, []);
+    // Só devolve o foco se a pessoa ainda está no gatilho ou em lugar nenhum: se ela já foi para
+    // outro elemento, o foco não é roubado.
+    const ativo = document.activeElement;
+    if (alvo?.isConnected && (ativo === null || ativo === document.body || ativo === alvo)) {
+      alvo.focus();
+    }
+    // O painel nunca chegou a abrir: o aviso vai à região de status, fora dele (P84, 2.1).
+    anunciar(TEXTO_ATENDIMENTO_INDISPONIVEL, { duracaoMs: DURACAO_DO_ERRO_MS });
+  }, [anunciar]);
 
   // Fecha ao mudar de rota (inclusive voltar/avançar). Só o caminho conta: searchParams não.
   const caminho = usePathname();
@@ -144,26 +185,22 @@ export function AtendimentoProvider({
   }, [caminho, aberto, fechar]);
 
   const valor = useMemo<ValorDoAtendimento>(
-    () => ({ aberto, abrir, fechar, numeroDoWhatsApp }),
-    [aberto, abrir, fechar, numeroDoWhatsApp],
+    () => ({ aberto, carregando, abrir, fechar, numeroDoWhatsApp }),
+    [aberto, carregando, abrir, fechar, numeroDoWhatsApp],
   );
 
   return (
     <ContextoDoAtendimento value={valor}>
       {children}
+      {/* Região sempre montada e vazia: o texto entra depois e é anunciado (sem efeito visual). */}
+      <p role="status" className="sr-only">
+        {carregando && aberto ? 'Abrindo o atendimento…' : ''}
+      </p>
       {painelPedido && (
         // Abriu antes do chunk chegar: avisa por leitor de tela (sem mudar o visual). O foco segue
         // no gatilho até o diálogo montar e o showModal() levá-lo para dentro.
         <BordaDoPainel key={tentativa} aoFalhar={aoFalharOPainel}>
-          <Suspense
-            fallback={
-              aberto ? (
-                <p role="status" className="sr-only">
-                  Abrindo o atendimento…
-                </p>
-              ) : null
-            }
-          >
+          <Suspense fallback={<BaixandoOPainel aoMudar={setCarregando} />}>
             <PainelDoAtendimento
               aberto={aberto}
               aoSolicitarFechamento={fechar}
@@ -193,7 +230,8 @@ export function BotaoAbrirAtendimento({
   variante,
   ...resto
 }: BotaoAbrirAtendimentoProps) {
-  const { abrir } = useAtendimento();
+  const { abrir, carregando } = useAtendimento();
+  const ocupado = carregando ? true : undefined;
 
   if (variante === undefined) {
     const { style } = resto;
@@ -203,6 +241,7 @@ export function BotaoAbrirAtendimento({
         className={className}
         style={style}
         aria-haspopup="dialog"
+        aria-busy={ocupado}
         onClick={(evento) => abrir(evento.currentTarget)}
       >
         {children}
@@ -216,6 +255,7 @@ export function BotaoAbrirAtendimento({
       variante={variante}
       className={className}
       aria-haspopup="dialog"
+      aria-busy={ocupado}
       onClick={(evento) => abrir(evento.currentTarget)}
     >
       {children}

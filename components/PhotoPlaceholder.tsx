@@ -29,7 +29,9 @@ export function PhotoPlaceholder({
         ? { 'aria-hidden': true }
         : { role: 'img', 'aria-label': `Foto a ser inserida: ${descricao}` })}
     >
-      <span aria-hidden="true">{textoVisivel ?? `[FOTO: ${descricao}]`}</span>
+      <span aria-hidden="true" data-foto-pendente>
+        {textoVisivel ?? `[FOTO: ${descricao}]`}
+      </span>
     </div>
   );
 }

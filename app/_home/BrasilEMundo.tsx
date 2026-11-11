@@ -10,7 +10,7 @@ const CARTOES = [
     titulo: 'A nova geração de queijeiros',
     texto:
       'Canastra, Serro, Mantiqueira, Campo das Vertentes, Cuesta Paulista. Produtores brasileiros que vêm conquistando medalhas pelo mundo.',
-    link: { href: '/queijos?origem=brasil', texto: 'Conhecer os brasileiros →' },
+    link: { href: '/queijos?origem=brasil', texto: 'Conhecer os brasileiros' },
   },
   {
     foto: 'cave de maturação europeia, prateleiras de madeira',
@@ -18,7 +18,7 @@ const CARTOES = [
     titulo: 'Os clássicos de origem',
     texto:
       'França, Itália, Suíça, Espanha, Portugal. Queijos de denominação de origem, importados com toda a documentação.',
-    link: { href: '/queijos?origem=mundo', texto: 'Conhecer os importados →' },
+    link: { href: '/queijos?origem=mundo', texto: 'Conhecer os importados' },
   },
 ] as const;
 
@@ -40,7 +40,7 @@ export function BrasilEMundo() {
               <h3 className={`titulo-cartao-grande ${estilos.nome}`}>{c.titulo}</h3>
               <p className={estilos.texto}>{c.texto}</p>
               <Button href={c.link.href} variante="link" className={estilos.link}>
-                {c.link.texto}
+                {c.link.texto} <span aria-hidden="true">→</span>
               </Button>
             </div>
           </article>

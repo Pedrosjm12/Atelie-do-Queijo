@@ -204,7 +204,7 @@
 .resposta {
   height: 36px;
   padding: 0 12px;
-  border: var(--borda-campo);
+  border: var(--borda-controle);
   border-radius: var(--raio-pilula);
   background: transparent;
   font-size: 12px;

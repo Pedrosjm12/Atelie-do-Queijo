@@ -2345,7 +2345,8 @@ Registrada aqui, **sem implementar**. **Distribuída** em 2026-11-05 no [mapa da
   - **Correção:** `act` assíncrono aguardado nesse clique. A suíte completa passou 4 de 4 vezes.
 - **Bloco B (tarefas 4 a 7):** concluído em 2026-11-11, com auditoria (tarefa 6, registrada em [Verificação do bloco B](#verificação-do-bloco-b-etapa-8)), correções da auditoria e da revisão (CI com `PERMITIR_DADOS_FICTICIOS` no `env` do workflow, porque o `next typegen` do `typecheck` carrega a config na fase de build) e revisão ✅.
 - **Bloco B publicado em `00f9abb`.** Bloco C (tarefas 8 e 9, JSON-LD) concluído em 2026-11-11 ([verificação](#verificação-do-bloco-c-etapa-8)); falta só rodar o validador do Google no Preview.
-- **Próximo passo:** bloco D, tarefa 10 (varredura com axe, `testes-e-qualidade` + `especialista-em-acessibilidade`).
+- **Bloco C publicado em `c18e34c`.** Bloco D (tarefas 10 a 13, acessibilidade) concluído em 2026-11-11 ([verificação](#verificação-do-bloco-d-etapa-8)); os três textos do P84 estão no código. Pendente: conferência com leitor de tela real (NVDA ou VoiceOver) do foco na falha do *chunk* e do anúncio "Abrindo o atendimento…".
+- **Próximo passo:** bloco E, tarefa 14 (orçamento por rota e Core Web Vitals, `performance-e-seo`).
 
 **Pré-requisito:** etapa 7 concluída (`c5b514e`, `50fbf93`) e o painel sob demanda com o *gate* de hidratação dos e2e (`24d8de4`, ADR-0012).
 
@@ -2727,8 +2728,35 @@ Conferência: nenhum `console.*` em código de servidor (o único `console.error
 Tarefa 9 (2026-11-11): `testes-e-qualidade` (fronteiras de estoque, preço e lacuna; os 10 queijos e todas as rotas indexáveis no e2e, sem valor fictício nem `[`), `auditor-de-seguranca` (nada crítico, alto ou médio; escape de `<` para a sequência unicode `u003c` com barra invertida, igual à documentação do Next 16.4.3; dados só de `data/`) e `revisor-de-codigo` (⚠️ resolvido). Ajustes aplicados: o construtor recusa valores de `data/ficticio.ts`; `produto()`, `trilhaDeNavegacao()` e `artigo()` devolvem `null` sem nome/título/itens verdadeiros; `Offer` só com preço > 0; `engines.node` = `24.x` (aviso da Vercel) com o `package-lock.json` sincronizado.
 
 - **Validador do Google (critério da tarefa 8): pendente do Preview público.** Só roda com página pública; fazer no Preview da `main` depois do push (Deployment Protection desligada) com o [Teste de pesquisa aprimorada](https://search.google.com/test/rich-results) em `/` e `/queijos/canastra-curado`. Resultado esperado: **"Product snippets" válido com avisos** (`image`, `brand`, `review`/`aggregateRating`); **"Merchant listings" com erro por falta de `image`** (o produto não entra em listagens de comerciante até haver foto) e sugestões de `shippingDetails` e `hasMerchantReturnPolicy`; `BreadcrumbList` válido (o item `/queijos?origem=brasil` é URL absoluta rastreável do mesmo site, aceito mesmo com canônica `/queijos`).
-- **Decisão do dono (sugestão do revisor):** estoque `ultimas` publica `InStock` (contrato); o schema.org aceita `LimitedAvailability`, mais fiel. Muda o contrato só se o dono quiser.
+- **Decidido pelo dono em 2026-11-11:** estoque `ultimas` continua publicando `InStock` (o revisor sugeriu `LimitedAvailability`; recusado).
 - **Para a tarefa 21 (`docs/conteudo.md`):** ao trocar os dados fictícios pelos reais, **remover** os valores de `data/ficticio.ts` em vez de substituí-los ali; senão o filtro do JSON-LD passa a esconder dados reais (ex.: o produtor verdadeiro numa descrição).
+
+### Achados da varredura com axe (tarefa 10, 2026-11-11)
+
+`@axe-core/playwright` 4.14.0 (ADR-0014) e `e2e/acessibilidade.spec.ts`: 24 cenários da lista de acessibilidade, a 1440 e a 390 px (47 casos; o menu do celular só existe a 390 px). Tags wcag2a, wcag2aa, wcag21a, wcag21aa e wcag22aa, depois do *gate* de hidratação. Sem a exceção, 13 casos falham (prova de que o axe lê o DOM); com ela, todos passam.
+
+| Regra | Impacto | Onde | Avaliação |
+| --- | --- | --- | --- |
+| `color-contrast` | serious | Textos `[FOTO: …]` dos placeholders: Home e resultado do quiz (3 nós), `/aprenda`, `/aprenda/queijo-e-vinho`, `/produtores` (1440 e 390 px), Canastra e Brie (1440 px), menu do celular aberto (placeholders cobertos pelo menu) | Real, já decidido pelo dono (**D34**): única entrada de `EXCECOES_DO_AXE`; some com as fotos |
+
+- **Nenhum outro achado** em `/queijos`, `/sacola` (todas as variantes), `/checkout` (etapas 1, 2, confirmação e erro), `/presentes`, 404, painel (4 estados) e aviso da sacola.
+- **Seletor da exceção** amplo demais para o placeholder decorativo (`[aria-hidden="true"] > span[aria-hidden="true"]`): a tarefa 11 dá ao `PhotoPlaceholder` um atributo de dado próprio (sem efeito visual) para a exceção mirar só nele.
+- O axe não cobre a borda dos campos (1.4.11), foco, ordem e leitor de tela: tarefas 11, 12 e 13.
+
+### Verificação do bloco D (etapa 8)
+
+Tarefa 12 (2026-11-11): `e2e/teclado.spec.ts`, 22 testes (ordem de Tab e Shift+Tab, foco dourado em todas as paradas, `#presentes-corporativos` pelo rodapé e por `hashchange`, contorno de foco ≥ 3:1 com `opacity: .65`). Tarefa 13: `guardiao-do-design` (tudo conforme, um desvio) e `especialista-em-acessibilidade` (⚠️, sem bloqueante; não houve teste com leitor de tela real, só leitura do código e e2e).
+
+**Decisões do dono em 2026-11-11:**
+- **Trilha:** `gap: 4px 8px` (antes `0 8px`) **aprovado**. Quando a trilha quebra em duas linhas (≤ ~390 px), as linhas ficam 4 px mais afastadas e o conteúdo desce 4 px; evita sobrepor as zonas de toque de 24 px (WCAG 2.5.8). Desvio para o checklist da §14.
+- **Erro 2.1 com o painel fechado:** fica **10 s** no aviso (o **Adicionado à sacola. Boa escolha.** segue 4 s, P26), para quem lê devagar ou usa zoom (WCAG 2.2.1).
+- **Escala do perfil sensorial:** a seta de "suave → marcante" fica `aria-hidden` e entra o texto só para leitor de tela " a " (lê "suave a marcante"); **texto novo aprovado pelo dono**, sem mudança visual. Registrar no checklist da §14.
+- **Orçamento de JS (ADR-0012):** depois do bloco D, o compartilhado está em 141,91 de 143,88 kB gzip: sobram ~2 kB. Qualquer código global novo nas próximas etapas precisa de medição antes.
+- **Borda de erro dos campos:** continua 1 px em `--casca-texto` (1,69:1 contra a borda normal; o erro também é indicado por texto, `aria-invalid` e `aria-describedby`, então a 1.4.1 é atendida).
+
+**Contrastes medidos:** `--placeholder` como borda de campo dá 4,87:1 sobre `--cave`, 4,47:1 sobre `--carvao`, 4,70:1 sobre `--cave-funda` e 4,65:1 sobre `--cave-quiz` (1.4.11 atendida).
+
+**Correções pedidas ao `frontend-nextjs` antes do commit:** reanunciar o 2.1 a cada nova tentativa que falhar; foco devolvido ao gatilho só se ninguém tiver movido o foco; "Abrindo o atendimento…" numa região viva já montada; `tabIndex={0}` no tabpanel da aba Queijista sem elemento focável; colar telefone com `+55` descarta o 55; seta da escala sensorial com `aria-hidden`; teste negativo da exceção do axe.
 
 ### Commits da etapa 8
 
@@ -2737,9 +2765,9 @@ Tarefa 9 (2026-11-11): `testes-e-qualidade` (fronteiras de estoque, preço e lac
 | Docs | Este detalhamento e os ADRs 0014 e 0015 | `docs: detalha a etapa 8 e propõe os adrs 0014 e 0015` | Publicado (`e147dbd`) |
 | Docs | Respostas P68 a P84, revogação do D2, ADRs 0014 e 0015 aceitos, propostas de texto do P84 | `docs: registra as respostas p68 a p84 e aceita os adrs 0014 e 0015` | Publicado (`ddf8d59`) |
 | A | Tarefas 1 a 3 | `feat(seo): adiciona url base, canônicas, open graph, sitemap e robots` | Publicado (`0b638b9`) |
-| B | Tarefas 4 a 7 | `feat(seguranca): adiciona cabeçalhos http, csp e travas de publicação` | Publicado (revisão ✅ em 2026-11-11) |
-| C | Tarefas 8 e 9 | `feat(seo): adiciona dados estruturados json-ld` | Publicado (revisão ⚠️ resolvida em 2026-11-11) |
-| D | Tarefas 10 a 13 | `fix(acessibilidade): adiciona a varredura com axe e corrige os achados` | A fazer |
+| B | Tarefas 4 a 7 | `feat(seguranca): adiciona cabeçalhos http, csp e travas de publicação` | Publicado (`00f9abb`) |
+| C | Tarefas 8 e 9 | `feat(seo): adiciona dados estruturados json-ld` | Publicado (`c18e34c`) |
+| D | Tarefas 10 a 13 | `fix(acessibilidade): adiciona a varredura com axe e corrige os achados` | Publicado (revisão ⚠️ resolvida em 2026-11-11) |
 | E | Tarefas 14 a 16 | `perf: amplia o orçamento por rota e mede os core web vitals` | A fazer |
 | F | Tarefas 17 a 20 | `test: adiciona cobertura e regressão visual` | A fazer |
 | Docs | Tarefa 21 | `docs: fecha a etapa 8` | A fazer |
@@ -2852,6 +2880,10 @@ Onde aparece (a decidir junto com a escolha; sugestão sem visual novo): com o p
 - **3.2** O WhatsApp do Ateliê não está disponível por aqui agora. Se quiser, volte para a aba Assistente: ele responde na hora, 24 horas.
 
 Sugestão de uso: dentro do horário, o texto escolhido aparece abaixo da linha do horário; com a cave fechada, fica só o texto literal da §8.3 (**Nossa cave está fechada agora. …**), que já indica o Assistente, para não repetir a mesma ideia duas vezes. "Responde na hora, 24 horas" é o texto da §8.1.
+
+**Ordem no chat (decidida pelo dono em 2026-11-11):** depois de pôr na sacola, fica `depoisDaAcao` (1.1), as respostas rápidas e, por último, **Adicionado à sacola. Boa escolha.**, como já está no código.
+
+**Aplicação (2026-11-11, tarefa 11):** 1.1 em `TEXTOS_DO_ROTEIRO.depoisDaAcao` (só aparece se a sacola aceitou o item); 2.1 no `role="status"` do aviso da sacola com o painel fechado e no `role="log"` com o painel aberto; 3.1 abaixo da linha do horário na aba Queijista sem número (com a cave fechada, só o texto da §8.3).
 
 **Ao aprovar:** o `frontend-nextjs` (com o `especialista-em-ia-conversacional` no `depoisDaAcao`) aplica os textos na tarefa 11 ou numa tarefa própria pequena; o comentário de `lib/roteiro.ts` que diz "O agente não propõe texto" passa a citar a exceção do P84; os testes que exigem `[A DEFINIR` no `depoisDaAcao` (`lib/roteiro.test.ts`, "os 13 textos novos continuam como lacuna") são atualizados; o `depoisDaAcao` só aparece quando a ação de pôr na sacola teve sucesso (conferir no provider, que hoje acrescenta a confirmação só no sucesso); a linha "Textos do P84" da tabela de desvios recebe os textos finais.
 

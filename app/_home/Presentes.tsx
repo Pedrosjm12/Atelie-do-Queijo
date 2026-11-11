@@ -17,7 +17,7 @@ export function Presentes() {
         idDoTitulo="titulo-presentes"
         paragrafo="Kits montados pelo nosso queijista, com tábua, acompanhamentos e cartão escrito à mão."
         larguraDoParagrafo={560}
-        link={{ href: '/presentes', texto: 'Ver todos os presentes →' }}
+        link={{ href: '/presentes', texto: 'Ver todos os presentes' }}
       />
       <ul className={estilos.grade}>
         {KITS.map((kit) => (

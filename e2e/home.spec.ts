@@ -121,11 +121,11 @@ test.describe('home', () => {
       'href',
       '/presentes',
     );
-    await expect(page.getByRole('link', { name: 'Conhecer os brasileiros →' })).toHaveAttribute(
+    await expect(page.getByRole('link', { name: 'Conhecer os brasileiros' })).toHaveAttribute(
       'href',
       '/queijos?origem=brasil',
     );
-    await expect(page.getByRole('link', { name: 'Conhecer os importados →' })).toHaveAttribute(
+    await expect(page.getByRole('link', { name: 'Conhecer os importados' })).toHaveAttribute(
       'href',
       '/queijos?origem=mundo',
     );

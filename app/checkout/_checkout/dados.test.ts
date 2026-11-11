@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { mascararTelefone, medirMensagem } from './dados';
+import { mascararTelefone, medirMensagem, telefoneColado } from './dados';
 
 describe('mascararTelefone', () => {
   it.each([
@@ -26,5 +26,18 @@ describe('medirMensagem', () => {
 
   it('ignora espaços nas pontas, como o esquema', () => {
     expect(medirMensagem('  oi  ')).toEqual({ caracteres: 2, linhas: 1 });
+  });
+});
+
+describe('telefoneColado', () => {
+  it.each([
+    ['+55 11 91234-5678', '11912345678'],
+    ['5511912345678', '11912345678'],
+    ['55 11 1234-5678', '1112345678'],
+    ['(11) 91234-5678', '(11) 91234-5678'],
+    ['55119', '55119'],
+    ['(55) 91234-5678', '(55) 91234-5678'],
+  ])('%s → %s', (entrada, esperado) => {
+    expect(telefoneColado(entrada)).toBe(esperado);
   });
 });

@@ -567,19 +567,26 @@ describe('regras do assistente (§8.2)', () => {
     expect(slugs(ultima.mensagens).every((s) => s in CARTOES_DO_CHAT)).toBe(true);
   });
 
-  it('os 13 textos novos continuam como lacuna [A DEFINIR: …] (P52)', () => {
+  it('só o depoisDaAcao (P84, 1.1) saiu da lacuna; os demais textos novos seguem [A DEFINIR: …] (P52)', () => {
     const literais = [
       'sugestaoDoPresente',
       'perguntaDoPresente',
       'rotuloComCartao',
       'rotuloOutrasOpcoes',
       'passagemParaHumano',
+      'depoisDaAcao',
     ];
     const lacunas = Object.entries(TEXTOS_DO_ROTEIRO).filter(
       ([chave]) => !literais.includes(chave),
     );
-    expect(lacunas).toHaveLength(13);
+    expect(lacunas).toHaveLength(12);
     for (const [chave, valor] of lacunas) expect(valor, chave).toMatch(/^\[A DEFINIR: .+\]$/);
+  });
+
+  it('depoisDaAcao é o texto aprovado do P84 (1.1), literal e sem lacuna', () => {
+    expect(TEXTOS_DO_ROTEIRO.depoisDaAcao).toBe(
+      'Pronto, vai com embalagem de presente. A mensagem do cartão você escreve no checkout, com até 200 caracteres. Posso ajudar em mais alguma coisa?',
+    );
   });
 
   it('nenhum texto visível em lib/roteiro.ts fora de TEXTOS_DO_ROTEIRO', () => {

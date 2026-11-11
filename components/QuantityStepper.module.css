@@ -2,7 +2,7 @@
   display: inline-flex;
   align-items: center;
   height: 52px;
-  border: var(--borda-campo);
+  border: var(--borda-controle);
   border-radius: var(--raio-pilula);
 }
 

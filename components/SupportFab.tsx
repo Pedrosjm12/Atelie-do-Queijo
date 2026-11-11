@@ -10,7 +10,7 @@ export const ATRASO_DA_BOLHA_MS = 20_000;
 
 /** Botão flutuante de atendimento (spec 4.8). */
 export function SupportFab() {
-  const { abrir } = useAtendimento();
+  const { abrir, carregando } = useAtendimento();
   const [bolhaVisivel, setBolhaVisivel] = useState(false);
 
   // A bolha aparece 20 s após o primeiro acesso, uma vez por sessão. O sessionStorage pode
@@ -43,6 +43,7 @@ export function SupportFab() {
         className={estilos.botao}
         aria-label="Abrir atendimento"
         aria-haspopup="dialog"
+        aria-busy={carregando ? true : undefined}
         onClick={(evento) => {
           setBolhaVisivel(false);
           abrir(evento.currentTarget);

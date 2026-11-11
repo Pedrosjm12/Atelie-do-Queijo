@@ -97,7 +97,7 @@ test.describe('página /presentes (§12, §5.7)', () => {
     page,
   }) => {
     await page.goto('/');
-    await page.getByRole('link', { name: 'Ver todos os presentes →' }).click();
+    await page.getByRole('link', { name: 'Ver todos os presentes' }).click();
     await expect(page).toHaveURL('/presentes');
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(
       'Para quem merece uma boa tábua.',

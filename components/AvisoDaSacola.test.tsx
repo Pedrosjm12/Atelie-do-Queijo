@@ -3,6 +3,7 @@ import { act, render, screen } from '@testing-library/react';
 import { BotaoAdicionar } from './BotaoAdicionar';
 import { LinkDaSacola } from './LinkDaSacola';
 import { SacolaProvider } from './SacolaProvider';
+import { useAnunciar } from './avisoDaSacola.contexto';
 
 const TEXTO = 'Adicionado à sacola. Boa escolha.';
 
@@ -216,5 +217,33 @@ describe('AvisoDaSacola', () => {
     expect(screen.getByRole('status')).toHaveTextContent(LIMITE);
     expect(salva().presente).toBe(true);
     expect(salva().itens[0]?.quantidade).toBe(10);
+  });
+});
+
+describe('aviso com duração própria', () => {
+  function Anuncia() {
+    const anunciar = useAnunciar();
+    return (
+      <button type="button" onClick={() => anunciar('Texto longo', { duracaoMs: 10_000 })}>
+        Anunciar
+      </button>
+    );
+  }
+
+  it('fica 10 s quando pedido; o da sacola segue com 4 s', async () => {
+    render(
+      <SacolaProvider>
+        <Anuncia />
+      </SacolaProvider>,
+    );
+    await clicar('Anunciar');
+    await avancar(20);
+    const regiao = document.querySelector('[data-aviso-da-sacola]');
+    expect(regiao).toHaveTextContent('Texto longo');
+    await avancar(5000);
+    expect(regiao).toHaveTextContent('Texto longo');
+    await avancar(5100);
+    await avancar(300); // saída de opacidade
+    expect(regiao).toBeEmptyDOMElement();
   });
 });

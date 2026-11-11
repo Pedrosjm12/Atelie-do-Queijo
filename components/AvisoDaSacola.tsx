@@ -21,6 +21,7 @@ export function AvisoDaSacola({ aoExpirar }: AvisoDaSacolaProps) {
   const aviso = useContext(ContextoDoAviso);
   const id = aviso?.id ?? null;
   const texto = aviso?.texto ?? '';
+  const duracaoMs = aviso?.duracaoMs ?? DURACAO_DO_AVISO_MS;
   const [exibido, setExibido] = useState<{ id: number; texto: string } | null>(null);
 
   useEffect(() => {
@@ -29,12 +30,12 @@ export function AvisoDaSacola({ aoExpirar }: AvisoDaSacolaProps) {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setExibido(null);
     const quadro = requestAnimationFrame(() => setExibido({ id, texto }));
-    const prazo = setTimeout(aoExpirar, DURACAO_DO_AVISO_MS);
+    const prazo = setTimeout(aoExpirar, duracaoMs);
     return () => {
       cancelAnimationFrame(quadro);
       clearTimeout(prazo);
     };
-  }, [id, texto, aoExpirar]);
+  }, [id, texto, duracaoMs, aoExpirar]);
 
   // Aviso expirado: o texto fica mais um instante para a saída (opacidade) e então é removido.
   useEffect(() => {

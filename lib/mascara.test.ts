@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { digitosAte, posicaoAposDigitos } from './mascara';
+import { mascararCep } from './commerce';
+import { colarComMascara, digitosAte, posicaoAposDigitos } from './mascara';
 
 describe('digitosAte', () => {
   it('conta só os dígitos antes da posição', () => {
@@ -16,5 +17,21 @@ describe('posicaoAposDigitos', () => {
   });
   it('passa do total de dígitos → fim do texto', () => {
     expect(posicaoAposDigitos('12-3', 9)).toBe(4);
+  });
+});
+
+describe('colarComMascara', () => {
+  it('"CEP 01310-100" colado no campo vazio vira 01310-100, com o cursor no fim', () => {
+    expect(colarComMascara('', 0, 0, 'CEP 01310-100', mascararCep)).toEqual({
+      texto: '01310-100',
+      cursor: 9,
+    });
+  });
+
+  it('substitui a seleção e descarta o que passa de 8 dígitos', () => {
+    expect(colarComMascara('01310-100', 0, 9, ' 30130 010 99', mascararCep).texto).toBe(
+      '30130-010',
+    );
+    expect(colarComMascara('0131', 4, 4, '0-100', mascararCep).texto).toBe('01310-100');
   });
 });

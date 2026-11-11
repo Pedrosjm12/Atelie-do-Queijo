@@ -4,11 +4,15 @@ import estilos from './Detalhes.module.css';
 type ChaveDoPerfil = keyof DetalheDoQueijo['perfil'];
 
 /** Atributos e escalas da spec §7.3. */
-const ATRIBUTOS: readonly { chave: ChaveDoPerfil; nome: string; escala: string }[] = [
-  { chave: 'intensidade', nome: 'Intensidade', escala: 'suave → marcante' },
-  { chave: 'cremosidade', nome: 'Cremosidade', escala: 'firme → derrete' },
-  { chave: 'salinidade', nome: 'Salinidade', escala: 'delicado → salgado' },
-  { chave: 'aroma', nome: 'Aroma', escala: 'leve → pungente' },
+const ATRIBUTOS: readonly {
+  chave: ChaveDoPerfil;
+  nome: string;
+  escala: readonly [string, string];
+}[] = [
+  { chave: 'intensidade', nome: 'Intensidade', escala: ['suave', 'marcante'] },
+  { chave: 'cremosidade', nome: 'Cremosidade', escala: ['firme', 'derrete'] },
+  { chave: 'salinidade', nome: 'Salinidade', escala: ['delicado', 'salgado'] },
+  { chave: 'aroma', nome: 'Aroma', escala: ['leve', 'pungente'] },
 ];
 
 const NIVEIS: readonly Nivel[] = [1, 2, 3, 4, 5];
@@ -31,7 +35,12 @@ export function SensoryProfile({ perfil }: SensoryProfileProps) {
             <li key={chave}>
               <div className={estilos.linhaDoAtributo}>
                 <span className={estilos.nomeDoAtributo}>{nome}</span>
-                <span className={estilos.escala}>{escala}</span>
+                <span className={estilos.escala}>
+                  {escala[0]}
+                  <span aria-hidden="true"> → </span>
+                  <span className="sr-only"> a </span>
+                  {escala[1]}
+                </span>
               </div>
               {valor === null ? (
                 <p className={estilos.lacuna}>[A DEFINIR]</p>

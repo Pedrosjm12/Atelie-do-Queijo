@@ -15,3 +15,20 @@ export function posicaoAposDigitos(mascarado: string, n: number): number {
   }
   return mascarado.length;
 }
+
+/**
+ * Resultado de colar `colado` no lugar da seleção `[inicio, fim)` de `atual`: o texto já com a
+ * máscara e a posição do cursor logo depois do último dígito colado. A máscara tira o que não é
+ * dígito (ex.: colar "CEP 01310-100" resulta em "01310-100").
+ */
+export function colarComMascara(
+  atual: string,
+  inicio: number,
+  fim: number,
+  colado: string,
+  mascara: (texto: string) => string,
+): { texto: string; cursor: number } {
+  const bruto = atual.slice(0, inicio) + colado + atual.slice(fim);
+  const texto = mascara(bruto);
+  return { texto, cursor: posicaoAposDigitos(texto, digitosAte(bruto, inicio + colado.length)) };
+}

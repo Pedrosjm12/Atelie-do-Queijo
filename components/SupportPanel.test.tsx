@@ -7,11 +7,14 @@ import {
   type Assistente,
 } from '@/lib/assistant';
 import { FORMATOS_DO_CANASTRA_NO_CHAT } from '@/lib/cartoesDoChat';
+import { TEXTOS_DO_ROTEIRO } from '@/lib/roteiro';
 import { TEXTO_DA_CAVE_FECHADA, TEXTO_DO_HORARIO } from '@/lib/horario';
 import { AVISO_DE_NOVA_ABA } from '@/lib/whatsapp';
 import { AtendimentoProvider } from './Atendimento';
 import { SacolaProvider, TEXTO_ADICIONADO, useEstadoDaSacola } from './SacolaProvider';
+import { TEXTO_ATENDIMENTO_INDISPONIVEL } from './atendimento.contexto';
 import { SupportFab } from './SupportFab';
+import { TEXTO_SEM_WHATSAPP } from './SupportPanel';
 
 vi.mock('next/navigation', () => ({ usePathname: () => '/' }));
 
@@ -256,6 +259,11 @@ describe('SupportPanel: conversa', () => {
     expect(
       within(screen.getByRole('log', { name: 'Conversa' })).getByText(TEXTO_ADICIONADO),
     ).toBeVisible();
+    expect(
+      within(screen.getByRole('log', { name: 'Conversa' })).getByText(
+        TEXTOS_DO_ROTEIRO.depoisDaAcao,
+      ),
+    ).toBeVisible();
   });
 
   it('o log rolável entra na ordem do Tab (WCAG 2.1.1)', async () => {
@@ -302,6 +310,19 @@ describe('SupportPanel: texto digitado nunca se perde', () => {
     const campo = screen.getByLabelText('Escreva sua mensagem');
     expect(campo).toHaveValue('oi');
     expect(doCliente()).toEqual([]);
+    // P84, 2.1: o aviso entra como mensagem do assistente no log.
+    expect(within(screen.getByRole('log')).getByText(TEXTO_ATENDIMENTO_INDISPONIVEL)).toBeVisible();
+
+    // Nova tentativa que falha de novo: o aviso é anunciado outra vez.
+    const adiada2 = promessaAdiada<Assistente>();
+    vi.mocked(carregarAssistente).mockImplementationOnce(() => adiada2.promessa);
+    await usuario.keyboard('{Enter}');
+    adiada2.rejeitar(new Error('de novo'));
+    await waitFor(() =>
+      expect(
+        within(screen.getByRole('log')).getAllByText(TEXTO_ATENDIMENTO_INDISPONIVEL),
+      ).toHaveLength(2),
+    );
 
     await usuario.keyboard('{Enter}');
     await waitFor(() => expect(doCliente()).toEqual(['oi']));
@@ -411,6 +432,18 @@ describe('SupportPanel: horário da aba Queijista (P5; §8.3)', () => {
     const { aba } = await abrirNaAba('2026-11-08T11:00:00-03:00', null);
     expect(within(aba).getByText(TEXTO_DA_CAVE_FECHADA)).toBeVisible();
     expect(within(aba).queryByRole('link')).not.toBeInTheDocument();
+    // Com a cave fechada, só o texto da §8.3 (P84, 3.1).
+    expect(within(aba).queryByText(TEXTO_SEM_WHATSAPP)).not.toBeInTheDocument();
+  });
+
+  it('sem número e dentro do horário, o texto do P84 (3.1) vem abaixo da linha do horário', async () => {
+    const { aba } = await abrirNaAba('2026-11-10T10:00:00-03:00', null);
+    const horario = within(aba).getByText(TEXTO_DO_HORARIO);
+    const aviso = within(aba).getByText(TEXTO_SEM_WHATSAPP);
+    expect(horario.compareDocumentPosition(aviso) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(within(aba).queryByRole('link')).not.toBeInTheDocument();
+    // Sem nada focável dentro, o próprio painel entra no Tab (APG).
+    expect(aba).toHaveAttribute('tabindex', '0');
   });
 });
 

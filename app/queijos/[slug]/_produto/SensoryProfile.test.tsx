@@ -9,6 +9,14 @@ function perfilDe(slug: string) {
   return q.detalhe.perfil;
 }
 
+/** Texto visível da escala: sem o "a" só para leitor de tela; a seta é decorativa (aria-hidden). */
+function escalaDe(inicio: string): string | null {
+  const no = screen.getByText(inicio, { exact: false, selector: 'span' });
+  const clone = no.cloneNode(true) as HTMLElement;
+  clone.querySelectorAll('.sr-only').forEach((x) => x.remove());
+  return clone.textContent;
+}
+
 describe('SensoryProfile', () => {
   it('Canastra curado: quatro grupos com o valor da spec', () => {
     render(<SensoryProfile perfil={perfilDe('canastra-curado')} />);
@@ -17,10 +25,10 @@ describe('SensoryProfile', () => {
     expect(screen.getByRole('img', { name: 'Cremosidade: 2 de 5' })).toBeInTheDocument();
     expect(screen.getByRole('img', { name: 'Salinidade: 3 de 5' })).toBeInTheDocument();
     expect(screen.getByRole('img', { name: 'Aroma: 4 de 5' })).toBeInTheDocument();
-    expect(screen.getByText('suave → marcante')).toBeInTheDocument();
-    expect(screen.getByText('firme → derrete')).toBeInTheDocument();
-    expect(screen.getByText('delicado → salgado')).toBeInTheDocument();
-    expect(screen.getByText('leve → pungente')).toBeInTheDocument();
+    expect(escalaDe('suave')).toBe('suave → marcante');
+    expect(escalaDe('firme')).toBe('firme → derrete');
+    expect(escalaDe('delicado')).toBe('delicado → salgado');
+    expect(escalaDe('leve')).toBe('leve → pungente');
   });
 
   it('tem cinco barras por grupo, preenchidas até o valor', () => {

@@ -30,7 +30,8 @@ export type CartaoDoChat = {
 };
 
 export type MensagemDoChat =
-  | { id: string; tipo: 'assistente'; texto: string }
+  /** `aposAcao`: só vale se a ação da mesma resposta tiver sucesso (o painel descarta se falhar). */
+  | { id: string; tipo: 'assistente'; texto: string; aposAcao?: true }
   | { id: string; tipo: 'cliente'; texto: string }
   | { id: string; tipo: 'produto'; slug: SlugDoQueijo; cartao: CartaoDoChat }
   | { id: string; tipo: 'respostas-rapidas'; opcoes: readonly RespostaRapida[] };

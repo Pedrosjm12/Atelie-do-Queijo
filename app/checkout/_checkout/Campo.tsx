@@ -5,10 +5,11 @@ import {
   useRef,
   useState,
   type ChangeEvent,
+  type ClipboardEvent,
   type HTMLInputAutoCompleteAttribute,
   type ReactNode,
 } from 'react';
-import { digitosAte, posicaoAposDigitos } from '@/lib/mascara';
+import { colarComMascara, digitosAte, posicaoAposDigitos } from '@/lib/mascara';
 import { ROTULOS, type CampoDeEntrega } from './dados';
 import { idDoCampo } from './ids';
 import estilos from './Checkout.module.css';
@@ -87,6 +88,8 @@ type CampoDeTextoProps = Omit<CampoProps, 'children'> & {
   max?: string;
   /** Máscara aplicada a cada digitação; o cursor acompanha os dígitos (só em `type="text"`). */
   mascara?: (texto: string) => string;
+  /** Ajusta o texto colado antes da máscara (ex.: tirar o código do país do telefone). */
+  normalizarColado?: (texto: string) => string;
 };
 
 /** `<input>` de uma linha; com `mascara`, mantém o cursor no lugar depois de reformatar. */
@@ -101,6 +104,7 @@ export function CampoDeTexto({
   min,
   max,
   mascara,
+  normalizarColado,
   ...campo
 }: CampoDeTextoProps) {
   const entrada = useRef<HTMLInputElement>(null);
@@ -130,6 +134,26 @@ export function CampoDeTexto({
     forcar((n) => n + 1);
   }
 
+  // Colar com máscara: o `maxLength` cortaria o texto colado antes da máscara (ex.: "CEP 01310-100").
+  function aoColar(evento: ClipboardEvent<HTMLInputElement>) {
+    if (!mascara) return;
+    const bruto = evento.clipboardData.getData('text');
+    if (bruto === '') return;
+    const colado = normalizarColado ? normalizarColado(bruto) : bruto;
+    evento.preventDefault();
+    const no = evento.currentTarget;
+    const { texto, cursor: posicao } = colarComMascara(
+      valor,
+      no.selectionStart ?? valor.length,
+      no.selectionEnd ?? valor.length,
+      colado,
+      mascara,
+    );
+    cursor.current = posicao;
+    onChange(texto);
+    forcar((n) => n + 1);
+  }
+
   return (
     <Campo {...campo}>
       {(atributos) => (
@@ -140,6 +164,7 @@ export function CampoDeTexto({
           className={estilos.entrada}
           value={valor}
           onChange={aoDigitar}
+          onPaste={aoColar}
           autoComplete={autoComplete}
           inputMode={inputMode}
           maxLength={maxLength}
