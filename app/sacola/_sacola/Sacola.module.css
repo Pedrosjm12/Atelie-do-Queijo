@@ -7,9 +7,42 @@
   outline: none;
 }
 
+/*
+ * Reserva antes de a sacola ser lida: casa com a altura do estado final para o rodapé não se mexer
+ * (CLS). `ReservaDaSacola` marca o contêiner com `data-sacola` e `--n` (linhas guardadas); sem isso
+ * vale 320px. Alturas medidas: vazia 104,8 px (margem 24); com itens, linha 149 px (desktop e
+ * tablet) ou 200,6 px (até 600 px) e resumo 223,6 px (215,6 px até 600 px), ao lado da lista (desktop)
+ * ou abaixo dela, com gap de 32 px. Com "Embalagem para presente" (`data-presente`), o resumo cresce
+ * 64 px (gap de 20 + botão "Tirar" de 44). Trava: e2e/reserva-da-sacola.spec.ts (1440, 800 e 390 px).
+ */
 .reserva {
   min-height: 320px;
   margin-top: 40px;
+}
+
+.pagina[data-sacola='vazia'] .reserva {
+  min-height: 104.8px;
+  margin-top: 24px;
+}
+
+.pagina[data-presente='1'] {
+  --linha-do-presente: 64px;
+}
+
+.pagina[data-sacola='cheia'] .reserva {
+  min-height: max(calc(223.6px + var(--linha-do-presente, 0px)), calc(1px + var(--n) * 149px));
+}
+
+@media (max-width: 900px) {
+  .pagina[data-sacola='cheia'] .reserva {
+    min-height: calc(256.6px + var(--linha-do-presente, 0px) + var(--n) * 149px);
+  }
+}
+
+@media (max-width: 600px) {
+  .pagina[data-sacola='cheia'] .reserva {
+    min-height: calc(248.6px + var(--linha-do-presente, 0px) + var(--n) * 200.6px);
+  }
 }
 
 .corpo {

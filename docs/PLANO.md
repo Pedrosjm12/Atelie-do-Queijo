@@ -2758,6 +2758,56 @@ Tarefa 12 (2026-11-11): `e2e/teclado.spec.ts`, 22 testes (ordem de Tab e Shift+T
 
 **Correções pedidas ao `frontend-nextjs` antes do commit:** reanunciar o 2.1 a cada nova tentativa que falhar; foco devolvido ao gatilho só se ninguém tiver movido o foco; "Abrindo o atendimento…" numa região viva já montada; `tabIndex={0}` no tabpanel da aba Queijista sem elemento focável; colar telefone com `+55` descarta o 55; seta da escala sensorial com `aria-hidden`; teste negativo da exceção do axe.
 
+### Medições do bloco E (tarefa 14, 2026-11-11)
+
+**Orçamento por rota** (`npm run medir:pacote`, método do ADR-0012). Todas as 20 páginas pré-renderizadas são medidas; rota sem limite faz o script falhar. Os 10 `/queijos/<slug>` usam o limite do Canastra. Compartilhado: 141,93 de 143,88 kB (limites existentes intactos).
+
+| Rota | Medido (kB gzip) | Limite |
+| --- | ---: | ---: |
+| `/presentes` | 142,81 | 145,81 |
+| `/aprenda` | 141,93 | 144,93 |
+| `/aprenda/<slug>` (os 3) | 142,21 | 145,21 |
+| `/produtores` | 141,93 | 144,93 |
+| `/sacola` | 145,02 | 148,02 |
+| `/checkout` | 168,06 | 171,06 |
+| 404 | 141,93 | 144,93 |
+| *Chunk* tardio do painel | 5,63 | 8,63 |
+
+**Core Web Vitals de laboratório** (`npm run medir:pacote -- --web-vitals`): `next start`, Pixel 7 emulado, CPU 4× mais lenta (como o Lighthouse móvel; `REDUCAO_DE_CPU=1` desliga), sem estrangular a rede, mediana de 3. TBT aproximado: soma de (duração − 50 ms) das *long tasks* depois do FCP, até 3 s após o `load`. **A meta vale com CPU 4×.**
+
+| Rota | LCP (ms) | CLS | TBT (ms) | Elemento de LCP | Desvio |
+| --- | ---: | ---: | ---: | --- | --- |
+| `/` | 624 | 0,0000 | 331 | `<p>` "Do Serro à Borgonha, selecionamos queijo…" | TBT |
+| `/queijos/canastra-curado` | 472 | 0,0000 | 53 | `<p>` "Casca firme e dourada, massa levemente e…" | — |
+| `/sacola` (vazia) | 308 | 0,1412 | 29 | `<p>` "Entrega refrigerada para todo o Brasil ·…" | CLS |
+| `/sacola` (1 item) | 324 | 0,0365 | 16 | idem | — |
+| `/sacola` (3 itens) | 296 | 0,0000 | 19 | idem | — |
+| `/presentes` | 432 | 0,0000 | 216 | `<h1>` "Para quem merece uma boa tábua." | TBT (no ruído) |
+
+- **LCP do hero:** é texto, nunca o SVG A.3 nem o `<model-viewer>`: base para a prova do bloco C da etapa 5.
+- **Desvios para a tarefa 15:** CLS da `/sacola` vazia (reserva de 320 px maior que o estado vazio); TBT da Home e de `/presentes` (suspeita: hidratação somada à pré-busca do painel em `requestIdleCallback`, ADR-0012). Destino de cada um em [Ajustes do bloco E](#ajustes-do-bloco-e-tarefa-15-2026-11-12).
+- **Lighthouse (P76 = A):** manual, com o dono, em `/`, produto, `/presentes`, `/aprenda`, `/sacola` vazia e `/checkout` (roteiro no resumo da sessão de 2026-11-11). Resultados: _a registrar_.
+
+### Ajustes do bloco E (tarefa 15, 2026-11-12)
+
+**CLS da `/sacola`:** `ReservaDaSacola` (script *inline* síncrono, só constante e a chave do `localStorage`) marca o contêiner com `data-sacola`, `--n` e `data-presente` antes da primeira pintura; o CSS reserva a altura do estado final (vazia, *n* linhas, com ou sem "Embalagem para presente", que soma 64 px ao resumo). Trava nova: `e2e/reserva-da-sacola.spec.ts` compara a altura da reserva (JS do Next bloqueado) com a do estado hidratado, com tolerância de 1 px, a 1440, 800 e 390 px, em 5 estados (15 testes). Sem mudança visual.
+
+**Script `--web-vitals`:** TBT recortado a partir do FCP, como no Lighthouse (antes descartava a tarefa que atravessa o FCP); cenário novo "1 item + presente"; `REDUCAO_DE_CPU` validada; escape de `|` na tabela corrigido. **LCP e CLS reprovam; o TBT só informa** (decisão do dono em 2026-11-12, abaixo).
+
+| Rota | LCP (ms) | CLS | TBT (ms) | Elemento de LCP |
+| --- | ---: | ---: | ---: | --- |
+| `/` | 736 | 0,0000 | 366 | `<p>` "Do Serro à Borgonha, selecionamos queijo…" |
+| `/queijos/canastra-curado` | 700 | 0,0000 | 401 | `<p>` "Casca firme e dourada, massa levemente e…" |
+| `/sacola` (vazia) | 392 | 0,0000 | 386 | `<p>` "Entrega refrigerada para todo o Brasil ·…" |
+| `/sacola` (1 item) | 380 | 0,0000 | 404 | idem |
+| `/sacola` (3 itens) | 444 | 0,0000 | 406 | idem |
+| `/sacola` (1 item + presente) | 484 | 0,0000 | 410 | idem |
+| `/presentes` | 560 | 0,0000 | 367 | `<h1>` "Para quem merece uma boa tábua." |
+
+**Causa do TBT (diagnóstico com perfil de CPU, CPU 4×):** uma tarefa longa logo após o FCP (300 a 420 ms) em todas as rotas; ~85% do tempo é do próprio framework (`react-dom`, roteador do Next e *runtime* do Turbopack instanciando módulos). O código do Ateliê pesa pouco. As tarefas depois do `load` (pré-busca do painel, ~20 ms, e das rotas dos links, como a `/sacola`, ~90 ms) somam ~60 ms. O número depende da máquina: a mesma `/sacola` deu 29 ms em 2026-11-11 e 389 ms em 2026-11-12, sem mudança de código que justifique.
+
+**Decisão do dono (2026-11-12):** o TBT do script vira informativo; o veredito fica com o Lighthouse manual (P76 = A), que simula a CPU de forma estável. A pré-busca **não** foi alterada: no App Router, `prefetch={false}` desliga também a pré-busca no *hover* (documentação do Next 16.4.3), o que deixaria toda navegação no celular mais lenta para ganhar ~60 ms. Se o Lighthouse reprovar o TBT, o desvio vai para os [desvios do checklist da §14](#desvios-para-o-checklist-da-14-etapa-8) com esta causa, e a pré-busca volta à mesa.
+
 ### Commits da etapa 8
 
 | Bloco | Conteúdo | Mensagem | Situação |
@@ -2768,7 +2818,7 @@ Tarefa 12 (2026-11-11): `e2e/teclado.spec.ts`, 22 testes (ordem de Tab e Shift+T
 | B | Tarefas 4 a 7 | `feat(seguranca): adiciona cabeçalhos http, csp e travas de publicação` | Publicado (`00f9abb`) |
 | C | Tarefas 8 e 9 | `feat(seo): adiciona dados estruturados json-ld` | Publicado (`c18e34c`) |
 | D | Tarefas 10 a 13 | `fix(acessibilidade): adiciona a varredura com axe e corrige os achados` | Publicado (revisão ⚠️ resolvida em 2026-11-11) |
-| E | Tarefas 14 a 16 | `perf: amplia o orçamento por rota e mede os core web vitals` | A fazer |
+| E | Tarefas 14 a 16 | `perf: amplia o orçamento por rota e mede os core web vitals` | Publicado (revisão ⚠️ resolvida em 2026-11-12; Lighthouse manual pendente com o dono) |
 | F | Tarefas 17 a 20 | `test: adiciona cobertura e regressão visual` | A fazer |
 | Docs | Tarefa 21 | `docs: fecha a etapa 8` | A fazer |
 
