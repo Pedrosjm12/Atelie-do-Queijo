@@ -1,0 +1,74 @@
+# Atualização de dependências (ADR-0016, decisão 2; P86 = A, P87 = A).
+# Regra de revisão no README.md, seção "Atualizações de dependências".
+version: 2
+
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '06:00'
+      timezone: America/Sao_Paulo
+    # Espera 7 dias antes de propor versão nova (versões maliciosas costumam ser retiradas em horas ou dias).
+    # Atualizações de segurança não esperam.
+    cooldown:
+      default-days: 7
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: 'build(deps)'
+    # Uma dependência entra só no primeiro grupo que a casa; por isso os grupos específicos vêm antes.
+    groups:
+      next:
+        patterns:
+          - 'next'
+          - 'eslint-config-next'
+      react:
+        patterns:
+          - 'react'
+          - 'react-dom'
+          - '@types/react'
+          - '@types/react-dom'
+      vitest:
+        patterns:
+          - 'vitest'
+          - '@vitest/coverage-v8'
+      visualizador-3d:
+        patterns:
+          - '@google/model-viewer'
+          - 'three'
+      # Trocar o Playwright troca a imagem Docker da regressão visual: PR à parte, nunca misturado.
+      playwright:
+        patterns:
+          - '@playwright/test'
+      desenvolvimento:
+        dependency-type: development
+        update-types:
+          - minor
+          - patch
+    ignore:
+      # O projeto fica no Node 24 (engines 24.x); os tipos acompanham.
+      - dependency-name: '@types/node'
+        update-types: ['version-update:semver-major']
+      # O @google/model-viewer 4.4.0 aceita só three 0.183.x (ADR-0009).
+      - dependency-name: 'three'
+        versions: ['>=0.184.0']
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '06:00'
+      timezone: America/Sao_Paulo
+    # Espera 7 dias antes de propor versão nova (versões maliciosas costumam ser retiradas em horas ou dias).
+    # Atualizações de segurança não esperam.
+    cooldown:
+      default-days: 7
+    open-pull-requests-limit: 3
+    commit-message:
+      prefix: 'ci(deps)'
+    groups:
+      acoes:
+        patterns:
+          - '*'

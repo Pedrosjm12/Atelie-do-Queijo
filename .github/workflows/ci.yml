@@ -5,7 +5,13 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  # Botão "Run workflow" na aba Actions.
+  workflow_dispatch:
+  # Segunda-feira, 9h UTC (ADR-0016): pega aviso de segurança novo mesmo sem commit.
+  schedule:
+    - cron: '0 9 * * 1'
 
+# Padrão mínimo; cada job repete a permissão de forma explícita (ADR-0016).
 permissions:
   contents: read
 
@@ -16,18 +22,24 @@ env:
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  # Só PRs cancelam a execução anterior; push, semanal e manual na main sempre terminam.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
+# Ações fixadas por SHA do commit, com a versão em comentário (o Dependabot atualiza os dois).
+# timeout-minutes = maior duração medida nas execuções de 2026-11-11 a 2026-11-17 + 50%,
+# arredondado para cima e com folga para a cobertura e para o cache frio (docs/PLANO.md, tarefa 3).
 jobs:
   verificar:
     name: Verificar (lint, tipos, testes, build)
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 6
+    permissions:
+      contents: read
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: actions/setup-node@v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: .nvmrc
           cache: npm
@@ -35,27 +47,82 @@ jobs:
       - run: npm run lint
       - run: npm run typecheck
       - run: npm run format:check
-      - run: npm test
+      # Mesmos testes do `npm test`, mais a catraca de cobertura de lib/ e data/ (ADR-0014).
+      - run: npm run test:cobertura
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: coverage
+          path: coverage/
+          if-no-files-found: ignore
+          retention-days: 7
       - run: npm run modelos:validar
       - run: npm run build
+
+  auditoria:
+    name: Auditoria de dependências
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Assinaturas e procedência dos pacotes
+        run: npm audit signatures
+      # P88 = A: qualquer vulnerabilidade em dependência de produção reprova.
+      - name: Vulnerabilidades em produção (qualquer nível)
+        run: npm audit --omit=dev
+      # P88 = A: no desenvolvimento só reprovam high e critical. As 7 moderadas de
+      # typescript-eslint -> minimatch (GHSA-g3hv-75wg-m249) foram triadas na etapa 8 e aceitas
+      # (só ESLint, sem entrada de terceiros, sem correção dentro do semver). Triagem:
+      # docs/PLANO.md, seção "Triagem do `npm audit`" em "Verificação do bloco B (etapa 8)":
+      # https://github.com/Pedrosjm12/Atelie-do-Queijo/blob/main/docs/PLANO.md#triagem-do-npm-audit
+      # Reavaliar quando o typescript-eslint corrigir.
+      - name: Vulnerabilidades em desenvolvimento (high ou critical, com exceção documentada)
+        # Exceção do picomatch (GHSA-fc5q-39xc-vjpf, sem correção): ver scripts/auditar-dev.mjs e docs/PLANO.md.
+        run: npm run auditar:dev
 
   e2e:
     name: Testes E2E (Playwright)
     needs: verificar
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 8
+    permissions:
+      contents: read
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: actions/setup-node@v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
-      - run: npx playwright install --with-deps chromium
+      - name: Versão do Playwright
+        id: playwright
+        run: echo "versao=$(node -p "require('@playwright/test/package.json').version")" >> "$GITHUB_OUTPUT"
+      - name: Cache dos navegadores do Playwright
+        id: cache-playwright
+        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5.1.0
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.versao }}
+      - name: Instalar Chromium e dependências do sistema
+        if: steps.cache-playwright.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps chromium
+      # Com o cache, o navegador já está em disco; só as bibliotecas do sistema precisam voltar.
+      - name: Instalar só as dependências do sistema
+        if: steps.cache-playwright.outputs.cache-hit == 'true'
+        run: npx playwright install-deps chromium
       - run: npm run test:e2e
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: failure()
         with:
           name: playwright-report

@@ -3126,6 +3126,14 @@ Não há *skill* de DevOps na lista aprovada. O `devops-e-deploy` segue a docume
 
 Cada tarefa termina com `lint`, `typecheck`, `format:check`, `test`, `modelos:validar`, `build` e `test:e2e` passando. O e2e completo roda com `--workers=2` e o Docker fechado na máquina do dono. Nas tarefas de CI, o critério inclui **a execução verde no GitHub Actions depois do *push***: a sessão principal confere com `gh run list` e `gh run view`. A estimativa de linhas está entre parênteses.
 
+#### Exceção documentada do `npm audit` (decisão do dono, 2026-11-17)
+
+- **Alerta:** GHSA-fc5q-39xc-vjpf (`picomatch` <= 4.0.7, ReDoS, *high*), publicado em 2026-10-19, **sem versão corrigida**. Só desenvolvimento (`vitest`, `vite`, `tinyglobby`, `fdir`, `eslint-config-next`); `npm audit --omit=dev` segue com 0.
+- **Decisão:** opção B. O job `auditoria` roda `npm run auditar:dev` (`scripts/auditar-dev.mjs`, com teste), que ignora só esse GHSA e reprova qualquer outro *high* ou *critical*.
+- **Validade:** `revisarAte: 2027-01-31`; depois dessa data o CI reprova até a exceção ser reavaliada.
+- **Prova de que a regra morde:** os testes de `scripts/auditar-dev.test.ts` (outro *high* reprova, inclusive no próprio `picomatch`); `npm audit --audit-level=moderate` sai com 1.
+- **Remover** a entrada de `EXCECOES` quando o `picomatch` publicar a correção (o Dependabot deve abrir o PR).
+
 #### Fase 1 — Loja simulada
 
 **Bloco A — Decisões (commits de documentação)**
@@ -3152,6 +3160,26 @@ Cada tarefa termina com `lint`, `typecheck`, `format:check`, `test`, `modelos:va
      - nenhum `uses:` fica por *tag*;
      - o job `verificar` falha se a catraca da cobertura cair. Prova local: com um limite forçado acima do medido, `npm run test:cobertura` sai com código 1, como na tarefa 17 da etapa 8;
      - o `package-lock.json` não muda de versão do Playwright.
+
+   **Linha de base (medida em 2026-11-17, API pública do GitHub; só 9 execuções concluídas na `main`, a 10ª ainda rodava):**
+
+   | Execução | Commit | `verificar` | `e2e` | Total |
+   | --- | --- | --- | --- | --- |
+   | 43 | b399e59 | 127 s | 191 s | 325 s |
+   | 44 | 2ccb92e | 74 s | 196 s | 276 s |
+   | 45 | 8c3e9de | 122 s | 147 s | 277 s |
+   | 46 | 01e77e3 | 160 s | 224 s | 393 s |
+   | 47 | e4ff37c | 71 s | 181 s | 258 s |
+   | 48 | 31430b8 | 122 s | 273 s | 401 s |
+   | 49 | 61036ba | 150 s | 253 s | 411 s |
+   | 50 | c324bb1 | 150 s | 253 s | 409 s |
+   | 51 | f76d6e4 | 163 s | 260 s | 429 s |
+   | **Máximo** | | **163 s** | **273 s** | 429 s |
+   | **+ 50 %** | | 245 s | 410 s | |
+
+   `timeout-minutes` adotados: `verificar` 6 min (245 s + cobertura e cache frio), `e2e` 8 min (410 s + download do Chromium em cache frio), `auditoria` 5 min (só `npm ci` e três `npm audit`; sem linha de base, a medir na primeira execução). A coluna "depois" (com cobertura e cache) entra aqui quando a sessão principal conferir a primeira execução verde.
+
+   **Prova da catraca (2026-11-17):** `npm run test:cobertura` passa (instruções 98,41 %, ramos 95,49 %, funções 99,48 %, linhas 99,55 %); com o limite forçado por linha de comando, `npx vitest run --coverage --coverage.thresholds.statements=100`, sai com código 1 (`ERROR: Coverage for statements (98.41%) does not meet global threshold (100%)`). Nenhum arquivo foi alterado. Numa das execuções, o teste `Atendimento.carregando.test.tsx` estourou o tempo de `findByRole` com a máquina sobrecarregada (a mesma suíte passou na repetição); fica de olho como possível instabilidade sob carga.
 
 4. **[devops-e-deploy] Job `auditoria`** (~40)
    - Job em paralelo ao `verificar`: `npm ci`, `npm audit signatures`, `npm audit --omit=dev` (qualquer achado em produção reprova) e, para o desenvolvimento, a regra do P88. Recomendação: `npm audit --audit-level=high`, que aceita as 7 moderadas de `typescript-eslint` → `minimatch`, já triadas na etapa 8.

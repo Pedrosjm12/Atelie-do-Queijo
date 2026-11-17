@@ -18,6 +18,7 @@
     "test:visual:docker": "node scripts/visual-docker.mjs",
     "modelos:validar": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/validar-modelos.mjs",
     "medir:pacote": "node scripts/medir-pacote.mjs",
+    "auditar:dev": "node scripts/auditar-dev.mjs",
     "prepare": "lefthook install",
     "test:cobertura": "vitest run --coverage"
   },
@@ -31,7 +32,7 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "4.14.0",
-    "@playwright/test": "^1.64.1",
+    "@playwright/test": "1.64.1",
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.3",
     "@testing-library/user-event": "^14.6.8",

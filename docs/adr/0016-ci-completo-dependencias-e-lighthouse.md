@@ -82,3 +82,7 @@ Versões conferidas no registro do npm em 2026-11-17:
 - **Notas do Lighthouse variam entre máquinas.** O *runner* do GitHub é compartilhado e costuma dar Desempenho menor que o computador do dono. Por isso o P91 recomenda começar só avisando e calibrar as metas depois de algumas execuções.
 - **Aviso de segurança novo em dependência de produção** deixa o CI vermelho mesmo sem mudança de código. É de propósito: o `schedule` semanal existe para isso.
 - As ações por SHA ficam ilegíveis sem o comentário da versão. O Dependabot atualiza os dois.
+
+## Adendo (2026-11-17): exceção do picomatch
+
+A regra do P88 ganhou uma exceção aprovada pelo dono: o GHSA-fc5q-39xc-vjpf (`picomatch`, sem correção, só desenvolvimento) é ignorado por `scripts/auditar-dev.mjs`, com validade até 2027-01-31. Qualquer outro aviso `high` ou `critical` continua reprovando.

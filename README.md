@@ -138,10 +138,25 @@ docs/           plano, ADRs e guias
 
 Os arquivos corrigidos voltam ao stage sozinhos.
 
-**CI** (`.github/workflows/ci.yml`, em push e pull request para `main`):
+**CI** (`.github/workflows/ci.yml`, em push e pull request para `main`, no botão "Run workflow" e toda segunda-feira às 9h UTC):
 
-1. job `verificar`: `npm ci`, lint, typecheck, `format:check`, testes, `modelos:validar` e build;
-2. job `e2e` (roda só se `verificar` passar): instala o Chromium e executa o Playwright.
+1. job `verificar`: `npm ci`, lint, typecheck, `format:check`, testes com cobertura (`npm run test:cobertura`, com a catraca de `lib/` e `data/`; o relatório `coverage/` fica como artefato por 7 dias), `modelos:validar` e build;
+2. job `auditoria` (em paralelo): `npm audit signatures`, `npm audit --omit=dev` (qualquer achado em produção reprova) e `npm run auditar:dev` (no desenvolvimento só reprovam `high` e `critical`, com a exceção documentada do `picomatch`, GHSA-fc5q-39xc-vjpf, em `scripts/auditar-dev.mjs`);
+3. job `e2e` (roda só se `verificar` passar): instala o Chromium (com cache pela versão do Playwright) e executa o Playwright.
+
+As ações do GitHub ficam fixadas por SHA de commit, com a versão em comentário, e cada job tem só a permissão `contents: read`.
+
+## Atualizações de dependências
+
+O Dependabot (`.github/dependabot.yml`) abre PRs toda segunda-feira, para `npm` e para as ações do GitHub, em grupos: `next`, `react`, `vitest`, `visualizador-3d` (`@google/model-viewer` + `three`), `playwright` (sozinho), `desenvolvimento` (só minor e patch) e `acoes`.
+
+**Quem revisa e o que entra:**
+
+- **Patch e minor:** a sessão principal do Claude Code revisa o PR (CI verde, notas de versão, `npm audit`) e mescla.
+- **Major de dependência de produção** (`next`, `react`, `react-dom`, `zod`, `@google/model-viewer`, `three`): nunca entra sem perguntar ao dono do projeto.
+- **Playwright:** PR à parte, também só com o ok do dono. Trocar a versão troca a imagem Docker da regressão visual; se as capturas mudarem, regenere com `npm run test:visual:docker -- --update-snapshots` e peça a conferência do `guardiao-do-design` antes de mesclar.
+- **Nunca propostos:** `@types/node` 26 (o projeto fica no Node 24) e `three` 0.184 ou maior (o `@google/model-viewer` 4.4.0 aceita só `three` 0.183.x). Trocar de Node também exige pergunta ao dono.
+- **Segurança:** um aviso novo em dependência de produção deixa o CI vermelho mesmo sem mudança de código; é o objetivo da execução semanal. O GitHub desativa a execução semanal depois de 60 dias sem atividade no repositório; um *push* ou o botão manual a reativa.
 
 ## Convenções
 
