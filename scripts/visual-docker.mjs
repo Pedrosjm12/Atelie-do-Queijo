@@ -17,7 +17,9 @@ const imagem = `mcr.microsoft.com/playwright:v${version}-noble`;
 const comando = [
   'set -e',
   'if ! cmp -s package-lock.json node_modules/.lock-visual; then',
-  '  npm ci --ignore-scripts --no-audit --no-fund',
+  // --loglevel=error: a imagem traz Node 26 e o projeto pede 24.x (engines); o aviso EBADENGINE
+  // não afeta as capturas (dependem do Chromium da imagem). Decisão do dono, 2026-11-17 (Node B).
+  '  npm ci --ignore-scripts --no-audit --no-fund --loglevel=error',
   '  cp package-lock.json node_modules/.lock-visual',
   'fi',
   // Os argumentos extras chegam como parâmetros posicionais do bash ("$@"), sem montar string.

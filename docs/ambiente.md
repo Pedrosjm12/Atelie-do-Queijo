@@ -98,7 +98,7 @@ memory=3GB
 
 - Se o `npm run test:e2e` ainda ficar pesado: `npx playwright test --workers=2`.
 
-**Pendência (etapa 9):** a imagem do Playwright traz Node 26, enquanto o `package.json` pede `24.x` (`.nvmrc` 24). Só gera um aviso, as capturas dependem do Chromium da imagem; a decisão do dono está no [plano](PLANO.md#pendências-do-dono-ao-fechar-a-etapa-8).
+**Node dentro do contêiner:** a imagem do Playwright traz Node 26, enquanto o projeto pede `24.x` (`engines` e `.nvmrc`). Isso não afeta as capturas, que dependem do Chromium da imagem. Por decisão do dono (2026-11-17), o `npm ci` do contêiner roda com `--loglevel=error`, o que esconde o aviso `EBADENGINE`. **Não amplie o `engines`** (por exemplo, para `>=24 <27`): a Vercel lê esse campo e publicaria com o Node 26. Produção, CI e a máquina local continuam no Node 24.
 
 ## Robots e `VERCEL_ENV` no build
 
