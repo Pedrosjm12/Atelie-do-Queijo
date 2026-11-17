@@ -1,6 +1,6 @@
 # ADR-0017 — Hospedagem na Vercel e ambientes (local, CI, Preview e Production)
 
-- **Status:** Proposto (2026-11-17). Registra decisões já tomadas pelo dono (D31; 2026-11-11; 2026-11-17) e as conferências que faltam; aceite junto com o P96 do `docs/PLANO.md`.
+- **Status:** Aceito (2026-11-17), conforme o P96 = A do `docs/PLANO.md`. Registra decisões já tomadas pelo dono (D31; 2026-11-11; 2026-11-17); as conferências que faltam seguem na tarefa 11.
 - **Data:** 2026-11-17
 - **Contexto da etapa:** 9 (CI completo, ambientes e checklist de aceite)
 

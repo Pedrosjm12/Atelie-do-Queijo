@@ -1,6 +1,6 @@
 # ADR-0016 — CI completo: auditoria, atualização de dependências, regressão visual e Lighthouse CI
 
-- **Status:** Proposto (2026-11-17). Aguarda as respostas do dono às perguntas P85 a P91 e P96 do `docs/PLANO.md` (etapa 9).
+- **Status:** Aceito (2026-11-17), conforme o P96 = A do `docs/PLANO.md`. Repositório público (P85); P86 a P91 = A, A, A, A, B, B.
 - **Data:** 2026-11-17
 - **Contexto da etapa:** 9 (CI completo, ambientes e checklist de aceite)
 
