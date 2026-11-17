@@ -1,5 +1,4 @@
-import { expect, semAguardarHidratacao, test } from './_apoio/teste';
-import type { Page } from '@playwright/test';
+import { expect, semAguardarHidratacao, test, type Page } from './_apoio/teste';
 import { vigiarConsole } from './_apoio/console';
 
 const ROTA = '/queijos/canastra-curado';

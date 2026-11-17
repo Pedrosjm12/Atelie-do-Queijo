@@ -1,5 +1,4 @@
-import { aguardarHidratacao, expect, test } from './_apoio/teste';
-import type { Page } from '@playwright/test';
+import { aguardarHidratacao, expect, test, type Page } from './_apoio/teste';
 
 // Links do WhatsApp, horário do atendimento e carregamento tardio do motor (etapa 6; spec §8.2, §8.3
 // e §10.5). O número é o fictício de `data/ficticio.ts` (sem variável de ambiente no e2e).

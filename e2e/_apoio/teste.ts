@@ -63,3 +63,6 @@ export const test = base.extend<{ vigiaDeCsp: void }>({
 });
 
 export { expect } from '@playwright/test';
+// Tipos para os specs: nenhum `e2e/*.spec.ts` importa `@playwright/test` direto (regra no
+// eslint.config.mjs), para que todo `test` passe pela fixture com o gate de hidratação.
+export type { Locator, Page, Route } from '@playwright/test';

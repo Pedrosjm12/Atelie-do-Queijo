@@ -1,5 +1,4 @@
-import { expect, test } from './_apoio/teste';
-import type { Locator, Page } from '@playwright/test';
+import { expect, test, type Locator, type Page } from './_apoio/teste';
 
 const rota = '/queijos/canastra-curado';
 

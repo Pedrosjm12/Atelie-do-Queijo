@@ -1,5 +1,4 @@
-import { expect, semAguardarHidratacao, test } from './_apoio/teste';
-import type { Page } from '@playwright/test';
+import { expect, semAguardarHidratacao, test, type Page } from './_apoio/teste';
 
 /**
  * Trava do CLS da /sacola (etapa 8, tarefa 15). Antes de ler o `localStorage`, a página mostra só a

@@ -1,11 +1,11 @@
-import { expect, test } from './_apoio/teste';
+import { expect, test, type Page } from './_apoio/teste';
 import { caminhosIndexaveis } from '../lib/seo';
 
 const BASE = 'http://localhost:3000';
 // O e2e roda `next build` sem VERCEL_ENV: ambiente de desenvolvimento/prévia (robots bloqueia tudo).
 const EM_PRODUCAO = process.env.VERCEL_ENV === 'production';
 
-async function meta(page: import('@playwright/test').Page, seletor: string) {
+async function meta(page: Page, seletor: string) {
   return page.locator(seletor).first().getAttribute('content');
 }
 

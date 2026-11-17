@@ -38,6 +38,25 @@ const eslintConfig = defineConfig([
       ],
     },
   },
+  // Etapa 8, tarefa 18: todo spec passa pela fixture de e2e/_apoio/teste.ts (gate de hidratação
+  // e vigia de CSP). Inclusive `import type`: os tipos são reexportados pela própria fixture.
+  // Regra base (não a do typescript-eslint) para não sobrescrever a restrição do 3D acima.
+  {
+    files: ['e2e/**/*.spec.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: '@playwright/test',
+              message: "Importe de './_apoio/teste' (fixture com o gate de hidratação).",
+            },
+          ],
+        },
+      ],
+    },
+  },
   prettier,
   globalIgnores([
     '.next/**',

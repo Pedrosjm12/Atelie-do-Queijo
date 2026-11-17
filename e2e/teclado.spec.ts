@@ -1,5 +1,4 @@
-import type { Locator, Page } from '@playwright/test';
-import { expect, test } from './_apoio/teste';
+import { expect, test, type Locator, type Page } from './_apoio/teste';
 import { DADOS, campo, semearSacola, tabAte } from './_apoio/checkout';
 
 /**

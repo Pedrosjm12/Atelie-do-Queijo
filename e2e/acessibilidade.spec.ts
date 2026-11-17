@@ -1,5 +1,4 @@
-import type { Page } from '@playwright/test';
-import { expect, test } from './_apoio/teste';
+import { expect, test, type Page } from './_apoio/teste';
 import { conferirAcessibilidade } from './_apoio/acessibilidade';
 import { DADOS, campo, semearSacola } from './_apoio/checkout';
 

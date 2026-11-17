@@ -7,11 +7,11 @@ import {
   PRODUTOR_CANASTRA_FICTICIO,
 } from '../data/ficticio';
 import { caminhosIndexaveis } from '../lib/seo';
-import { expect, test } from './_apoio/teste';
+import { expect, test, type Page } from './_apoio/teste';
 
 type No = Record<string, unknown>;
 
-async function lerJsonLd(page: import('@playwright/test').Page, caminho: string): Promise<No[]> {
+async function lerJsonLd(page: Page, caminho: string): Promise<No[]> {
   await page.goto(caminho);
   const blocos = await page.locator('script[type="application/ld+json"]').allTextContents();
   return blocos.flatMap((texto) => {

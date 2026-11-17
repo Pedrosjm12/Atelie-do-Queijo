@@ -1,5 +1,4 @@
-import { expect, test } from './_apoio/teste';
-import type { Page } from '@playwright/test';
+import { expect, test, type Page } from './_apoio/teste';
 
 const larguras = [360, 390, 768, 1440, 1920];
 

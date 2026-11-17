@@ -1,5 +1,4 @@
-import type { Locator, Page } from '@playwright/test';
-import { expect, test } from './_apoio/teste';
+import { expect, test, type Locator, type Page } from './_apoio/teste';
 import { DADOS, campo, semearSacola } from './_apoio/checkout';
 
 // P81 = B (revoga o D2): borda dos campos em --placeholder; o que não é campo segue --pedra-clara.

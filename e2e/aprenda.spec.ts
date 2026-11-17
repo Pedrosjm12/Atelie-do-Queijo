@@ -1,4 +1,4 @@
-import { expect, test } from './_apoio/teste';
+import { expect, test, type Page } from './_apoio/teste';
 import { vigiarConsole } from './_apoio/console';
 
 const ARTIGOS = [
@@ -7,7 +7,7 @@ const ARTIGOS = [
   { slug: 'como-guardar-queijo-na-geladeira', titulo: 'Como guardar queijo na geladeira' },
 ];
 
-const itemDoMenu = (page: import('@playwright/test').Page) =>
+const itemDoMenu = (page: Page) =>
   page.getByRole('banner').getByRole('link', { name: 'Aprenda', exact: true }).first();
 
 test.describe('página /aprenda (§12, §5.8)', () => {
