@@ -1,12 +1,23 @@
 # Plano de implementação — Ateliê do Queijo
 
 > Fonte da verdade: `ATELIE-DO-QUEIJO-SPEC.md`. Decisões técnicas: `docs/adr/`.
-> Última atualização: 2026-11-05 (respostas do dono às perguntas P68 a P84 da etapa 8; ADRs 0014 e 0015 aceitos). Etapas 1, 2, 3, 4, 5, 6 e 7 **concluídas**; **próxima: etapa 8, pronta para começar** (todas as perguntas respondidas; só os três textos do P84 aguardam a escolha do dono, sem bloquear nenhum bloco). A loja segue **simulada**.
+> Última atualização: 2026-11-17 (etapa 9 detalhada; ADRs 0016 e 0017 propostos; perguntas P85 a P96 aguardando o dono). Etapas 1 a 8 **concluídas**; **atual: etapa 9, aguardando as respostas P85 a P96**. A loja segue **simulada**.
 >
 > **AVISO: dados de negócio fictícios** (WhatsApp, CNPJ, endereço, frete, parcelas, produtor) estão em `data/ficticio.ts` e **precisam ser trocados antes da publicação**; o build de produção na Vercel falha enquanto a trava existir. Ver [Decisões do dono de 2026-11-03](#decisões-do-dono-de-2026-11-03-d1-a-d34).
 >
 > **RETOMADA (2026-11-05): as etapas 1 a 7 estão concluídas; a etapa 8 (rodada de qualidade) está DETALHADA, com as [perguntas P68 a P84](#perguntas-ao-dono-etapa-8) respondidas pelo dono em 2026-11-05 e os ADRs 0014 e 0015 aceitos. Pronta para começar pelo bloco A.** A etapa 7 entregou `/presentes`, `/aprenda`, `/aprenda/<slug>`, `/produtores` e a 404 da §12 (`app/not-found.tsx`), com [ADR-0011](adr/0011-paginas-de-conteudo-e-404.md) (Aceito) e as [perguntas P53 a P67](#perguntas-ao-dono-etapa-7) respondidas com a opção A. Todos os links do menu, do rodapé e da Home levam a uma página com h1. Ver [Etapa 7](#etapa-7--páginas-restantes-presentes-aprenda-produtores-e-404).
 >
+> - **ETAPA 9 DETALHADA (2026-11-17), aguardando as [perguntas P85 a P96](#perguntas-ao-dono-etapa-9).** Ver a [etapa 9](#etapa-9--ci-completo-ambientes-e-aceite-herança-da-etapa-4).
+>   - **Fase 1 (loja simulada):** 20 tarefas em cinco blocos:
+>     - A: decisões;
+>     - B: CI de base, com cobertura, auditoria e Dependabot;
+>     - C: regressão visual e Lighthouse no CI;
+>     - D: ambientes e licenças;
+>     - E: checklist da §14 em `docs/aceite.md` e rascunho do aviso de privacidade.
+>   - **Fase 2 (publicação real):** lista R1 a R12, que depende de dados, contas e aprovação do dono. Nada vai à `producao` sem essa aprovação.
+>   - **ADRs propostos:** [0016](adr/0016-ci-completo-dependencias-e-lighthouse.md) (CI completo e `@lhci/cli` só de desenvolvimento) e [0017](adr/0017-hospedagem-na-vercel-e-ambientes.md) (Vercel e ambientes; o plano Hobby da Vercel não permite uso comercial).
+>   - **Próximo passo:** commit `docs: detalha a etapa 9 e propõe os adrs 0016 e 0017`. Depois, com as respostas do dono, a tarefa 2 e o bloco B, que depende de P85 a P88.
+>   - **Ações do dono:** responder às perguntas; confirmar se o repositório é público ou privado (P85).
 > - **ETAPA 8 CONCLUÍDA, exceto as pendências do dono (2026-11-17).** Blocos A a F publicados (`0b638b9` a `8c3e9de`, mais `01e77e3`, `build(deps)` do `next` 16.4.6) e tarefa 21 (documentação) publicada em `e4ff37c`. **Decisões do dono de 2026-11-17:** (1) **1A**, a D27 prevalece sobre as lacunas da §4.9 no rodapé; (2) **Node B**: aviso silenciado só no contêiner, projeto no Node 24 (a 2B levaria a Vercel ao Node 26); (3) **3B**: Lighthouse rodado pela sessão principal. Corrigiu o CLS do `/checkout` (`31430b8`); o TBT da Home (296 ms) foi aceito como desvio (**TBT A**). **Nenhuma pendência do dono na etapa 8** ([detalhes](#pendências-do-dono-ao-fechar-a-etapa-8)). Também aberto: validador do Google no Preview e leitor de tela real (ver [desvios e pendências](#desvios-para-o-checklist-da-14-etapa-8)). **Próximo: etapa 9.** As notas abaixo são histórico.
 > - **ATUALIZAÇÃO (2026-11-17):** o bloco F foi publicado depois do `test:e2e` completo (329 passaram e 9 foram pulados de propósito, com `--workers=2` e o Docker fechado). O build passou a parar com o aviso de segurança do Next (GHSA-mfr8-8qww-v76h, moderada, de 16.3.0 a 16.4.4). O projeto não é afetado, porque não usa `'use cache'` nem `unstable_cache`, mas o dono aprovou atualizar o `next` e o `eslint-config-next` para 16.4.6 num commit `build(deps)` separado, antes da tarefa 21. **Feito em 2026-11-17:** lint, typecheck, Prettier, 1197/1197 no Vitest, build, `medir:pacote`, e2e (329 passaram e 9 foram pulados de propósito) e `test:visual:docker` (22/22, sem alterar nenhuma captura); `npm audit --omit=dev` sem achados. **Próximo:** tarefa 21 (`documentador-tecnico`, fechamento da etapa 8).
 > - **Ponto de parada anterior (2026-11-14): bloco F da etapa 8 pronto, sem commit.** Tarefas 17 (cobertura), 18 (estabilidade dos e2e) e 19 (regressão visual em Docker) implementadas; o `revisor-de-codigo` deu ❌ e os apontamentos foram corrigidos (projeto `visual` só com `ATELIE_VISUAL=1`, argumentos do script como `"$@"`, erro claro sem Docker); o `guardiao-do-design` aprovou as 22 *baselines* na segunda rodada (tarefa 20). Verde: lint, typecheck, Prettier, `npm test` (1197/1197), cobertura nos limites, specs instáveis 220/220, `test:visual:docker` 2× seguidas. **Falta:** o `npm run test:e2e` completo (338 testes) — a execução de 2026-11-12 foi interrompida por falta de memória, sem resultado; feche o Docker Desktop antes de rodar. Se passar: commit `test: adiciona cobertura e regressão visual` + push, e marcar a linha F da [tabela de commits](#commits-da-etapa-8) como publicada; depois, a tarefa 21 (`documentador-tecnico`, fechamento da etapa 8). Detalhes em [tarefa 18](#estabilidade-dos-e2e-tarefa-18-2026-11-12) e [tarefa 19](#regressão-visual-tarefa-19-2026-11-12). **Pendências do dono:** (1) confirmar se a D27 cobre o CNPJ e o endereço fictícios do rodapé (a §4.9 pede as lacunas); (2) Node 26 da imagem do Playwright × `engines: 24.x`, a decidir na etapa 9; (3) Lighthouse manual do bloco E.
@@ -41,10 +52,8 @@ Convenções deste plano:
 | 5 | Visualizador 3D (`CheeseViewer` com `@google/model-viewer`) e fallback SVG do Apêndice A | `especialista-3d-webgl` | **Concluída** ([detalhe](#etapa-5--visualizador-3d-com-fallback-svg)); blocos A e B publicados (`92fb989`, `a990e3a`), [ADR-0009](adr/0009-visualizador-3d-com-model-viewer.md) Aceito. **Bloco C pendente, só com o 1º GLB** |
 | 6 | Assistente com roteiro determinístico, horários e links do WhatsApp no painel de atendimento | `especialista-em-ia-conversacional`, `frontend-nextjs` | **Concluída** ([detalhe](#etapa-6--assistente-com-roteiro-determinístico-horário-e-links-do-whatsapp)); blocos A e B publicados (`a744972`, `a37640c`), [ADR-0010](adr/0010-assistente-deterministico-e-whatsapp.md) Aceito; P44 a P52 decididos em 2026-11-03. Os textos do P52 seguem como `[A DEFINIR: …]` até o dono escrever |
 | 7 | Páginas restantes: Presentes, Aprenda, Produtores, 404 (textos da §12) | `frontend-nextjs`, `guardiao-do-design`, `especialista-em-acessibilidade` | **Concluída** ([detalhe](#etapa-7--páginas-restantes-presentes-aprenda-produtores-e-404)); blocos A a D publicados (`0589676`, `eca43a5`, `7602c3d`, `c5b514e`), [ADR-0011](adr/0011-paginas-de-conteudo-e-404.md) Aceito; P53 a P67 decididas (opção A). Textos da §12 seguem com lacunas do dono |
-| 8 | Rodada de qualidade: testes, acessibilidade, performance e SEO, segurança | `performance-e-seo`, `devops-e-deploy`, `auditor-de-seguranca`, `especialista-em-acessibilidade`, `frontend-nextjs`, `testes-e-qualidade` | **Detalhada** em 2026-11-05 ([detalhe](#etapa-8--rodada-de-qualidade-testes-acessibilidade-desempenho-seo-e-segurança)): blocos A a F, 21 tarefas, ADRs [0014](adr/0014-dependencias-da-rodada-de-qualidade.md) e [0015](adr/0015-cabecalhos-http-e-csp.md) **Aceitos**; P68 a P84 respondidas em 2026-11-05. **Pronta para começar** |
-| 9 | CI completo, ambientes e checklist de aceite da §14 | `devops-e-deploy`, `documentador-tecnico` | A detalhar; herda itens da etapa 4 ([seção](#etapa-9--ci-completo-ambientes-e-aceite-herança-da-etapa-4) e [lista](#fica-para-depois-segurança-e-lgpd)) |
-
-A etapa 9 será detalhada pelo `arquiteto-de-software` no início dela.
+| 8 | Rodada de qualidade: testes, acessibilidade, performance e SEO, segurança | `performance-e-seo`, `devops-e-deploy`, `auditor-de-seguranca`, `especialista-em-acessibilidade`, `frontend-nextjs`, `testes-e-qualidade` | **Detalhada** em 2026-11-05 ([detalhe](#etapa-8--rodada-de-qualidade-testes-acessibilidade-desempenho-seo-e-segurança)): blocos A a F, 21 tarefas, ADRs [0014](adr/0014-dependencias-da-rodada-de-qualidade.md) e [0015](adr/0015-cabecalhos-http-e-csp.md) **Aceitos**; P68 a P84 respondidas em 2026-11-05. **Concluída** em 2026-11-17 (`0b638b9` a `e4ff37c`) |
+| 9 | CI completo, ambientes e checklist de aceite da §14 | `devops-e-deploy`, `performance-e-seo`, `testes-e-qualidade`, `auditor-de-seguranca`, `guardiao-do-design`, `documentador-tecnico` | **Detalhada** em 2026-11-17 ([detalhe](#etapa-9--ci-completo-ambientes-e-aceite-herança-da-etapa-4)): fase 1 (loja simulada, blocos A a E, 20 tarefas) e fase 2 (publicação real, R1 a R12, depende do dono); ADRs [0016](adr/0016-ci-completo-dependencias-e-lighthouse.md) e [0017](adr/0017-hospedagem-na-vercel-e-ambientes.md) **Propostos**; **aguarda as respostas P85 a P96** |
 
 ---
 
@@ -3041,7 +3050,390 @@ Sugestão de uso: dentro do horário, o texto escolhido aparece abaixo da linha 
 
 > **Herança da etapa 6:** trava de build ou teste de CI que falhe em produção com `[A DEFINIR` em `TEXTOS_DO_ROTEIRO` (**antecipada para a etapa 8, tarefa 5**); texto de saúde validado por profissional ([detalhes](#pendências-da-verificação-do-bloco-a-etapa-6)).
 
-> A etapa 9 ainda será detalhada pelo `arquiteto-de-software`. Esta seção reúne o que a etapa 4 deixou para ela. As tabelas originais continuam em [Fica para depois (segurança e LGPD)](#fica-para-depois-segurança-e-lgpd) e [Fica para depois (bloco E)](#fica-para-depois-bloco-e).
+**Objetivo:** deixar a loja **simulada** verificada de ponta a ponta por máquina. O CI passa a rodar tudo o que hoje roda à mão: cobertura, auditoria de dependências, regressão visual e Lighthouse, além de manter as dependências atualizadas sozinho. Os ambientes ficam documentados (ADR-0017), os avisos de licença são publicados e o checklist de aceite da §14 fica preenchido, com cada item provado ou registrado como desvio aprovado. A **publicação real** fica separada (fase 2), porque depende de dados, contas e aprovações do dono.
+
+**Situação: DETALHADA em 2026-11-17, aguardando as respostas do dono às [perguntas P85 a P96](#perguntas-ao-dono-etapa-9).** Os ADRs [0016](adr/0016-ci-completo-dependencias-e-lighthouse.md) (CI completo) e [0017](adr/0017-hospedagem-na-vercel-e-ambientes.md) (hospedagem e ambientes) estão **Propostos**. Nada da etapa 9 foi implementado. O bloco B pode começar só depois de P85 a P88. Os blocos C a E dependem também de P89 a P94.
+
+**Pré-requisito:** etapa 8 concluída (`e4ff37c`, mais `31430b8` e `61036ba`).
+
+**Decisões que valem aqui (não reabrir):**
+
+- **Hospedagem:**
+  - D31: Vercel.
+  - Branch de produção `producao`, que só recebe *push* com conteúdo real e aprovação explícita do dono.
+  - A `main` gera Preview, com `PERMITIR_DADOS_FICTICIOS=1` e `Disallow: /`.
+  - `NEXT_PUBLIC_SITE_URL=https://atelie-do-queijo.vercel.app` em Production e Preview.
+  - `WHATSAPP_NUMBER` só com o número real.
+- **Dados fictícios:** D26 a D29 e D27 × §4.9 = 1A. A trava de `data/ficticio.ts` impede o build de produção.
+- **Node:** 24 (Node B). Não ampliar `engines`.
+- **Regressão visual:** 22 capturas do Linux, na imagem do Playwright 1.64.1 (P79 = A).
+- **Lighthouse:** metas e desvios da etapa 8 (TBT A; SEO só por `is-crawlable`; Acessibilidade só pelo D34).
+- **Outras:** P75 = A (limite de taxa no ADR do gateway), P77 = A (sem dados de campo até reavaliar, ver P95), D32 (gateway Mercado Pago, na fase 2) e D33 (o agente redige o **rascunho** do aviso de privacidade).
+
+**Skills:** conferir o mapa em `SKILLS-ATELIE-DO-QUEIJO.md` antes de cada tarefa:
+
+- `web-quality-audit`, `performance` e `core-web-vitals` no Lighthouse CI;
+- `seo` na conferência de SEO e no roteiro do validador;
+- `accessibility` na rodada final;
+- `webapp-testing` nos testes de aceite e na conferência visual;
+- `best-practices` no `auditor-de-seguranca` e no `revisor-de-codigo`.
+
+Não há *skill* de DevOps na lista aprovada. O `devops-e-deploy` segue a documentação oficial do GitHub Actions, do Dependabot e da Vercel, conferida na data da tarefa.
+
+### Escopo: o que entra agora (loja simulada) e o que fica para a publicação real
+
+| Item | Etapa 9, fase 1 (agora, loja simulada) | Fase 2: publicação real (depende do dono) |
+| --- | --- | --- |
+| CI | Ações por SHA, cobertura com catraca, auditoria (`npm audit`, `npm audit signatures`), execução semanal e manual | — |
+| Dependências | Dependabot (P86) com grupos e ignorados; regra para os PRs do robô (P87); triagem das 7 moderadas de desenvolvimento (P88) | — |
+| Regressão visual | *Workflow* com `npm run test:visual:docker` no Linux do GitHub (P90) | Capturas novas quando houver fotos e GLB |
+| Lighthouse | `@lhci/cli` (P89, ADR-0016) com as metas da etapa 8, primeiro só avisando e depois reprovando (P91) | SEO 100 nas páginas públicas em produção |
+| Ambientes | ADR-0017; conferência de Server Actions, origem e logs na documentação; `docs/ambiente.md` com a tabela dos quatro ambientes | Domínio próprio; plano Pro da Vercel (uso comercial); primeiro deploy de produção |
+| Proteção de branches | *Ruleset* configurado **pelo dono** no GitHub (P93) | — |
+| Licenças | `public/licencas-de-terceiros.txt` gerado por script, sem dependência nova, e conferido no CI | — |
+| LGPD | **Rascunho** do aviso de privacidade (D33) em `docs/`, sem página nem link no site | Validação por profissional de direito; página e link antes de **Confirmar pedido** (texto novo, com aprovação); base legal, retenção, canal do titular, telefone e presenteado |
+| Aceite §14 | `docs/aceite.md` (P92): cada item com evidência (teste ou conferência) ou desvio aprovado | Reconferir os itens que mudam com dados, fotos e GLB |
+| Conferências humanas | Roteiro do NVDA e do validador do Google em modo código (P94) | Validador do Google no endereço público |
+| Gateway, frete, WhatsApp | — (seguem simulados) | ADR do gateway (D32: Mercado Pago), frete real, `WHATSAPP_NUMBER` real, limite de taxa (P75) |
+| Dados e textos | — (seguem fictícios ou `[A DEFINIR …]`) | Trocar `data/ficticio.ts`, preencher as lacunas, texto de saúde validado por profissional, remover as travas ("Para liberar a publicação" em `docs/ambiente.md`) |
+| Dados de visitantes | Nada (P95) | Speed Insights ou `useReportWebVitals`, só com o aviso de privacidade |
+| 3D | — | Bloco C da etapa 5, com o primeiro GLB |
+
+**Fora, por regra do projeto:**
+
+- nenhuma dependência de produção nova;
+- nenhum texto, cor ou medida da spec alterados;
+- nenhuma conta criada nem plano pago contratado;
+- nada publicado em produção;
+- nenhum *push* na `producao`;
+- sem CodeQL ou Semgrep: as ferramentas de análise estática da Trail of Bits ficaram fora da lista aprovada na etapa 8. Podem voltar se o dono pedir, e são grátis em repositório público.
+
+### Custo da CI (estimativa, a confirmar na tarefa 3)
+
+| *Workflow* | Quando roda (recomendação) | Duração estimada | Execuções por mês (estimativa) |
+| --- | --- | ---: | ---: |
+| `ci.yml`: `verificar` + `e2e` + `auditoria` | Todo *push* e PR na `main`, semanal e manual | 15 a 20 min (jobs em paralelo; o `e2e` é o mais longo) | ~20 *pushes* + ~8 PRs do Dependabot + 4 semanais |
+| `visual.yml` | Só quando mudam arquivos que afetam a tela, mais o botão manual (P90 = B) | 6 a 10 min | ~10 |
+| `lighthouse.yml` | Mesmo gatilho do visual, mais semanal (P91 = B) | 6 a 10 min | ~14 |
+| **Total** | | | **~700 a 900 min/mês** |
+
+- **Repositório público:** os *runners* padrão são grátis, então não há custo (documentação do GitHub, "About billing for GitHub Actions").
+- **Repositório privado no plano Free:** a cota é de 2.000 min/mês, e a estimativa fica abaixo da metade. Mesmo assim, rodar o visual e o Lighthouse em todo *push* (P90 = A e P91 = A) levaria o total a ~1.400 min/mês, perto do limite. Por isso a recomendação é usar o filtro por caminho.
+- **Visibilidade:** ainda não está confirmada (P85).
+- **Tempo do dono:** responder às perguntas (~20 min), configurar o *ruleset* e os alertas do Dependabot no site do GitHub (~10 min, com passo a passo) e, se o P94 = A, o roteiro do NVDA e do validador (~20 min). O resto fica com os agentes.
+
+### Tarefas
+
+Cada tarefa termina com `lint`, `typecheck`, `format:check`, `test`, `modelos:validar`, `build` e `test:e2e` passando. O e2e completo roda com `--workers=2` e o Docker fechado na máquina do dono. Nas tarefas de CI, o critério inclui **a execução verde no GitHub Actions depois do *push***: a sessão principal confere com `gh run list` e `gh run view`. A estimativa de linhas está entre parênteses.
+
+#### Fase 1 — Loja simulada
+
+**Bloco A — Decisões (commits de documentação)**
+
+1. **[arquiteto-de-software] Detalhamento da etapa 9 e ADRs 0016 e 0017 propostos.** Este texto.
+   - **Pronto quando:** commit `docs: detalha a etapa 9 e propõe os adrs 0016 e 0017` publicado.
+2. **[arquiteto-de-software] Registro das respostas P85 a P96.** Ajusta as tarefas ao que o dono escolher e muda os ADRs 0016 e 0017 para Aceito (ou os reescreve).
+   - **Pronto quando:** commit `docs: registra as respostas p85 a p96 e aceita os adrs 0016 e 0017` publicado.
+
+**Bloco B — CI de base (commit 3)** — depende de P85 a P88
+
+3. **[devops-e-deploy] Linha de base e endurecimento do `ci.yml`** (~120)
+   - **Linha de base:** registrar neste plano a duração de cada job nas últimas 10 execuções (`gh run list --workflow=CI`, `gh run view --json jobs`).
+   - **Endurecimento:**
+     - ações fixadas por SHA, com a versão em comentário;
+     - `permissions: contents: read` em cada job;
+     - `npm run test:cobertura` no lugar de `npm test` no job `verificar`, com `coverage/` como artefato por 7 dias;
+     - cache de `~/.cache/ms-playwright`, com a chave na versão do `@playwright/test`;
+     - `timeout-minutes` = linha de base + 50%;
+     - gatilhos `workflow_dispatch` e `schedule` semanal (segunda, 9h UTC);
+     - `@playwright/test` com versão exata `1.64.1` (ADR-0016, decisão 3).
+   - **Pronto quando:**
+     - o CI fica verde na `main`, com a tabela de durações antes e depois registrada neste plano;
+     - nenhum `uses:` fica por *tag*;
+     - o job `verificar` falha se a catraca da cobertura cair. Prova local: com um limite forçado acima do medido, `npm run test:cobertura` sai com código 1, como na tarefa 17 da etapa 8;
+     - o `package-lock.json` não muda de versão do Playwright.
+
+4. **[devops-e-deploy] Job `auditoria`** (~40)
+   - Job em paralelo ao `verificar`: `npm ci`, `npm audit signatures`, `npm audit --omit=dev` (qualquer achado em produção reprova) e, para o desenvolvimento, a regra do P88. Recomendação: `npm audit --audit-level=high`, que aceita as 7 moderadas de `typescript-eslint` → `minimatch`, já triadas na etapa 8.
+   - **Pronto quando:**
+     - o job fica verde na `main` hoje;
+     - a mesma linha com `--audit-level=moderate` sai com código 1 localmente (prova de que a regra morde);
+     - a triagem das 7 moderadas está citada no comentário do passo, com um *link* para a tabela da etapa 8.
+
+5. **[devops-e-deploy] Dependabot** (~60) — P86 = A e P87
+   - `.github/dependabot.yml` com os ecossistemas, grupos, ignorados e prefixos do ADR-0016 (decisão 2).
+   - Seção "Atualizações de dependências" no `README.md`, com a regra do P87:
+     - quem revisa;
+     - quando o PR do Playwright exige regenerar as capturas (`npm run test:visual:docker -- --update-snapshots` + `guardiao-do-design`);
+     - o que nunca entra sem perguntar: *major* de dependência de produção, Node e `three` fora da faixa do `model-viewer`.
+   - **Ação do dono:** ligar "Dependabot alerts" e "Dependabot security updates" em *Settings → Code security* (passo a passo no resumo da tarefa).
+   - **Pronto quando:**
+     - o GitHub aceita o arquivo, sem erro em *Insights → Dependency graph → Dependabot*;
+     - a primeira rodada termina, abrindo PRs agrupados ou registrando "up to date";
+     - nenhum PR propõe `@types/node` 26 nem `three` 0.184 ou maior.
+
+6. **Verificação do bloco B:**
+   - `auditor-de-seguranca`, somente leitura: permissões mínimas, SHAs conferidos contra as versões, nenhum `pull_request_target`, nenhum segredo em *log* ou artefato, e PRs do Dependabot sem acesso a segredos;
+   - depois, `revisor-de-codigo`;
+   - commit `ci: amplia o ci com cobertura, auditoria e dependabot`.
+
+**Bloco C — Regressão visual e Lighthouse no CI (commit 4)** — depende de P89 a P91
+
+7. **[devops-e-deploy + testes-e-qualidade] *Workflow* de regressão visual** (~70)
+   - `.github/workflows/visual.yml`:
+     - `ubuntu-latest`, com `npm run test:visual:docker` (mesma imagem e mesmo script do dono; ADR-0016, decisão 4);
+     - gatilho do P90 (recomendação: *push* e PR na `main` com filtro de caminhos em `app/**`, `components/**`, `**/*.css`, `public/**`, `data/**`, `e2e/visual/**`, `playwright.config.ts`, `package-lock.json` e `scripts/visual-docker.mjs`, mais `workflow_dispatch`);
+     - diferenças (`test-results/`) como artefato por 7 dias em caso de falha;
+     - nunca `--update-snapshots`.
+   - Se o script precisar de ajuste para o *runner* (permissões de arquivos criados pelo contêiner, variável `CI`), o ajuste vale também para o Windows e é testado nos dois.
+   - **Pronto quando:**
+     - a primeira execução no GitHub passa 22/22 **sem alterar nenhuma captura**, o que prova que o Linux do dono e o do GitHub dão o mesmo resultado;
+     - uma mudança proposital de 1 px faz o *workflow* falhar e publicar a diferença. Prova por `workflow_dispatch` numa branch temporária `ci/prova-visual`, apagada em seguida e nunca mesclada;
+     - `npm run test:visual:docker` continua passando no Windows do dono.
+
+8. **[performance-e-seo + devops-e-deploy] Lighthouse CI** (~150) — P89 = A, ADR-0016 (decisão 5)
+   - `@lhci/cli` 0.16.1 como devDependency, com versão exata;
+   - `lighthouserc.json` com as 6 rotas da etapa 8, 3 execuções, perfil celular, mediana e metas: Desempenho ≥ 90, Boas práticas ≥ 95, Acessibilidade ≥ 96, SEO com todas as auditorias aprovadas exceto `is-crawlable`;
+   - `upload.target: filesystem`, sem *storage* público;
+   - script `npm run lighthouse`;
+   - `.github/workflows/lighthouse.yml` com o gatilho do P91. Recomendação: o mesmo do visual, mais o semanal, em modo **aviso** (`warn`) até a tarefa 9;
+   - relatórios HTML e JSON como artefato por 14 dias;
+   - um resumo das medianas no *Job Summary* do GitHub, para o dono ler sem baixar nada.
+   - **Pronto quando:**
+     - o *workflow* roda e publica os relatórios;
+     - `npm run lighthouse` funciona no Windows do dono (Chrome instalado, build com `PERMITIR_DADOS_FICTICIOS=1`);
+     - o `npm audit --omit=dev` continua limpo, porque o pacote é só de desenvolvimento;
+     - o `medir:pacote` não muda.
+
+9. **[performance-e-seo] Calibração e modo reprova** (~20)
+   - Depois de 5 execuções no CI (manuais, pelo botão, para não esperar semanas), comparar as medianas do CI com as locais da etapa 8 (tabela neste plano).
+   - Se o *runner* ficar estável acima das metas, passar o modo para **reprova** (`error`). Se não, registrar a meta do CI com a margem medida e o motivo. A meta do projeto (≥ 90) não muda.
+   - **Pronto quando:** a tabela de calibração está neste plano e o `lighthouserc.json` reflete a decisão.
+
+10. **Verificação do bloco C:**
+    - `testes-e-qualidade`: estabilidade do visual em 2 execuções seguidas no CI;
+    - `auditor-de-seguranca`: relatórios sem dado sensível e sem *upload* público;
+    - depois, `revisor-de-codigo`;
+    - commit `ci: adiciona regressão visual e lighthouse ao ci`. A dependência entra no mesmo commit, citando o ADR-0016.
+
+**Bloco D — Ambientes, hospedagem e licenças (commit 5)**
+
+11. **[devops-e-deploy + auditor-de-seguranca] Conferências de hospedagem** (~80, quase só documentação) — ADR-0017
+    - Confirmar, na documentação do Next 16.4.6 e da Vercel (decisão 6 do ADR-0017):
+      - `serverActions.allowedOrigins` desnecessário na Vercel;
+      - `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` desnecessária na Vercel;
+      - logs sem corpo de POST.
+    - Se algum ponto falhar, corrigir no `next.config.ts` com teste.
+    - `docs/ambiente.md` ganha:
+      - a tabela dos quatro ambientes;
+      - "o que conferir no painel da Vercel": Deployment Protection ligada em Preview, Toolbar desligada em Preview, `PERMITIR_DADOS_FICTICIOS` só em Preview, Node 24 no *log* de build do Preview;
+      - o aviso do plano Hobby × uso comercial.
+    - **Ação do dono:** conferir os quatro itens do painel e informar o resultado. São 5 minutos, com o passo a passo no resumo da tarefa.
+    - **Pronto quando:**
+      - cada item da decisão 6 do ADR-0017 tem a fonte citada (URL e data);
+      - a herança "CSRF e `X-Forwarded-Host`" e "Logs sem corpo de POST" está marcada como resolvida ou virou tarefa;
+      - o dono confirmou os itens do painel.
+
+12. **[devops-e-deploy + documentador-tecnico] Avisos de licença de terceiros** (~150 com testes) — ADR-0016 (decisão 6) e ADR-0009
+    - `scripts/licencas.mjs`, sem dependência: lê o `package-lock.json`, pega só os pacotes de produção e gera `public/licencas-de-terceiros.txt` com nome, versão, licença e o texto de `LICENSE` e `NOTICE` de cada um;
+    - script `licencas:gerar` e o passo `licencas:conferir` no job `verificar`;
+    - teste Vitest do gerador;
+    - conferir se o build preserva os comentários `@license` do `model-viewer` e do `three` em `.next/static`. O arquivo de avisos cobre o requisito de qualquer forma;
+    - o arquivo fica fora do sitemap. **Nenhum *link* no rodapé**, porque seria texto novo fora da spec; se o dono quiser um, é pergunta à parte.
+    - **Pronto quando:**
+      - `GET /licencas-de-terceiros.txt` responde 200 no build;
+      - o arquivo lista todos os pacotes de produção do *lockfile*, entre eles `@google/model-viewer` (Apache-2.0), `three` (MIT), os pacotes `lit` (BSD-3-Clause), `next`, `react` e `zod`;
+      - `licencas:conferir` falha se uma dependência de produção mudar sem o arquivo ser regenerado;
+      - nenhum pacote de desenvolvimento aparece no arquivo.
+
+13. **Verificação do bloco D:**
+    - `auditor-de-seguranca`: conferências da tarefa 11 e o arquivo de licenças sem caminho local nem dado da máquina;
+    - depois, `revisor-de-codigo`;
+    - commit `chore: publica os avisos de licença e documenta os ambientes`.
+
+**Bloco E — Checklist de aceite da §14 e rascunho de privacidade (commits 6 e 7)**
+
+14. **[testes-e-qualidade] Evidência automática de cada item da §14** (~200)
+    - Mapear cada um dos 13 itens da §14 para os testes que já o provam (unitário, e2e, axe, visual).
+    - Cobrir as lacunas com testes novos, por exemplo:
+      - sem rolagem horizontal de 360 a 1920 px em **todas** as rotas, não só na Home;
+      - nenhuma cor fora dos tokens da §3.1 nos CSS Modules e no CSS global, fora dos SVGs;
+      - pesos das fontes carregadas conforme a §3.2;
+      - espaçamentos do hero e entre seções da Home (48/96, 112 e 128).
+    - **Pronto quando:** a tabela "item → evidência" está pronta para a tarefa 18, e todo item automatizável tem pelo menos um teste que falha se o item quebrar. Prova: reverter um token em um teste local faz o teste novo falhar.
+
+15. **[guardiao-do-design] Conferência final lado a lado com o protótipo** (somente leitura)
+    - Home, Catálogo, Produto do Canastra e painel de Atendimento, a 1440 e a 390 px, contra `design/Ateliê do Queijo — Telas.html`;
+    - "Textos idênticos aos deste documento", letra a letra, com a lista de desvios aprovados das etapas 3 a 8 ao lado;
+    - os achados vão ao `frontend-nextjs` só se não forem desvio aprovado.
+    - **Pronto quando:** cada um dos itens visuais da §14 tem o veredito (conforme / desvio aprovado com a referência / achado corrigido) e as capturas da regressão visual não mudaram, ou mudaram com aprovação.
+
+16. **[especialista-em-acessibilidade] Rodada final WCAG 2.2 AA e roteiros para o dono**
+    - Releitura das exceções do axe (só D34) e dos desvios de acessibilidade.
+    - Roteiro curto em português, para quem não é técnico, de duas conferências que só uma pessoa faz:
+      - **NVDA**, gratuito no Windows: falha ao carregar o atendimento e o anúncio "Abrindo o atendimento…";
+      - **Teste de pesquisa aprimorada do Google**, no modo "Código", colando o HTML de `/` e de `/queijos/canastra-curado` do build local, sem abrir o Preview.
+    - Executor conforme o P94.
+    - **Pronto quando:** os roteiros estão no `docs/aceite.md` e o resultado das duas conferências está registrado. Se o P94 = B, ficam como pendência da fase 2.
+
+17. **[auditor-de-seguranca + documentador-tecnico] Rascunho do aviso de privacidade** (D33)
+    - `docs/privacidade-rascunho.md`, marcado **RASCUNHO, não publicado, validar com profissional de direito**.
+    - Parte do [inventário LGPD da etapa 8](#inventário-lgpd-para-o-rascunho-do-aviso-d33-etapa-9) e cobre:
+      - controlador: lacuna até o CNPJ real;
+      - dados e finalidade por fluxo: newsletter, frete, checkout, assistente;
+      - base legal sugerida: art. 7º, V, e obrigação fiscal;
+      - telefone: justificar ou tornar opcional (decisão do dono);
+      - retenção, como lacuna;
+      - canal do titular, como lacuna;
+      - `localStorage` como estritamente necessário;
+      - operadores: Vercel e, ao clicar, o WhatsApp (Meta);
+      - dados do presenteado: pendência do dono.
+    - **Nenhuma página, rota ou *link* no site.**
+    - **Pronto quando:** o arquivo cobre todas as linhas do inventário e lista as perguntas que o profissional de direito precisa responder.
+
+18. **[documentador-tecnico] Checklist de aceite** (P92 = A: `docs/aceite.md`)
+    - Os 13 itens da §14, cada um com:
+      - estado: ✅ conforme, ⚠️ conforme com desvio aprovado, ou ⏳ depende do dono;
+      - evidência: teste, conferência da tarefa 15 ou roteiro da 16.
+    - A tabela única de **desvios aprovados**, consolidada de:
+      - [etapa 5](#textos-decididos-e-desvios-da-spec-checklist-da-14) e P21/D6;
+      - D4, D5, D12, D13, D14, D18 e D19;
+      - [etapa 7](#desvios-para-o-checklist-da-14-etapa-7): P54, P55, P63 e P67;
+      - [etapa 8](#desvios-para-o-checklist-da-14-etapa-8): P81, P80, P82, P70, P72, P84, trilha, escala sensorial, 10 s, D27, capturas do Linux, TBT e Lighthouse.
+    - O **checklist de publicação** da fase 2 (abaixo).
+    - **Pronto quando:** nenhum item da §14 fica sem estado nem evidência, e cada desvio cita a decisão do dono (número e data).
+
+19. **Verificação do bloco E:**
+    - `guardiao-do-design` (o checklist reflete a tarefa 15), `especialista-em-acessibilidade` e `auditor-de-seguranca` (rascunho) conferem;
+    - depois, `revisor-de-codigo`;
+    - commits:
+      - `test(aceite): cobre os itens automatizáveis da §14`;
+      - `docs: adiciona o checklist de aceite e o rascunho de privacidade`.
+
+**Fechamento**
+
+20. **[documentador-tecnico] Fechamento da fase 1 da etapa 9**
+    - `README.md`: os *workflows* e o que cada um confere, Dependabot, `npm run lighthouse` e `licencas:gerar`;
+    - `docs/ambiente.md`: o que a tarefa 11 não tiver feito;
+    - `docs/conteudo.md`: frete, prazo, parcelas e Pix simulados (onde estão e o que muda com a transportadora e o gateway);
+    - `CHANGELOG.md`;
+    - neste plano: a situação da etapa e a nota de retomada.
+    - **Pronto quando:** commit `docs: fecha a etapa 9 (loja simulada)` publicado.
+
+#### Fase 2 — Publicação real (não começa sem os dados e a aprovação do dono)
+
+Não é detalhada agora: cada item depende de uma escolha ou de um dado do dono e terá plano próprio quando chegar. A ordem abaixo é a recomendada. O `docs/aceite.md` (tarefa 18) traz a mesma lista como checklist.
+
+| # | Item | Responsável | Depende de |
+| --- | --- | --- | --- |
+| R1 | Dados reais: WhatsApp, CNPJ, endereço, produtor e ano; **remover** os valores de `data/ficticio.ts` (não substituí-los ali) e atualizar os testes que os citam | Dono + `engenheiro-de-ecommerce` + `frontend-nextjs` | Dono |
+| R2 | Lacunas: `[A DEFINIR …]` (9 fichas, artigos, categoria, queijos citados), `[TEXTO DO ARTIGO]`, `R$ [PREÇO]` dos kits, `[n]`, `[N]`, `[SELO E NÚMERO]`, `[DATA]` e fotos (`[FOTO: …]`, D34) | Dono + `frontend-nextjs` | Dono |
+| R3 | Texto de saúde (assistente) validado por profissional | Dono + `especialista-em-ia-conversacional` | Profissional |
+| R4 | ADR do gateway (D32, Mercado Pago): tokenização, webhooks assinados, idempotência, segredos `server-only`, revisão da CSP (ADR-0015), limite de taxa (P75), parcelas validadas no servidor, remover `recusa@exemplo.com` | `arquiteto-de-software` + `engenheiro-de-ecommerce` + `auditor-de-seguranca` | Conta do dono no gateway |
+| R5 | Frete real (transportadora, tabela, prazo, área) no lugar do D28 | `engenheiro-de-ecommerce` | Dono |
+| R6 | LGPD: rascunho (tarefa 17) validado por profissional, página e *link* antes de **Confirmar pedido** (texto aprovado), newsletter real ou retirada (D25) | Dono + `auditor-de-seguranca` + `frontend-nextjs` | Profissional |
+| R7 | Remover as travas de dados fictícios ("Para liberar a publicação" em `docs/ambiente.md`) e `PERMITIR_DADOS_FICTICIOS` da Vercel, da CI e do Playwright | `devops-e-deploy` | R1 e R2 |
+| R8 | Vercel: plano Pro (uso comercial), domínio próprio e `NEXT_PUBLIC_SITE_URL` final, `WHATSAPP_NUMBER` em Production | Dono + `devops-e-deploy` | Dono (custo) |
+| R9 | Dados de visitantes (P95) e monitoramento de erros, se o dono quiser, com ADR | `performance-e-seo` + `devops-e-deploy` | R6 |
+| R10 | Rodada de aceite em produção: Lighthouse com SEO 100 nas páginas públicas, validador do Google no endereço público, Search Console (conta do dono), NVDA se ficou para cá | `performance-e-seo` + `especialista-em-acessibilidade` | R7 e R8 |
+| R11 | PR `main` → `producao` aberto e **aprovado pelo dono**; conferir no primeiro deploy `VERCEL_ENV=production`, `robots.txt` liberado, sitemap e ausência de dado fictício | Dono + `devops-e-deploy` | Todos acima |
+| R12 | Bloco C da etapa 5 (3D no hero e giro no cartão), quando houver o primeiro GLB | `especialista-3d-webgl` | GLB do dono |
+
+### Commits da etapa 9
+
+| Bloco | Conteúdo | Mensagem | Situação |
+| --- | --- | --- | --- |
+| A | Tarefa 1: este detalhamento e os ADRs 0016 e 0017 propostos | `docs: detalha a etapa 9 e propõe os adrs 0016 e 0017` | Pendente (sessão principal) |
+| A | Tarefa 2: respostas P85 a P96 | `docs: registra as respostas p85 a p96 e aceita os adrs 0016 e 0017` | Aguarda o dono |
+| B | Tarefas 3 a 6 | `ci: amplia o ci com cobertura, auditoria e dependabot` | — |
+| C | Tarefas 7 a 10 | `ci: adiciona regressão visual e lighthouse ao ci` | — |
+| D | Tarefas 11 a 13 | `chore: publica os avisos de licença e documenta os ambientes` | — |
+| E | Tarefa 14 | `test(aceite): cobre os itens automatizáveis da §14` | — |
+| E | Tarefas 17 e 18 | `docs: adiciona o checklist de aceite e o rascunho de privacidade` | — |
+| Fechamento | Tarefa 20 | `docs: fecha a etapa 9 (loja simulada)` | — |
+
+**Ordem dos blocos:**
+
+- B antes de C, porque o C reaproveita os SHAs e as permissões do B.
+- A tarefa 9 (calibração) pode fechar depois do commit do C, num commit pequeno `ci: passa o lighthouse a reprovar`.
+- D corre em paralelo a C.
+- E depois de C, porque o checklist cita os *workflows* como evidência.
+
+Os PRs do Dependabot que aparecerem durante a etapa seguem a regra do P87 e não entram nesses commits.
+
+### Ações do dono na etapa 9 (não são perguntas)
+
+1. Responder às [perguntas P85 a P96](#perguntas-ao-dono-etapa-9).
+2. Em *Settings → Code security* do GitHub, ligar **Dependabot alerts** e **Dependabot security updates** (tarefa 5, com passo a passo).
+3. Se o P93 = A ou B, criar o *ruleset* no GitHub (passo a passo entregue com a resposta).
+4. No painel da Vercel, conferir os quatro itens da tarefa 11.
+5. Se o P94 = A, seguir os dois roteiros da tarefa 16.
+
+### Critérios de pronto da etapa 9 (fase 1)
+
+- [ ] O CI roda, em todo *push* na `main`, lint, typecheck, Prettier, Vitest com a catraca de cobertura, `modelos:validar`, build, e2e, auditoria e conferência de licenças, com ações fixadas por SHA e permissões mínimas; ele também roda toda semana e pelo botão manual.
+- [ ] Dependabot ativo, com grupos e ignorados conforme o ADR-0016 e a regra do P87 documentada.
+- [ ] Regressão visual no CI passando com as **mesmas** 22 capturas geradas pelo dono, e falhando com a mudança de 1 px.
+- [ ] Lighthouse no CI com as metas da etapa 8, calibrado, com relatórios só como artefato.
+- [ ] ADRs 0016 e 0017 aceitos; conferências de Server Actions, origem e logs registradas com a fonte.
+- [ ] `public/licencas-de-terceiros.txt` publicado e conferido no CI.
+- [ ] `docs/aceite.md` com os 13 itens da §14 com estado e evidência, os desvios consolidados e o checklist de publicação.
+- [ ] `docs/privacidade-rascunho.md` pronto para o profissional de direito, sem nada publicado no site.
+- [ ] Nenhuma dependência de produção nova; nenhum texto, cor ou medida mudados; nada na `producao`.
+
+### Riscos da etapa 9
+
+- **Capturas do GitHub diferentes das do dono** (outro processador, outra versão do Docker) → é a mesma imagem e o mesmo Chromium; se falhar, comparar a diferença no artefato antes de qualquer coisa. Nunca regenerar no CI para "fazer passar". Se a diferença for estrutural (fonte, antisserrilhado), as capturas passam a ser geradas **pelo CI** (opção D do P79) e o dono só aprova, com nova aprovação do `guardiao-do-design`.
+- **Lighthouse instável no *runner* compartilhado** → mediana de 3, modo aviso até a calibração (tarefa 9), metas do projeto inalteradas; se a variação passar de ~5 pontos, a reprova vale só para Acessibilidade, Boas práticas e SEO, e o Desempenho fica informativo no CI (com o manual da etapa 8 como veredito), com decisão registrada.
+- **Aviso de segurança novo travando o CI sem mudança de código** → é desejado em produção; para desenvolvimento vale a regra do P88; o `schedule` semanal mostra o problema antes do próximo *push*.
+- **Dependabot abrindo PRs demais** → rodada semanal, grupos, limite de PRs abertos; PRs do Playwright tratados à parte (capturas).
+- **Atualização do Next mudando CSP, cabeçalhos ou orçamento** → o e2e de cabeçalhos, o axe e o `medir:pacote` (no CI) pegam; PR do grupo `next` nunca é mesclado sem o `test:e2e` verde.
+- **`@lhci/cli` com dependências pesadas ou vulneráveis** → só desenvolvimento; triagem pelo P88; plano B = `lighthouse` com script próprio (P89 = B).
+- **Minutos do Actions (repositório privado)** → filtros por caminho (P90 e P91 = B); a tarefa 3 mede e, se o uso passar de 1.500 min/mês, o visual e o Lighthouse passam a semanal + manual.
+- **Memória da máquina do dono** → visual e Lighthouse passam a rodar no CI; localmente, continuam opcionais (Docker fechado durante o e2e).
+- **Push acidental na `producao`** → *ruleset* do P93 (barreira técnica) + trava de build com dados fictícios (segunda barreira).
+- **Rascunho de privacidade lido como texto final** → arquivo em `docs/`, título "RASCUNHO", nenhuma rota no site; publicação só na fase 2, após validação jurídica.
+
+### Perguntas ao dono (etapa 9)
+
+Cada pergunta tem opções, o impacto e uma recomendação, em linguagem direta. **Nenhuma foi respondida ainda.** Basta responder com o número e a letra (ex.: "P85 A, P86 A…") ou pedir explicação.
+
+| # | Pergunta | Opções | Recomendação | Decisão do dono |
+| --- | --- | --- | --- | --- |
+| P85 | O repositório no GitHub é **público** ou **privado**? Isso muda o custo do CI e o que o GitHub deixa proteger | **A)** Público: o CI é grátis e sem limite de minutos; a proteção de branches (P93) e a varredura de código ficam disponíveis no plano gratuito. O código e os dados fictícios ficam visíveis para qualquer pessoa (nenhum segredo está no repositório). **B)** Privado e continua privado: 2.000 minutos grátis por mês (a estimativa da etapa é ~700 a 900); a proteção de branches **não** existe no plano gratuito para repositório privado (só no GitHub Pro, pago), então o P93 vira só regra escrita. **C)** Privado agora, público depois | Só confirmar como está hoje (em *Settings → General*, embaixo, "Danger Zone"). Se estiver privado, **B** (o plano cabe na cota); tornar público é escolha sua, não técnica | — |
+| P86 | Que robô mantém as dependências atualizadas (abre um pedido de mudança quando sai versão nova ou correção de segurança)? | **A)** **Dependabot**, do próprio GitHub: nada a instalar, gratuito, agrupa atualizações parecidas num só pedido. **B)** **Renovate**: mais opções, mas exige instalar um aplicativo de terceiros com acesso de escrita ao repositório. **C)** Nenhum: a sessão principal confere à mão a cada etapa | **A** | — |
+| P87 | Quem aprova os pedidos de atualização do robô? | **A)** A sessão principal revisa (CI verde + `revisor-de-codigo`) e mescla atualizações *patch* e *minor*; **atualização *major* de dependência de produção** (Next, React, `model-viewer`, Zod) e a do Playwright (exige refazer as capturas) só com o seu "ok". **B)** Você mescla tudo pelo site do GitHub. **C)** Mesclagem automática das *patch* de desenvolvimento, o resto como A | **A**: você só é chamado quando há risco real | — |
+| P88 | O `npm audit` acusa 7 alertas **moderados** antigos, só em ferramentas de desenvolvimento (o verificador de código ESLint), que nunca chegam ao site. Ainda não há correção compatível | **A)** O CI reprova qualquer alerta em dependência **do site** e só alertas **altos ou críticos** nas de desenvolvimento; os 7 seguem registrados e o robô (P86) os resolve quando a correção sair. **B)** Forçar uma versão nova do pacote problemático (`overrides`): some o alerta, mas pode quebrar o ESLint. **C)** O CI reprova qualquer alerta: fica vermelho hoje até a correção sair | **A** | — |
+| P89 | Como rodar o Lighthouse (notas de desempenho, acessibilidade, boas práticas e SEO) no CI? | **A)** `@lhci/cli` 0.16.1, ferramenta oficial do Lighthouse para CI, como dependência **só de desenvolvimento** (ADR-0016): usa o mesmo Lighthouse 13.6.0 das medições da etapa 8; traz dezenas de pacotes, nenhum no site. **B)** Só o pacote `lighthouse` e um script nosso para repetir 3 vezes e tirar a mediana (menos pacotes, mais código para manter). **C)** Continuar manual, rodado pela sessão principal ao fim de cada etapa | **A** | — |
+| P90 | Quando roda a **regressão visual** (compara 22 fotos de tela com as de referência) no CI? Leva ~6 a 10 min | **A)** Em todo envio de código. **B)** Só quando mudar algo que aparece na tela (páginas, componentes, estilos, imagens, dados, as próprias capturas, a versão do Playwright), mais um botão para rodar à mão. **C)** Só pelo botão | **B**: pega toda mudança visual sem gastar minutos em mudança de documentação ou de CI | — |
+| P91 | Quando roda o **Lighthouse** no CI, e ele reprova ou só avisa? | **A)** Em todo envio, reprovando já. **B)** Mesmo gatilho do visual (P90 B) e uma vez por semana; **começa só avisando** e passa a reprovar depois de 5 execuções de calibração (tarefa 9), porque o computador do GitHub dá notas diferentes do seu. **C)** Só pelo botão e semanal, sempre só avisando | **B** | — |
+| P92 | Onde fica o **checklist de aceite da §14** (cada item da spec com "ok", "ok com desvio aprovado" ou "depende de você", e a prova)? | **A)** Documento próprio, `docs/aceite.md`, curto e fácil de ler, com o checklist da publicação real no fim. **B)** Uma seção deste plano (que já passa de 3.000 linhas). **C)** Uma *issue* no GitHub com caixas de marcar | **A** | — |
+| P93 | **Proteção de branches** no GitHub (você configura no site; a gente entrega o passo a passo). Como os agentes usam as suas credenciais, só uma regra técnica impede um envio acidental para a produção | **A)** Na `producao`: proibir envio direto (só por pedido de mudança vindo da `main`, com o CI verde), proibir apagar e reescrever. Na `main`: só proibir apagar e reescrever o histórico (o fluxo dos agentes não muda). **B)** A + exigir pedido de mudança também na `main` (todo trabalho passa a ser mesclado por você ou pela sessão principal: mais seguro, mais lento). **C)** Nenhuma (fica só a regra escrita no `CLAUDE.md` e a trava de build). Exige repositório público ou GitHub Pro (P85) | **A** (se P85 = B no plano gratuito, vale **C** até haver Pro) | — |
+| P94 | Duas conferências que **só uma pessoa** consegue fazer: ouvir o site com um leitor de tela (NVDA, gratuito) em dois momentos do atendimento, e colar o código de duas páginas no teste do Google de "resultados aprimorados" | **A)** Você faz agora, com um roteiro passo a passo de ~20 min (tarefa 16). **B)** Ficam para a publicação real (fase 2). **C)** Só o teste do Google agora (~5 min); o NVDA na fase 2 | **A**: se algo aparecer, os agentes ainda estão com o assunto fresco; **C** se o tempo estiver curto | — |
+| P95 | Medir a experiência dos **visitantes reais** (velocidade no celular de quem acessa; reavaliação do P77)? | **A)** Não agora: com a loja simulada e o Preview fechado não há visitante; decidir na publicação real, junto do aviso de privacidade. **B)** Ligar o Vercel Speed Insights já no Preview (dependência nova, ADR, sem dado útil por enquanto). **C)** Nunca | **A** | — |
+| P96 | Aceitar os ADRs [0016](adr/0016-ci-completo-dependencias-e-lighthouse.md) (CI completo) e [0017](adr/0017-hospedagem-na-vercel-e-ambientes.md) (Vercel e ambientes)? O 0017 só registra o que você já decidiu e avisa que o **plano gratuito da Vercel não permite uso comercial**: a loja real vai exigir o plano Pro (pago) antes de vender | **A)** Aceitar os dois (o 0016 se ajusta às respostas P85 a P91). **B)** Aceitar com ajustes (diga quais). **C)** Recusar e rediscutir | **A** | — |
+
+Fontes consultadas em 2026-11-17: GitHub Docs, ["About billing for GitHub Actions"](https://docs.github.com/en/billing/managing-billing-for-github-actions/about-billing-for-github-actions) (minutos grátis em repositório público; 2.000 min/mês no Free privado) e ["About rulesets"](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/about-rulesets) (público no Free; privado só no Pro, Team ou Enterprise); Vercel, ["Fair use guidelines"](https://vercel.com/docs/limits/fair-use-guidelines) e ["Hobby plan"](https://vercel.com/docs/plans/hobby-plan) (Hobby só para uso pessoal não comercial); registro do npm (`@lhci/cli` 0.16.1 com `lighthouse` 13.6.0, Apache-2.0, Node ≥ 22.19).
+
+### Herança recebida (cópia, para referência)
+
+Os itens abaixo estão distribuídos nas tarefas e na fase 2 acima. As tabelas originais continuam em [Fica para depois (segurança e LGPD)](#fica-para-depois-segurança-e-lgpd) e [Fica para depois (bloco E)](#fica-para-depois-bloco-e).
+
+| Item herdado | Destino na etapa 9 |
+| --- | --- |
+| Dependabot ou Renovate; `npm ci`, `npm audit`, `npm audit signatures` no CI | Tarefas 4 e 5 (P86 a P88) |
+| `Host`/`X-Forwarded-Host`, `allowedOrigins`, `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY`; logs sem corpo de POST | Tarefa 11 (ADR-0017) |
+| Licenças de terceiros (ADR-0009) | Tarefa 12 |
+| LGPD | Tarefa 17 (rascunho) e R6 (validação e publicação) |
+| ADR do gateway | R4 |
+| `conteudo.md` e `ambiente.md` com gateway, hospedagem, frete, Pix e horário | Tarefas 11 e 20 (simulados); R4 e R5 (reais) |
+| Checklist da §14 com os desvios | Tarefas 14, 15 e 18 |
+| Publicar só na Vercel / `VERCEL_ENV`; número fictício fora de `.next/static` | Já automático (etapa 8, `postbuild`); conferência no primeiro deploy (R11) |
+| Texto de saúde validado por profissional | R3 |
+| Cobertura, regressão visual e Lighthouse no CI (etapa 8) | Tarefas 3, 7 e 8 |
+| `useReportWebVitals` (P77) | P95 |
+| Validador do Google e leitor de tela real (etapa 8) | Tarefa 16 (P94) e R10 |
+| Agrupar `@google/model-viewer` e `three` (etapa 5) | Tarefa 5 |
 
 **Segurança e hospedagem**
 
@@ -3141,7 +3533,7 @@ Continuam como lacuna, por decisão do dono: dados dos 9 queijos sem ficha (`[A 
 | Aplicar D3, D4, D5 (registro), D11, D12, D13, D14, D18, D19 no código, nos testes e nos textos | `frontend-nextjs` (+ `guardiao-do-design`, `especialista-em-acessibilidade`) | Antes da etapa 5 (bloco único, um commit) — **Concluída em 2026-11-03.** Texto final do quiz: "Você prefere sabores {sabor}, vai servir {uso}, e acompanhar com {acompanhamento}. {nome} foi o que mais combinou com as três respostas." (uso: "para você mesmo, com calma"; sem artigo antes do nome, aprovado pelo dono). D14 feito com `white-space: nowrap` (`SemQuebra`), não com U+2011. |
 | Criar `data/ficticio.ts` e aplicar D26 a D29 (WhatsApp, CNPJ, endereço, frete, prazo, parcelas, produtor, ano); trocar as lacunas visíveis por esses valores | `engenheiro-de-ecommerce` + `frontend-nextjs` | Antes da etapa 6 (o WhatsApp é necessário nela) — **Concluída em 2026-11-03.** |
 | ADR do `@google/model-viewer` | `arquiteto-de-software` | Início da etapa 5 — **Escrito e aceito em 2026-11-03** ([ADR-0009](adr/0009-visualizador-3d-com-model-viewer.md), Aceito) |
-| ADR da hospedagem (Vercel) e ADR do gateway (Mercado Pago) | `arquiteto-de-software`, `auditor-de-seguranca` | Etapa 9 |
+| ADR da hospedagem (Vercel) e ADR do gateway (Mercado Pago) | `arquiteto-de-software`, `auditor-de-seguranca` | Etapa 9. Hospedagem: [ADR-0017](adr/0017-hospedagem-na-vercel-e-ambientes.md), **Proposto** em 2026-11-17 (P96). Gateway: fase 2 da etapa 9 (R4), quando o dono tiver a conta |
 | Rascunho do aviso de privacidade | `auditor-de-seguranca` + `documentador-tecnico` | Etapa 9 |
 | Checklist da §14 com os desvios D4, D5, D6, a borda dos campos do P81 = B (substitui o D2, revogado em 2026-11-05) e o item "trocar dados fictícios": remover `DADOS_FICTICIOS_ATIVOS` e a trava do `next.config.ts` ao trocar os dados, e atualizar junto os testes unitários e e2e que citam os valores fictícios (CNPJ, endereço, frete, parcelas, produtor, ano) | `documentador-tecnico` | Etapa 9 |
 
@@ -3151,7 +3543,7 @@ Continuam como lacuna, por decisão do dono: dados dos 9 queijos sem ficha (`[A 
 
 | Item | Situação | Quem decide |
 | --- | --- | --- |
-| Hospedagem (ex.: Vercel ou outra) | **Não decidida.** Nada de publicar em produção sem aprovação. Será tratada na etapa 9 com ADR próprio. | Dono do projeto |
+| Hospedagem (ex.: Vercel ou outra) | **Decidida: Vercel** (D31), com branch de produção `producao` e Preview a partir da `main` (2026-11-11). Registro em [ADR-0017](adr/0017-hospedagem-na-vercel-e-ambientes.md) (Proposto em 2026-11-17). Nada é publicado em produção sem aprovação. | Dono do projeto |
 | Gateway de pagamento (Shopify Storefront, Mercado Pago ou Pagar.me, com Pix) | **Não decidido.** Até lá, só funções simuladas em `lib/commerce.ts` (spec §2), atrás dos Server Actions da etapa 4 (ADR-0008). A integração real exige ADR, chaves em variável de ambiente e aprovação do dono. | Dono do projeto |
 | Pendências P24 a P38 da etapa 4 | **Decididas pelo dono em 2026-10-27 e implementadas** (ver [Decisões do dono para a etapa 4](#decisões-do-dono-para-a-etapa-4) e a [situação](#situação-das-decisões-p24-a-p38-ao-fim-da-etapa-4)). ADR-0007 aceito na mesma data. | Dono do projeto |
 | Aviso de privacidade (LGPD) e termos de compra | O checkout simulado coleta dados pessoais só em memória. Antes da publicação (etapa 9), é preciso ter um texto de privacidade e definir a base legal, junto com o P9 (newsletter). Itens detalhados pelo `auditor-de-seguranca` em [Fica para depois](#fica-para-depois-segurança-e-lgpd). | Dono do projeto + `auditor-de-seguranca` |
