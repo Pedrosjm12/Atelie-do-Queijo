@@ -1,7 +1,7 @@
 # Plano de implementação — Ateliê do Queijo
 
 > Fonte da verdade: `ATELIE-DO-QUEIJO-SPEC.md`. Decisões técnicas: `docs/adr/`.
-> Última atualização: 2026-11-17 (etapa 9 decidida: P85 a P96 respondidas, repositório público, ADRs 0016 e 0017 aceitos). Etapas 1 a 8 **concluídas**; **atual: etapa 9, bloco B (CI de base)**. A loja segue **simulada**.
+> Última atualização: 2026-11-17 (etapa 9 decidida: P85 a P96 respondidas, repositório público, ADRs 0016 e 0017 aceitos). Etapas 1 a 8 **concluídas**; **atual: etapa 9, bloco B publicado (`d757a96`); próximo: bloco C (regressão visual e Lighthouse)**. A loja segue **simulada**.
 >
 > **AVISO: dados de negócio fictícios** (WhatsApp, CNPJ, endereço, frete, parcelas, produtor) estão em `data/ficticio.ts` e **precisam ser trocados antes da publicação**; o build de produção na Vercel falha enquanto a trava existir. Ver [Decisões do dono de 2026-11-03](#decisões-do-dono-de-2026-11-03-d1-a-d34).
 >
@@ -3177,7 +3177,9 @@ Cada tarefa termina com `lint`, `typecheck`, `format:check`, `test`, `modelos:va
    | **Máximo** | | **163 s** | **273 s** | 429 s |
    | **+ 50 %** | | 245 s | 410 s | |
 
-   `timeout-minutes` adotados: `verificar` 6 min (245 s + cobertura e cache frio), `e2e` 8 min (410 s + download do Chromium em cache frio), `auditoria` 5 min (só `npm ci` e três `npm audit`; sem linha de base, a medir na primeira execução). A coluna "depois" (com cobertura e cache) entra aqui quando a sessão principal conferir a primeira execução verde.
+   `timeout-minutes` adotados: `verificar` 6 min (245 s + cobertura e cache frio), `e2e` 8 min (410 s + download do Chromium em cache frio), `auditoria` 5 min (só `npm ci` e três `npm audit`; sem linha de base, a medir na primeira execução). A coluna "depois" está logo abaixo.
+
+   **Depois (execução 52, `d757a96`, verde em 2026-11-17, cache frio na primeira vez):** `verificar` 128 s (limite 360 s), `auditoria` 55 s (limite 300 s), `e2e` 154 s (limite 480 s). Os três jobs ficaram bem abaixo dos `timeout-minutes`; o `e2e` ficou mais rápido que a linha de base (máximo 273 s). Reconferir quando o cache do Playwright estiver quente.
 
    **Prova da catraca (2026-11-17):** `npm run test:cobertura` passa (instruções 98,41 %, ramos 95,49 %, funções 99,48 %, linhas 99,55 %); com o limite forçado por linha de comando, `npx vitest run --coverage --coverage.thresholds.statements=100`, sai com código 1 (`ERROR: Coverage for statements (98.41%) does not meet global threshold (100%)`). Nenhum arquivo foi alterado. Numa das execuções, o teste `Atendimento.carregando.test.tsx` estourou o tempo de `findByRole` com a máquina sobrecarregada (a mesma suíte passou na repetição); fica de olho como possível instabilidade sob carga.
 
@@ -3373,7 +3375,7 @@ Não é detalhada agora: cada item depende de uma escolha ou de um dado do dono 
 | --- | --- | --- | --- |
 | A | Tarefa 1: este detalhamento e os ADRs 0016 e 0017 propostos | `docs: detalha a etapa 9 e propõe os adrs 0016 e 0017` | Pendente (sessão principal) |
 | A | Tarefa 2: respostas P85 a P96 | `docs: registra as respostas p85 a p96 e aceita os adrs 0016 e 0017` | Publicado nesta sessão |
-| B | Tarefas 3 a 6 | `ci: amplia o ci com cobertura, auditoria e dependabot` | — |
+| B | Tarefas 3 a 6 | `ci: amplia o ci com cobertura, auditoria e dependabot` | ✅ Publicado (`d757a96`, CI verde) |
 | C | Tarefas 7 a 10 | `ci: adiciona regressão visual e lighthouse ao ci` | — |
 | D | Tarefas 11 a 13 | `chore: publica os avisos de licença e documenta os ambientes` | — |
 | E | Tarefa 14 | `test(aceite): cobre os itens automatizáveis da §14` | — |
