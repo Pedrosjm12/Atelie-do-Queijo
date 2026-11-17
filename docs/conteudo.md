@@ -118,7 +118,7 @@ O painel de atendimento (botão flutuante) tem um assistente que **não é intel
 
 ### Textos que faltam (você escreve)
 
-A especificação não traz estes textos, então eles aparecem na conversa como `[A DEFINIR: …]`, de propósito. **Não os apague nem peça para inventar**: escreva o texto e troque a lacuna inteira, com os colchetes. Eles ficam no objeto `TEXTOS_DO_ROTEIRO`, no arquivo `lib/roteiro.ts`.
+A especificação não traz estes textos (restam 11 mais o aviso de nova aba), então eles aparecem na conversa como `[A DEFINIR: …]`, de propósito. **Não os apague nem peça para inventar**: escreva o texto e troque a lacuna inteira, com os colchetes. Eles ficam no objeto `TEXTOS_DO_ROTEIRO`, no arquivo `lib/roteiro.ts`.
 
 | Nome no arquivo        | Quando aparece                                                                  |
 | ---------------------- | ------------------------------------------------------------------------------- |
@@ -130,7 +130,6 @@ A especificação não traz estes textos, então eles aparecem na conversa como 
 | `harmonizar`           | Antes da pergunta "Vai acompanhar com…"                                         |
 | `outrasOpcoes`         | Ao escolher **Ver outras opções** (Manchego e Parmigiano Reggiano)              |
 | `presenteFormato`      | Pergunta do tamanho antes de pôr o presente na sacola                           |
-| `depoisDaAcao`         | Depois que o assistente põe o queijo na sacola                                  |
 | `continuar`            | Depois de cada sugestão, antes de voltar às três opções iniciais                |
 | `naoEntendi`           | Quando o assistente não reconhece a mensagem                                    |
 | `saude`                | Perguntas de saúde (gravidez, alergia, leite cru…)                              |
@@ -228,6 +227,7 @@ Cada artigo é um bloco com:
 | `foto` | Descrição da foto que ainda vai existir | `queijo e taça de vinho` |
 | `corpo` | O texto: uma lista de parágrafos, **ao menos um**. `null` mostra `[TEXTO DO ARTIGO]` | veja abaixo |
 | `queijosCitados` | Queijos que o artigo cita, pelo `slug` do queijo, **ao menos um**. `null` mostra `[A DEFINIR: queijos citados]` | veja abaixo |
+| `descricao` | **Opcional.** Resumo para o Google e para as prévias de WhatsApp e redes. Até 160 caracteres; se passar, é cortado em palavra inteira com "…" | `'Como combinar queijo e vinho sem regras chatas.'` |
 
 Exemplo preenchido:
 
@@ -249,7 +249,7 @@ Regras:
 
 - Cada texto entre aspas é **um parágrafo**. Separe os parágrafos por vírgula. Uma lista vazia (`[]`) não é aceita: use `null` enquanto não houver texto.
 - Os `slug` dos queijos são os da lista em [Rotas do README](../README.md#rotas) (por exemplo `canastra-curado`). Um slug que não existe é recusado na verificação do código.
-- O primeiro parágrafo do `corpo` também vira a descrição do artigo nos resultados de busca. Escreva-o como um resumo de até 160 caracteres.
+- **Descrição para buscadores:** se você preencher `descricao`, ela vale. Se não, o site usa o início do primeiro parágrafo do `corpo`, cortado em palavra inteira com "…". Sem `descricao` e sem `corpo`, vale a frase do site (**Queijos de autor, escolhidos à mão.**). Para controlar o que aparece no Google, escreva a `descricao`; ela nunca deve ter colchetes.
 - A categoria **Regiões e produtores** não tem artigo ainda e mostra `[A DEFINIR: artigos]`.
 - Para **criar um artigo novo** (além dos três da especificação), peça ajuda a quem mantém o código: o `slug` precisa ser registrado também no tipo `SlugDoArtigo`. O artigo novo aparece na Escola da Home e em `/aprenda`.
 - As fotos ainda são espaços reservados com a descrição `[FOTO: …]`.
@@ -266,6 +266,42 @@ Regras:
 | `queijos` | Queijos dele (`slug`), **ao menos um**. Cada um vira um link `Nome do queijo →` | `['canastra-curado']` |
 
 Hoje só há um produtor, e o **nome e o ano são fictícios** (ficam em `data/ficticio.ts`, junto dos demais dados de teste). Troque antes de a loja ir ao ar. Cada produtor novo é mais um bloco na lista. Não existe página individual de produtor: o link leva ao queijo.
+
+## O que o Google e as redes sociais veem (dados estruturados)
+
+Além do que o visitante enxerga, cada página publica, escondido no código, um resumo para o Google (os "dados estruturados", JSON-LD, em `lib/dadosEstruturados.ts`). Ele serve para o Google mostrar o produto com preço nos resultados. **Regra de ouro: nada inventado vai para os buscadores.** Se um dado está em lacuna (`[PREÇO]`, `[TEXTO DO ARTIGO]`, qualquer texto entre colchetes) ou é fictício (vem de `data/ficticio.ts`), ele é simplesmente **omitido**. Cada dado entra sozinho quando você o preenche:
+
+| Quando você preenche... | O que passa a aparecer para o Google |
+| --- | --- |
+| O **preço** de um formato (`preco` em centavos, maior que zero) | Uma oferta em reais para aquele formato, com disponibilidade (em estoque ou esgotado; "últimas unidades" conta como em estoque). Formato com `preco: null` não gera oferta |
+| O **corpo** de um artigo (ao menos um parágrafo real) | O artigo, com título e descrição (`descricao` ou o início do corpo). Sem corpo, nada é publicado |
+| A **foto** | Nada ainda: hoje as fotos são espaços reservados e o resumo do produto não leva imagem. Sem foto, o Google não coloca o queijo nas listagens de comerciantes. Quando as fotos reais existirem, peça a quem mantém o código para ligá-las ao resumo |
+| O **produtor** real | Nada ainda: o resumo do produto não cita produtor nem marca. Hoje o produtor é fictício e fica de fora |
+| Os **dados de contato** (CNPJ, endereço, telefone) | Nada: eles não vão para o resumo da loja, que só leva nome, endereço do site e logotipo |
+
+Sempre publicados: o nome da loja, o endereço do site e a **trilha de navegação** (Início / Queijos / ...). Kits e produtores não geram resumo.
+
+**Cuidado ao trocar os dados fictícios pelos reais.** O filtro compara cada texto com os valores de `data/ficticio.ts`. Se você **substituir** um valor ali (por exemplo, trocar `Produtor Exemplo` pelo nome verdadeiro), o filtro passa a considerar o nome verdadeiro "fictício" e **esconde os dados reais** do Google. O certo é **remover** o valor de `data/ficticio.ts` e escrever o dado real direto no arquivo da página (`data/produtores.ts`, `data/cheeses.ts`...). Peça a quem mantém o código para fazer essa troca junto com a etapa 9.
+
+## O que impede de publicar (trava de lacunas)
+
+Quando o site for publicado de verdade (produção na Vercel), o sistema **recusa a publicação** se encontrar qualquer texto `[A DEFINIR` pendente. A mensagem de erro lista o caminho de cada um, por exemplo `TEXTOS_DO_ROTEIRO.saude` . A trava olha:
+
+- os textos do assistente (`TEXTOS_DO_ROTEIRO`) e o aviso de nova aba;
+- os dados de `data/`: queijos (as fichas dos nove queijos sem ficha pronta usam `[A DEFINIR]`), artigos, categorias, kits e produtores;
+- o texto final das páginas geradas, depois do build, para pegar lacunas escritas direto na página (como `[A DEFINIR: queijos citados]` e `[A DEFINIR: artigos]`).
+
+Ela **não** barra `[FOTO: …]`, `[PREÇO]`, `[n]`, `[N]` e `[TEXTO DO ARTIGO]`: esses ficam para o checklist da publicação (etapa 9). Os dados fictícios (WhatsApp, CNPJ, endereço, frete, produtor) têm uma trava à parte; ver [`docs/ambiente.md`](ambiente.md). Na sua máquina e nas prévias nada é barrado: as travas só valem em produção.
+
+### Textos do atendimento já escritos (P84)
+
+Três textos que você escolheu em 05/11/2026 já estão no site. Para mudá-los, peça a quem mantém o código:
+
+| Texto | Onde fica | Quando aparece |
+| --- | --- | --- |
+| **Pronto, vai com embalagem de presente. A mensagem do cartão você escreve no checkout, com até 200 caracteres. Posso ajudar em mais alguma coisa?** (`depoisDaAcao`) | `lib/roteiro.ts`, objeto `TEXTOS_DO_ROTEIRO` | No chat, depois que o assistente põe o Canastra curado para presente na sacola (só se a sacola aceitou o item) |
+| **Não conseguimos abrir o atendimento agora. Confira sua conexão e tente de novo em instantes.** | `components/atendimento.contexto.ts` (`TEXTO_ATENDIMENTO_INDISPONIVEL`) | Quando o painel de atendimento não carrega (sem internet, por exemplo). Com o painel fechado, aparece no aviso da sacola, por 10 segundos; com o painel aberto, vira mensagem do assistente |
+| **O atendimento pelo WhatsApp não está disponível por aqui no momento. O Assistente do Ateliê responde na hora, 24 horas.** | `components/SupportPanel.tsx` (`TEXTO_SEM_WHATSAPP`) | Na aba Queijista, quando não há número de WhatsApp configurado (com a cave fechada, vale só o texto de cave fechada da especificação) |
 
 ## O que ainda não está neste guia
 

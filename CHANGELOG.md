@@ -55,6 +55,14 @@ O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 - `FocoNoConteudo` passa a levar o foco à `#âncora` da URL (inclusive em clique e `hashchange` na mesma rota), usado por **Presentes corporativos** do rodapé (`/presentes#presentes-corporativos`).
 - Os três artigos da Escola na Home levam a `/aprenda/<slug>`.
 - ADR-0011 (páginas de conteúdo e 404, sem dependência nova). Guia do dono ampliado com kits, artigos e produtores (`docs/conteudo.md`).
+- Etapa 8, SEO (`0b638b9`, `c18e34c`): `NEXT_PUBLIC_SITE_URL` lida por `lib/site.ts` (obrigatória e `https` em produção), canônica, Open Graph e Twitter por página, `app/sitemap.ts`, `app/robots.ts` (só libera a indexação com `VERCEL_ENV=production`), imagem de compartilhamento 1200 × 630 e ícone gerados sem texto (Apêndice A.1 e A.2) e descrição própria em `/produtores` e nos artigos (campo opcional `descricao`, P72).
+- Dados estruturados JSON-LD (`lib/dadosEstruturados.ts`): `Organization`, `WebSite`, `Product` com `Offer` só com preço maior que zero, `BreadcrumbList` e `Article` só com corpo. Nenhum campo recebe lacuna entre colchetes nem valor de `data/ficticio.ts`.
+- Etapa 8, segurança (`00f9abb`): cabeçalhos HTTP e CSP estática em todas as rotas (ADR-0015, `lib/cabecalhos.ts`), `poweredByHeader: false`, trava de build contra `[A DEFINIR` em produção (P73), `PERMITIR_DADOS_FICTICIOS=1` obrigatória em todo `next build` com dados fictícios (P74) e `scripts/conferir-build.mjs` (`postbuild`: número fictício em `.next/static` e lacunas no HTML pré-renderizado). Auditoria de `npm audit` e inventário LGPD registrados no plano.
+- Etapa 8, acessibilidade (`b399e59`): varredura do axe em todas as rotas e estados, a 1440 e 390 px (`@axe-core/playwright` 4.14.0, ADR-0014), e2e de teclado, `aria-busy` e cursor de espera no botão de atendimento enquanto o painel baixa (P80) e zona de toque de 24 × 24 px na trilha (P82).
+- Textos do P84 aprovados em 05/11/2026: `depoisDaAcao` do assistente, erro ao carregar o atendimento (10 s no aviso da sacola com o painel fechado) e aba Queijista sem número.
+- Etapa 8, desempenho (`2ccb92e`): orçamento de JavaScript por rota (limite = medido + 3 kB gzip) e `npm run medir:pacote -- --web-vitals` com LCP, CLS e TBT.
+- Etapa 8, testes (`8c3e9de`): `npm run test:cobertura` (`@vitest/coverage-v8` 5.0.5, limites mínimos em `lib/` e `data/`), regra de ESLint que obriga os e2e a usar a *fixture*, e regressão visual com 22 capturas (`npm run test:visual:docker`, imagem oficial do Playwright; `npm run test:visual`, só dentro do contêiner).
+- Guias atualizados: `docs/ambiente.md` (URL do site, permissão dos dados fictícios, cabeçalhos e CSP, Docker Desktop) e `docs/conteudo.md` (o que vai para o Google, trava de lacunas e textos do P84).
 
 ### Alterado
 
@@ -72,7 +80,14 @@ O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 
 - Os controles Adicionar, Calcular e Embalar para presente deixam de ser controles sem ação (`aria-disabled` fixo) e passam a funcionar. Avise-me, Falar com um queijista, Girar, Aproximar e Tela cheia seguem sem ação até as etapas 5 e 6.
 - Aviso: a loja é **simulada**. Nenhum pagamento real, nenhum e-mail enviado, frete e pedido simulados. O e-mail `recusa@exemplo.com` força o pagamento recusado nos testes e será removido com o gateway real.
+- **Revogação do D2 (P81 = B, 05/11/2026):** a borda de **todos os campos** (e-mail da newsletter, CEP, campos do checkout e campo de mensagem do chat) passa de `--pedra-clara` para `--placeholder` (#8C8070), para atingir 3:1 de contraste (WCAG 1.4.11). Botões secundários, chips, respostas rápidas, seletor de quantidade e opções de pagamento continuam em `--pedra-clara`. A entrada da etapa 4 acima, que cita o D2, permanece como histórico. Desvio aprovado da spec (§3.3) para o checklist da §14.
+- Trilha: `gap` de `4px 8px` (antes `0 8px`), aprovado pelo dono, para as zonas de toque de 24 px não se sobreporem quando a trilha quebra em duas linhas.
+- Escala do perfil sensorial: a seta fica `aria-hidden` e entra o texto só para leitor de tela "a" (lê "suave a marcante"), sem mudança visual.
+- `next` e `eslint-config-next` de 16.4.3 para 16.4.6 (`01e77e3`), por causa do alerta GHSA-mfr8-8qww-v76h (moderada, de 16.3.0 a 16.4.4). O projeto não usa `'use cache'` nem `unstable_cache`, então não era afetado; atualizado por prevenção.
+- `engines.node` passou a `24.x` (aviso da Vercel).
 
 ### Corrigido
 
 - Largura do conteúdo: 1200 px úteis mais 32 px de respiro lateral (antes ficavam 1136 px por causa do `box-sizing`).
+- Newsletter sem `method="post"`: o envio antes da hidratação colocava o e-mail na URL.
+- Teste instável do painel pelo checkout (`553cafd`) e dos specs de sacola e checkout (*gate* de hidratação, 220/220 em `--repeat-each=10`).

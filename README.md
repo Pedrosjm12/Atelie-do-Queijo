@@ -8,6 +8,7 @@ Loja online de queijos finos com tema escuro e queijos em 3D. Assinatura: **Quei
 
 - Node 24 (versão fixada em `.nvmrc`; com nvm, rode `nvm use`)
 - npm
+- Docker Desktop, só para a regressão visual (`npm run test:visual:docker`)
 
 ## Como rodar
 
@@ -17,7 +18,7 @@ npm run dev                     # servidor de desenvolvimento em http://localhos
 npx playwright install chromium # só na primeira vez, para os testes e2e
 ```
 
-Variáveis de ambiente: copie `.env.example` para `.env.local` e preencha. A lista completa e o significado de cada variável estão no próprio `.env.example`.
+Variáveis de ambiente: copie `.env.example` para `.env.local` e preencha. A lista completa e o significado de cada variável estão no próprio `.env.example` e em [`docs/ambiente.md`](docs/ambiente.md). Enquanto houver dados fictícios, `npm run build` e `npm run typecheck` exigem `PERMITIR_DADOS_FICTICIOS=1` no `.env.local`.
 
 ## Scripts
 
@@ -33,8 +34,11 @@ Variáveis de ambiente: copie `.env.example` para `.env.local` e preencha. A lis
 | `npm test` | Roda os testes unitários (Vitest) uma vez |
 | `npm run test:watch` | Roda o Vitest em modo contínuo |
 | `npm run test:e2e` | Roda os testes de ponta a ponta (Playwright); precisa do Chromium instalado (`npx playwright install chromium`) |
+| `npm run test:cobertura` | Roda o Vitest com cobertura (`@vitest/coverage-v8`) em `lib/` e `data/`; falha se ficar abaixo dos limites mínimos de `vitest.config.mts` (só podem subir). O relatório HTML fica em `coverage/` |
+| `npm run test:visual` | Roda o projeto `visual` do Playwright (regressão visual). O projeto só existe com `ATELIE_VISUAL=1`, definido dentro do contêiner; **no dia a dia use `npm run test:visual:docker`** |
+| `npm run test:visual:docker` | Roda a regressão visual (22 capturas, 1440 e 390 px) na imagem Docker oficial do Playwright, para bater com as imagens de referência do Linux. Precisa do Docker Desktop aberto. `-- --update-snapshots` atualiza as imagens. Guia em [`docs/ambiente.md`](docs/ambiente.md#docker-desktop-para-a-regressão-visual) |
 | `npm run modelos:validar` | Confere os GLB de `public/models/` contra `data/modelos3d.ts` (nome, tamanho até 3 MiB, texturas até 2048 px, decodificadores locais). Roda no CI antes do build. Com o manifesto vazio, passa |
-| `npm run medir:pacote` | Mede o JavaScript inicial (gzip) de cada rota e o chunk tardio do 3D, e compara com o orçamento. Rode depois de `npm run build`. Com `-- --web-vitals`, mede também LCP e CLS do produto |
+| `npm run medir:pacote` | Mede o JavaScript inicial (gzip) de cada rota e o chunk tardio do 3D, e compara com o orçamento. Rode depois de `npm run build`. Com `-- --web-vitals`, mede também LCP, CLS e TBT (informativo) de `/`, do produto, de `/sacola` e de `/presentes`. Também falha se o número fictício do WhatsApp aparecer em `.next/static` |
 
 Antes de abrir um PR (ou de commitar), rode nesta ordem: `npm run lint`, `npm run typecheck`, `npm run format:check`, `npm test`, `npm run build` e `npm run test:e2e`.
 
@@ -119,8 +123,8 @@ components/     componentes de interface
 data/           dados do catálogo e das páginas (cheeses.ts, kits.ts, artigos.ts, produtores.ts, ficticio.ts)
 lib/            funções utilitárias e regras (ex.: format.ts, sacola.ts, commerce.ts; pedido.server.ts só roda no servidor)
 public/models/  modelos 3D (GLB), vazia por enquanto
-scripts/        validar-modelos.mjs e medir-pacote.mjs
-e2e/            testes de ponta a ponta
+scripts/        validar-modelos.mjs, medir-pacote.mjs, conferir-build.mjs (postbuild) e visual-docker.mjs
+e2e/            testes de ponta a ponta (e2e/visual/: regressão visual e capturas de referência)
 docs/           plano, ADRs e guias
 ```
 
@@ -152,7 +156,7 @@ Os arquivos corrigidos voltam ao stage sozinhos.
 - [`docs/PLANO.md`](docs/PLANO.md): plano da etapa atual.
 - [`docs/adr/`](docs/adr/README.md): decisões técnicas.
 - [`docs/conteudo.md`](docs/conteudo.md): guia do dono da loja (cadastro de queijos, modelos 3D, assistente, horário e WhatsApp).
-- [`docs/ambiente.md`](docs/ambiente.md): variáveis de ambiente e a trava de dados fictícios.
+- [`docs/ambiente.md`](docs/ambiente.md): variáveis de ambiente, travas de publicação, cabeçalhos e CSP, e Docker para a regressão visual.
 
 > **Dados fictícios.** WhatsApp, CNPJ, endereço, frete, prazo, parcelas e produtor do Canastra são **fictícios** e ficam em `data/ficticio.ts`. O build de produção na Vercel (`VERCEL_ENV=production`) falha enquanto `DADOS_FICTICIOS_ATIVOS` for `true`. Troque os dados antes de publicar.
 
