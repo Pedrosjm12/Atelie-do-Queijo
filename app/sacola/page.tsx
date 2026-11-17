@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
+import { ReservaDaSacola } from '@/components/ReservaDaSacola';
 import { resumoParaSacola } from '@/lib/catalogo';
 import { ConteudoDaSacola } from './_sacola/ConteudoDaSacola';
 import { ID_DO_TITULO_DA_SACOLA } from './_sacola/ids';
-import { ReservaDaSacola } from './_sacola/ReservaDaSacola';
 import estilos from './_sacola/Sacola.module.css';
 
 // O título completo ("Sacola — Ateliê do Queijo") vem do template do layout raiz (P13, P25).

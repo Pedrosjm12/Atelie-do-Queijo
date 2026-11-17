@@ -6,9 +6,37 @@
   margin-bottom: 0;
 }
 
+/*
+ * Reserva antes de a sacola ser lida (CLS). `ReservaDaSacola` marca `data-sacola` no contêiner (só
+ * ele importa aqui); sem isso vale 320px. Vazia: a altura exata de `SacolaVazia` (mesmos valores
+ * da /sacola). Com itens: uma tela inteira, para o rodapé nascer abaixo da dobra e só se mover fora
+ * da tela (não conta no CLS), mas nunca mais que o formulário final, para o rodapé nunca SUBIR numa
+ * janela muito alta. Teto = menor distância do h1 ao rodapé no estado final, menos a margem da
+ * reserva (40) e o padding inferior da página (112; 80 até 600 px). Medido em 2026-11-17:
+ * 1038,3 px acima de 600 px (1060,7 a 601) e 1406,3 px até 600 px (1428,6 a 360), então 886 e
+ * 1286 px. `vh` (e não `dvh`) de propósito: no celular é ≥ a área visível e não muda quando a
+ * barra de endereço recolhe.
+ * Limite: item bem formado mas fora do catálogo reserva a tela e termina em `SacolaVazia` (raro:
+ * queijo retirado do catálogo). Trava: e2e/reserva-da-sacola.spec.ts.
+ */
 .reserva {
   min-height: 320px;
   margin-top: 40px;
+}
+
+.pagina[data-sacola='vazia'] .reserva {
+  min-height: 104.8px;
+  margin-top: 24px;
+}
+
+.pagina[data-sacola='cheia'] .reserva {
+  min-height: min(100vh, 886px);
+}
+
+@media (max-width: 600px) {
+  .pagina[data-sacola='cheia'] .reserva {
+    min-height: min(100vh, 1286px);
+  }
 }
 
 .fluxo {
