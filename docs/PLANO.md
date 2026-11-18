@@ -1,7 +1,7 @@
 # Plano de implementação — Ateliê do Queijo
 
 > Fonte da verdade: `ATELIE-DO-QUEIJO-SPEC.md`. Decisões técnicas: `docs/adr/`.
-> Última atualização: 2026-11-17 (etapa 9 decidida: P85 a P96 respondidas, repositório público, ADRs 0016 e 0017 aceitos). Etapas 1 a 8 **concluídas**; **atual: etapa 9, bloco B publicado (`d757a96`); próximo: bloco C (regressão visual e Lighthouse)**. A loja segue **simulada**.
+> Última atualização: 2026-11-18 (bloco C da etapa 9 publicado em `c9e9e02`, com CI verde). Etapas 1 a 8 **concluídas**; **atual: etapa 9, blocos B (`d757a96`) e C (`c9e9e02`) publicados; próximo: tarefa 9 (calibrar o Lighthouse após 5 execuções e passar as metas de `warn` para `error`) e bloco D (ambientes e licenças)**. A loja segue **simulada**.
 >
 > **AVISO: dados de negócio fictícios** (WhatsApp, CNPJ, endereço, frete, parcelas, produtor) estão em `data/ficticio.ts` e **precisam ser trocados antes da publicação**; o build de produção na Vercel falha enquanto a trava existir. Ver [Decisões do dono de 2026-11-03](#decisões-do-dono-de-2026-11-03-d1-a-d34).
 >
@@ -53,7 +53,7 @@ Convenções deste plano:
 | 6 | Assistente com roteiro determinístico, horários e links do WhatsApp no painel de atendimento | `especialista-em-ia-conversacional`, `frontend-nextjs` | **Concluída** ([detalhe](#etapa-6--assistente-com-roteiro-determinístico-horário-e-links-do-whatsapp)); blocos A e B publicados (`a744972`, `a37640c`), [ADR-0010](adr/0010-assistente-deterministico-e-whatsapp.md) Aceito; P44 a P52 decididos em 2026-11-03. Os textos do P52 seguem como `[A DEFINIR: …]` até o dono escrever |
 | 7 | Páginas restantes: Presentes, Aprenda, Produtores, 404 (textos da §12) | `frontend-nextjs`, `guardiao-do-design`, `especialista-em-acessibilidade` | **Concluída** ([detalhe](#etapa-7--páginas-restantes-presentes-aprenda-produtores-e-404)); blocos A a D publicados (`0589676`, `eca43a5`, `7602c3d`, `c5b514e`), [ADR-0011](adr/0011-paginas-de-conteudo-e-404.md) Aceito; P53 a P67 decididas (opção A). Textos da §12 seguem com lacunas do dono |
 | 8 | Rodada de qualidade: testes, acessibilidade, performance e SEO, segurança | `performance-e-seo`, `devops-e-deploy`, `auditor-de-seguranca`, `especialista-em-acessibilidade`, `frontend-nextjs`, `testes-e-qualidade` | **Detalhada** em 2026-11-05 ([detalhe](#etapa-8--rodada-de-qualidade-testes-acessibilidade-desempenho-seo-e-segurança)): blocos A a F, 21 tarefas, ADRs [0014](adr/0014-dependencias-da-rodada-de-qualidade.md) e [0015](adr/0015-cabecalhos-http-e-csp.md) **Aceitos**; P68 a P84 respondidas em 2026-11-05. **Concluída** em 2026-11-17 (`0b638b9` a `e4ff37c`) |
-| 9 | CI completo, ambientes e checklist de aceite da §14 | `devops-e-deploy`, `performance-e-seo`, `testes-e-qualidade`, `auditor-de-seguranca`, `guardiao-do-design`, `documentador-tecnico` | **Detalhada** em 2026-11-17 ([detalhe](#etapa-9--ci-completo-ambientes-e-aceite-herança-da-etapa-4)): fase 1 (loja simulada, blocos A a E, 20 tarefas) e fase 2 (publicação real, R1 a R12, depende do dono); ADRs [0016](adr/0016-ci-completo-dependencias-e-lighthouse.md) e [0017](adr/0017-hospedagem-na-vercel-e-ambientes.md) **Propostos**; **aguarda as respostas P85 a P96** |
+| 9 | CI completo, ambientes e checklist de aceite da §14 | `devops-e-deploy`, `performance-e-seo`, `testes-e-qualidade`, `auditor-de-seguranca`, `guardiao-do-design`, `documentador-tecnico` | **Detalhada** em 2026-11-17 ([detalhe](#etapa-9--ci-completo-ambientes-e-aceite-herança-da-etapa-4)): fase 1 (loja simulada, blocos A a E, 20 tarefas) e fase 2 (publicação real, R1 a R12, depende do dono); ADRs [0016](adr/0016-ci-completo-dependencias-e-lighthouse.md) e [0017](adr/0017-hospedagem-na-vercel-e-ambientes.md) **Aceitos**; P85 a P96 respondidas em 2026-11-17. **Em andamento:** blocos A, B (`d757a96`) e C (`c9e9e02`) publicados; próximo: tarefa 9 e bloco D |
 
 ---
 
@@ -3369,6 +3369,42 @@ Não é detalhada agora: cada item depende de uma escolha ou de um dado do dono 
 | R11 | PR `main` → `producao` aberto e **aprovado pelo dono**; conferir no primeiro deploy `VERCEL_ENV=production`, `robots.txt` liberado, sitemap e ausência de dado fictício | Dono + `devops-e-deploy` | Todos acima |
 | R12 | Bloco C da etapa 5 (3D no hero e giro no cartão), quando houver o primeiro GLB | `especialista-3d-webgl` | GLB do dono |
 
+### Fechamento do bloco C (2026-11-18)
+
+Commit `c9e9e02` (`ci: adiciona regressão visual e lighthouse ao ci`), publicado na `main`. As tarefas 7, 8 e 10 estão concluídas; a tarefa 9 segue pendente.
+
+**Tarefa 7, regressão visual:** `.github/workflows/visual.yml` roda `npm run test:visual:docker` com Playwright no Docker (22 capturas) e **nunca atualiza as capturas** (sem `--update-snapshots`). Em falha, publica o artefato `visual-diferencas`.
+
+**Tarefa 8, Lighthouse CI:**
+
+- `@lhci/cli` 0.16.1 só em desenvolvimento, `lighthouserc.json`, `.github/workflows/lighthouse.yml` e `npm run lighthouse`;
+- 6 rotas × 3 execuções, perfil celular, mediana, todas as metas em `warn`;
+- relatórios em `.lighthouseci/` e como artefato `lighthouse`, sem *storage* público.
+
+**Execução verde em `c9e9e02`:**
+
+| Workflow | Resultado |
+| --- | --- |
+| CI | Verde |
+| Regressão visual | 22/22, sem alterar capturas (2 min 19 s) |
+| Lighthouse | Verde (5 min 02 s); artefato `lighthouse` de 8,8 MB publicado |
+
+**Medição local:** desempenho 96 a 100, acessibilidade 96 a 100, boas práticas 100, LCP 0,9 a 1,1 s, CLS 0. SEO 63 a 66, só por `is-crawlable`, que falha de propósito fora de produção.
+
+**Prova de 1 px (2026-11-18):** na branch temporária `ci/prova-visual`, uma borda de 1 px no `body` (com gatilho de *push* adicionado só nessa branch) fez a regressão visual falhar e publicar o artefato `visual-diferencas` (36,6 MB). A branch foi apagada, local e remota. Sem token, o `workflow_dispatch` não pôde ser usado, por isso o gatilho de *push* temporário.
+
+**Correções depois da revisão e da auditoria:**
+
+- upload do Lighthouse com `include-hidden-files: true` e `if-no-files-found: warn`, porque `.lighthouseci` é pasta oculta;
+- `--no-sandbox` em `scripts/lighthouse.mjs` só quando `CI` está definido;
+- `lib/**` nos filtros de caminho dos dois *workflows*, mais `next.config.ts` no visual e `scripts/lighthouse.mjs` no Lighthouse;
+- `ATELIE_FORBID_ONLY` repassada ao contêiner, para o `forbidOnly` valer no CI;
+- o resumo do Lighthouse vem da execução representativa e lista os avisos reais das metas.
+
+**Regra para o *ruleset* da `main` (P93):** os *workflows* **Regressão visual** e **Lighthouse** **não** devem ser verificações obrigatórias. Os filtros de caminho fazem com que um PR que não toque nesses caminhos nunca dispare o *workflow*, e o GitHub ficaria esperando a verificação para sempre. Só o `CI` pode ser obrigatório.
+
+**Pendente:** tarefa 9 (calibrar depois de 5 execuções e passar as metas de `warn` para `error`), depois os blocos D e E. Dependabot: os PRs #2, #4 e #6 seguem em aberto (ver a triagem abaixo).
+
 ### Triagem dos PRs do Dependabot (2026-11-17)
 
 Primeira rodada (6 PRs), tratada pela regra do P87:
@@ -3389,7 +3425,8 @@ Primeira rodada (6 PRs), tratada pela regra do P87:
 | A | Tarefa 1: este detalhamento e os ADRs 0016 e 0017 propostos | `docs: detalha a etapa 9 e propõe os adrs 0016 e 0017` | Pendente (sessão principal) |
 | A | Tarefa 2: respostas P85 a P96 | `docs: registra as respostas p85 a p96 e aceita os adrs 0016 e 0017` | Publicado nesta sessão |
 | B | Tarefas 3 a 6 | `ci: amplia o ci com cobertura, auditoria e dependabot` | ✅ Publicado (`d757a96`, CI verde) |
-| C | Tarefas 7 a 10 | `ci: adiciona regressão visual e lighthouse ao ci` | — |
+| C | Tarefas 7, 8 e 10 | `ci: adiciona regressão visual e lighthouse ao ci` | ✅ Publicado (`c9e9e02`, CI verde) |
+| C | Tarefa 9 (calibração) | `ci: passa o lighthouse a reprovar` | Pendente (após 5 execuções) |
 | D | Tarefas 11 a 13 | `chore: publica os avisos de licença e documenta os ambientes` | — |
 | E | Tarefa 14 | `test(aceite): cobre os itens automatizáveis da §14` | — |
 | E | Tarefas 17 e 18 | `docs: adiciona o checklist de aceite e o rascunho de privacidade` | — |

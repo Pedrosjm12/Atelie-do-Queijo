@@ -26,5 +26,5 @@ Cada decisão técnica relevante do Ateliê do Queijo fica registrada aqui, em `
 | [0013](0013-numero-do-whatsapp-so-no-servidor.md) | Número do WhatsApp só no servidor: `WHATSAPP_NUMBER` e `server-only` | Aceito | 2026-11-05 |
 | [0014](0014-dependencias-da-rodada-de-qualidade.md) | Dependências da rodada de qualidade: `@axe-core/playwright` e cobertura do Vitest | Aceito (aprovado pelo dono em 2026-11-05) | 2026-11-05 |
 | [0015](0015-cabecalhos-http-e-csp.md) | Cabeçalhos HTTP de segurança e política de conteúdo (CSP) | Aceito (aprovado pelo dono em 2026-11-05) | 2026-11-05 |
-| [0016](0016-ci-completo-dependencias-e-lighthouse.md) | CI completo: auditoria, atualização de dependências, regressão visual e Lighthouse CI | Proposto | 2026-11-17 |
-| [0017](0017-hospedagem-na-vercel-e-ambientes.md) | Hospedagem na Vercel e ambientes (local, CI, Preview e Production) | Proposto | 2026-11-17 |
+| [0016](0016-ci-completo-dependencias-e-lighthouse.md) | CI completo: auditoria, atualização de dependências, regressão visual e Lighthouse CI | Aceito (aprovado pelo dono em 2026-11-17) | 2026-11-17 |
+| [0017](0017-hospedagem-na-vercel-e-ambientes.md) | Hospedagem na Vercel e ambientes (local, CI, Preview e Production) | Aceito | 2026-11-17 |

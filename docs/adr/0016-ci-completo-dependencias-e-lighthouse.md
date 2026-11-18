@@ -83,6 +83,19 @@ Versões conferidas no registro do npm em 2026-11-17:
 - **Aviso de segurança novo em dependência de produção** deixa o CI vermelho mesmo sem mudança de código. É de propósito: o `schedule` semanal existe para isso.
 - As ações por SHA ficam ilegíveis sem o comentário da versão. O Dependabot atualiza os dois.
 
+## Adendo (2026-11-18): bloco C publicado e riscos aceitos
+
+O bloco C foi publicado em `c9e9e02`: `.github/workflows/visual.yml` e `.github/workflows/lighthouse.yml`, `@lhci/cli` 0.16.1 só em desenvolvimento, `lighthouserc.json` e `npm run lighthouse`. A regressão visual passou 22/22 no GitHub sem alterar capturas, e uma borda de 1 px a fez falhar e publicar as diferenças. O Lighthouse roda em modo `warn` até a calibração (tarefa 9 do plano).
+
+Riscos aceitos:
+
+- **Imagem do Playwright por tag mutável.** A imagem `mcr.microsoft.com/playwright:v<versão>-noble` é escolhida por tag, sem *digest*. Fixar o *digest* é opcional e pode vir depois.
+- **Pacotes antigos na árvore do `@lhci/cli`** (`rimraf` 3, `glob` 7, `inflight`). Não geram avisos no `npm audit`, e o pacote é só de desenvolvimento.
+- **Relatório de erros do `lhci`.** Não passar `--enable-error-reporting`, que envia dados ao Sentry.
+- **`shell: true` em `scripts/lighthouse.mjs`.** Aceito porque os argumentos são constantes, sem entrada externa.
+
+Regra de uso: os *workflows* Regressão visual e Lighthouse **não** entram como verificações obrigatórias do *ruleset* da `main`, porque os filtros de caminho deixariam PRs sem esses caminhos esperando para sempre. Só o `CI` pode ser obrigatório.
+
 ## Adendo (2026-11-17): exceção do picomatch
 
 A regra do P88 ganhou uma exceção aprovada pelo dono: o GHSA-fc5q-39xc-vjpf (`picomatch`, sem correção, só desenvolvimento) é ignorado por `scripts/auditar-dev.mjs`, com validade até 2027-01-31. Qualquer outro aviso `high` ou `critical` continua reprovando.

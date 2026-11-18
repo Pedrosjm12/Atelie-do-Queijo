@@ -62,6 +62,7 @@ O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 - Textos do P84 aprovados em 05/11/2026: `depoisDaAcao` do assistente, erro ao carregar o atendimento (10 s no aviso da sacola com o painel fechado) e aba Queijista sem número.
 - Etapa 8, desempenho (`2ccb92e`): orçamento de JavaScript por rota (limite = medido + 3 kB gzip) e `npm run medir:pacote -- --web-vitals` com LCP, CLS e TBT.
 - Etapa 8, testes (`8c3e9de`): `npm run test:cobertura` (`@vitest/coverage-v8` 5.0.5, limites mínimos em `lib/` e `data/`), regra de ESLint que obriga os e2e a usar a *fixture*, e regressão visual com 22 capturas (`npm run test:visual:docker`, imagem oficial do Playwright; `npm run test:visual`, só dentro do contêiner).
+- Etapa 9, bloco C (`c9e9e02`): *workflow* de regressão visual (`.github/workflows/visual.yml`, 22 capturas no Docker, nunca atualiza as capturas) e Lighthouse CI (`@lhci/cli` 0.16.1 só em desenvolvimento, `lighthouserc.json`, `.github/workflows/lighthouse.yml`, `npm run lighthouse`; 6 rotas, 3 execuções, perfil celular, em modo aviso até a calibração).
 - Guias atualizados: `docs/ambiente.md` (URL do site, permissão dos dados fictícios, cabeçalhos e CSP, Docker Desktop) e `docs/conteudo.md` (o que vai para o Google, trava de lacunas e textos do P84).
 
 ### Alterado
