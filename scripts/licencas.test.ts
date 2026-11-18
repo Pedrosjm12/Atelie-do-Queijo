@@ -62,6 +62,50 @@ describe('licencas', () => {
     expect(lista.find((p) => p.nome === 'alfa')?.opcional).toBe(false);
   });
 
+  it('trata como plataforma o pacote da lista sem restrição no lockfile e os filhos exclusivos dele', () => {
+    const l = {
+      packages: {
+        '': {},
+        'node_modules/raiz': {
+          version: '1.0.0',
+          license: 'MIT',
+          dependencies: { comum: '1' },
+          optionalDependencies: { '@img/sharp-wasm32': '1', 'bin-x': '1' },
+        },
+        'node_modules/@img/sharp-wasm32': {
+          version: '1.0.0',
+          license: 'MIT',
+          dependencies: { exclusivo: '1', compartilhado: '1' },
+        },
+        'node_modules/bin-x': {
+          version: '1.0.0',
+          license: 'MIT',
+          cpu: ['x64'],
+          dependencies: { 'so-do-bin': '1' },
+        },
+        'node_modules/so-do-bin': { version: '1.0.0', license: 'MIT' },
+        'node_modules/exclusivo': { version: '1.0.0', license: 'MIT' },
+        'node_modules/compartilhado': { version: '1.0.0', license: 'MIT' },
+        'node_modules/comum': {
+          version: '1.0.0',
+          license: 'MIT',
+          dependencies: { compartilhado: '1' },
+        },
+      },
+    };
+    const lista = pacotesDeProducao(l, { dependencies: { raiz: '1' } });
+    const op = Object.fromEntries(lista.map((p) => [p.nome, p.opcional]));
+    expect(op).toEqual({
+      '@img/sharp-wasm32': true,
+      'bin-x': true,
+      'so-do-bin': true,
+      exclusivo: true,
+      compartilhado: false,
+      comum: false,
+      raiz: false,
+    });
+  });
+
   it('é determinística: a ordem do lockfile não muda a saída', () => {
     const invertido = {
       packages: Object.fromEntries(Object.entries(lock.packages).reverse()),

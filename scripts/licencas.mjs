@@ -42,8 +42,16 @@ function resolverChave(pacotes, deChave, nome) {
   }
 }
 
-/** Binário por plataforma: só o que tem restrição de os, cpu ou libc no lockfile. */
-const porPlataforma = (i) => Boolean(i.os || i.cpu || i.libc);
+/**
+ * Pacotes que o npm pula por restrição de plataforma que o lockfile NÃO registra (sem os/cpu/libc
+ * no package-lock.json, mas com `cpu: wasm32` no package.json publicado). No Linux/x64 eles não
+ * são instalados e no Windows são; por isso entram à mão aqui. Revisar a cada atualização do sharp.
+ */
+export const SEM_RESTRICAO_NO_LOCK = ['@img/sharp-wasm32'];
+
+/** Binário por plataforma: restrição de os, cpu ou libc no lockfile, ou pacote da lista acima. */
+const porPlataforma = (i, chave) =>
+  Boolean(i.os || i.cpu || i.libc) || SEM_RESTRICAO_NO_LOCK.includes(nomeDoPacote(chave));
 
 const NOME_NPM = /^(@[a-z0-9][\w.-]*\/)?[a-z0-9][\w.-]*$/;
 const porCodigo = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
@@ -74,6 +82,28 @@ export function pacotesDeProducao(lock, pkg) {
       visitar(fila[i], nome);
     }
   }
+  // Só é "texto lido" o pacote alcançável das raízes sem atravessar um pacote por plataforma:
+  // filhos exclusivos desses pacotes (ex.: @emnapi/runtime do sharp-wasm32) não existem em
+  // node_modules em todos os sistemas.
+  const livres = new Set();
+  const pilha = [];
+  const alcancar = (deChave, nome) => {
+    const chave = resolverChave(pacotes, deChave, nome);
+    if (!chave || livres.has(chave)) return;
+    livres.add(chave);
+    if (!porPlataforma(pacotes[chave], chave)) pilha.push(chave);
+  };
+  for (const nome of Object.keys(pkg.dependencies ?? {})) alcancar('', nome);
+  while (pilha.length > 0) {
+    const chave = pilha.pop();
+    const info = pacotes[chave];
+    for (const nome of Object.keys({
+      ...(info.dependencies ?? {}),
+      ...(info.optionalDependencies ?? {}),
+    })) {
+      alcancar(chave, nome);
+    }
+  }
   return fila
     .map((chave) => {
       const info = pacotes[chave];
@@ -82,7 +112,7 @@ export function pacotesDeProducao(lock, pkg) {
         nome: nomeDoPacote(chave),
         versao: info.version,
         licenca: typeof info.license === 'string' ? info.license : 'não declarada',
-        opcional: porPlataforma(info),
+        opcional: porPlataforma(info, chave) || !livres.has(chave),
       };
     })
     .sort(
@@ -111,7 +141,8 @@ const LINHA = '='.repeat(72);
 
 /**
  * Monta o texto final. `entradas`: [{ nome, versao, licenca, opcional, textos: [{ arquivo, texto }] }].
- * Binários específicos de plataforma (os/cpu/libc no lockfile) não têm o texto lido, porque só
+ * Binários específicos de plataforma (os/cpu/libc no lockfile, a lista SEM_RESTRICAO_NO_LOCK e os
+ * filhos que só eles alcançam) não têm o texto lido, porque só
  * existem em node_modules na plataforma que os instalou e a saída precisa ser igual em todas.
  */
 export function formatar(entradas) {
