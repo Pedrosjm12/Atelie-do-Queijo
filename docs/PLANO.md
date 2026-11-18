@@ -3369,6 +3369,19 @@ Não é detalhada agora: cada item depende de uma escolha ou de um dado do dono 
 | R11 | PR `main` → `producao` aberto e **aprovado pelo dono**; conferir no primeiro deploy `VERCEL_ENV=production`, `robots.txt` liberado, sitemap e ausência de dado fictício | Dono + `devops-e-deploy` | Todos acima |
 | R12 | Bloco C da etapa 5 (3D no hero e giro no cartão), quando houver o primeiro GLB | `especialista-3d-webgl` | GLB do dono |
 
+### Triagem dos PRs do Dependabot (2026-11-17)
+
+Primeira rodada (6 PRs), tratada pela regra do P87:
+
+| PR | Atualização | Decisão |
+| --- | --- | --- |
+| #1 | `actions/cache` 5.1.0 → 6.1.0 | Mesclado por `git merge` (a v6 só migra para ESM) |
+| #3 | `vitest` e `@vitest/coverage-v8` 5.0.5 → 5.1.0 | Mesclado por `git merge` |
+| #5 | `@testing-library/user-event` 14.6.9 e `@vitejs/plugin-react` 6.3.0 | Conflito no lock com o #3; aplicado à mão com o mesmo resultado |
+| #2 | `react` e `react-dom` 19.3.1 | Em espera: verde na máquina local (lint, tipos, 1205 testes, build, e2e 338), vermelho no GitHub por motivo ainda não conferido (a API bloqueou) |
+| #4 | `@playwright/test` 1.65.0 | Só com o ok do dono e depois do bloco C (exige regenerar as 22 capturas) |
+| #6 | `eslint` 10.14.0 (major) | Rejeitado: `npm ci` falha com ERESOLVE (`eslint-plugin-jsx-a11y` 6.10.2 não aceita o ESLint 10). Major do `eslint` ignorada no `dependabot.yml` |
+
 ### Commits da etapa 9
 
 | Bloco | Conteúdo | Mensagem | Situação |

@@ -53,6 +53,11 @@ updates:
       # O @google/model-viewer 4.4.0 aceita só three 0.183.x (ADR-0009).
       - dependency-name: 'three'
         versions: ['>=0.184.0']
+      # ESLint 10 (PR #6, 2026-11-17): `npm ci` falha com ERESOLVE porque o eslint-plugin-jsx-a11y 6.10.2
+      # (dependência do eslint-config-next) ainda não aceita a major 10. Reabrir quando o plugin e o
+      # eslint-config-next a suportarem (decisão do dono, 2026-11-17).
+      - dependency-name: 'eslint'
+        update-types: ['version-update:semver-major']
 
   - package-ecosystem: github-actions
     directory: /
