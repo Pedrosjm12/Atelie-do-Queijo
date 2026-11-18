@@ -3258,7 +3258,8 @@ Cada tarefa termina com `lint`, `typecheck`, `format:check`, `test`, `modelos:va
       - a tabela dos quatro ambientes;
       - "o que conferir no painel da Vercel": Deployment Protection ligada em Preview, Toolbar desligada em Preview, `PERMITIR_DADOS_FICTICIOS` só em Preview, Node 24 no *log* de build do Preview;
       - o aviso do plano Hobby × uso comercial.
-    - **Ação do dono:** conferir os quatro itens do painel e informar o resultado. São 5 minutos, com o passo a passo no resumo da tarefa.
+    - **Feito em 2026-11-18 (documentação):** os três pontos da decisão 6 estão confirmados com fonte e data em [`docs/ambiente.md`](ambiente.md#server-actions-origem-e-logs-na-vercel-conferido-em-2026-11-18); nenhuma correção em `next.config.ts` foi necessária, e o teste `lib/hospedagem.test.ts` guarda a ausência de `allowedOrigins`. `docs/ambiente.md` ganhou a tabela dos quatro ambientes, "O que conferir no painel da Vercel" e o aviso Hobby × uso comercial.
+    - **Ação do dono (pendente):** conferir os quatro itens do painel e informar o resultado. São 5 minutos, com o passo a passo em `docs/ambiente.md`.
     - **Pronto quando:**
       - cada item da decisão 6 do ADR-0017 tem a fonte citada (URL e data);
       - a herança "CSRF e `X-Forwarded-Host`" e "Logs sem corpo de POST" está marcada como resolvida ou virou tarefa;
@@ -3275,6 +3276,12 @@ Cada tarefa termina com `lint`, `typecheck`, `format:check`, `test`, `modelos:va
       - o arquivo lista todos os pacotes de produção do *lockfile*, entre eles `@google/model-viewer` (Apache-2.0), `three` (MIT), os pacotes `lit` (BSD-3-Clause), `next`, `react` e `zod`;
       - `licencas:conferir` falha se uma dependência de produção mudar sem o arquivo ser regenerado;
       - nenhum pacote de desenvolvimento aparece no arquivo.
+    - **Feito em 2026-11-18:** `scripts/licencas.mjs` (sem dependência), `licencas:gerar` e `licencas:conferir` (primeiro passo do job `verificar`, logo após o `npm ci`), testes em `scripts/licencas.test.ts` (inclui a leitura de disco com pacotes falsos) e `e2e/licencas.spec.ts` (200 e `@google/model-viewer@`). O arquivo lista **68 pacotes** de produção, sem nenhum de desenvolvimento.
+      - Binários de plataforma (`os`, `cpu` ou `libc` no lockfile, como `@img/sharp-*`) saem com um aviso de que o texto acompanha o pacote no npm, porque só existem em `node_modules` na plataforma que os instalou; todo o resto tem o texto lido de `node_modules`, e o script falha se a versão instalada difere do lockfile (`npm ci`).
+      - **Três `SUBSTITUTOS`**, pacotes publicados sem arquivo de licença cujo texto vem de outro pacote do mesmo repositório (mesma licença declarada, verificado à mão): `@lit-labs/ssr-dom-shim` (BSD-3-Clause, usa o de `lit`), `@next/env` (MIT, usa o de `next`) e `client-only` (MIT, usa o de `react`).
+      - **`@license` removido no build:** os comentários `@license` do `model-viewer` e do `three` não sobrevivem ao minificador em `.next/static`; o arquivo de avisos é o único aviso distribuído (registrado também no ADR-0009).
+      - `GET /licencas-de-terceiros.txt` responde 200 (conferido no e2e).
+      - **Pendência: LGPL do libvips** (`@img/sharp-libvips-*`, LGPL-3.0). Se o `sharp` chegar ao bundle do servidor, é preciso incluir o texto da LGPL-3.0 e validar com profissional de direito. **Decisão do dono antes de publicar.**
 
 13. **Verificação do bloco D:**
     - `auditor-de-seguranca`: conferências da tarefa 11 e o arquivo de licenças sem caminho local nem dado da máquina;
@@ -3792,7 +3799,8 @@ Pontos que dependem de decisão do dono (nada disto foi alterado):
 - **Nota fiscal** do presente: capitalizada e com ponto final (a spec traz só o fragmento).
 - **`[PREÇO]` no total** enquanto o frete for lacuna (comportamento intencional, sem inventar valor).
 - **Item esgotado fora do resumo, mas dentro do envio:** o servidor responde `sacola-invalida` e a tela mostra o link **Voltar para a sacola**. Comportamento mantido.
-- **CSRF e `X-Forwarded-Host`** (etapa 9): definir a causa e os hosts permitidos antes de publicar.
+- **CSRF e `X-Forwarded-Host`** (etapa 9): **resolvida em 2026-11-18** (tarefa 11). Na Vercel `host` e `x-forwarded-host` coincidem com o domínio acessado, então `serverActions.allowedOrigins` fica vazio; `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` não é necessária (uma instância por _deploy_, só Server Actions de módulo). Fontes em [`docs/ambiente.md`](ambiente.md#server-actions-origem-e-logs-na-vercel-conferido-em-2026-11-18); teste `lib/hospedagem.test.ts`. Reabrir se houver _proxy_/CDN na frente da Vercel.
+- **Logs sem corpo de POST** (etapa 9): **resolvida em 2026-11-18** (tarefa 11). Os _runtime logs_ da Vercel não têm campo de corpo, e o código do servidor não escreve nada. Mesma fonte acima.
 - **LGPD** (etapa 9): aviso de privacidade, base legal, retenção e destinatário do presente. Validar com profissional de direito.
 - **Número do pedido** (`Pedido nº AQ-…`) acima do título da confirmação: sugestão ao dono (P36 hoje proíbe mostrar).
 

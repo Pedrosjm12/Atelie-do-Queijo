@@ -16,3 +16,6 @@ design/
 
 # lighthouse ci (relatórios gerados)
 .lighthouseci
+
+# avisos de licença gerados por scripts/licencas.mjs (texto de terceiros, não reformatar)
+public/licencas-de-terceiros.txt

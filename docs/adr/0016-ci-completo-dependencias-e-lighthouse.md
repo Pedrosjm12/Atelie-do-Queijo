@@ -56,7 +56,7 @@ Versões conferidas no registro do npm em 2026-11-17:
    - script `npm run lighthouse` para rodar o mesmo no computador do dono;
    - *workflow* próprio (`.github/workflows/lighthouse.yml`), com gatilho e modo (aviso ou reprova) conforme o P91.
 6. **Licenças de terceiros sem dependência nova:**
-   - um script do projeto (`scripts/licencas.mjs`) lê o `package-lock.json`, percorre só os pacotes de produção (sem `dev: true`) e junta o campo `license` e os arquivos `LICENSE`/`NOTICE` de cada um em `public/licencas-de-terceiros.txt`;
+   - um script do projeto (`scripts/licencas.mjs`) lê o `package-lock.json`, percorre só os pacotes de produção (a árvore de `dependencies` + `optionalDependencies`; peers opcionais ficam fora) e junta o campo `license` e os arquivos `LICENSE`/`NOTICE` de cada um em `public/licencas-de-terceiros.txt`;
    - um passo do CI falha se o arquivo commitado estiver desatualizado.
 7. **Nada novo vai para o navegador.** Tudo acima é ferramenta de desenvolvimento ou de CI. O orçamento de JavaScript (ADR-0012) não muda.
 

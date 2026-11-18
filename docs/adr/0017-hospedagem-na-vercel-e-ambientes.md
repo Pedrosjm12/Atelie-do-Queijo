@@ -44,12 +44,14 @@ A herança da etapa 4 deixou três conferências de hospedagem: `Host`/`X-Forwar
 4. **Vercel Toolbar desligada em Preview** (ou `VERCEL_PREVIEW_FEEDBACK_ENABLED=0`), porque a CSP do ADR-0015 bloqueia `vercel.live` (ação do dono registrada na etapa 8).
 5. **Node 24 na Vercel**, lido do `engines`. A migração para o 26 fica para um ADR próprio, quando houver motivo.
 6. **Server Actions, origem e logs:** a tarefa de conferência da etapa 9 confirma, **na documentação do Next 16.4.6 e da Vercel**, que:
-   - a Vercel serve a página e a Server Action na mesma origem e repassa `Host` e `X-Forwarded-Host` coerentes, então `serverActions.allowedOrigins` fica vazio;
+   - a Vercel serve a página e a Server Action na mesma origem e repassa `Host` e `X-Forwarded-Host` coerentes, então `serverActions.allowedOrigins` fica vazio (sem a lista só passa a mesma origem, mas requisições sem cabeçalho `Origin`, de clientes fora do navegador, passam com aviso, conforme a documentação do Next 16.4.6 instalada; por isso a validação Zod e o limite de taxa das ações continuam necessários);
    - a chave de criptografia das Server Actions é estável dentro de um mesmo deploy, então `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` não é necessária na Vercel. Seria necessária num servidor próprio com várias instâncias;
    - os logs de execução da Vercel não registram o corpo das requisições POST;
    - o código não registra nada (conferido na etapa 8: nenhum `console.*` no servidor).
 
    Se a documentação disser outra coisa, o item vira tarefa com correção, e este ADR é atualizado antes do aceite.
+
+   **Conferido em 2026-11-18 (tarefa 11):** os quatro pontos se confirmam, sem mudança de código. Fontes, URLs e datas em [`docs/ambiente.md`](../ambiente.md#server-actions-origem-e-logs-na-vercel-conferido-em-2026-11-18). Nuances: a Vercel não documenta `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` (a conclusão vem do guia de _self-hosting_ do Next, que a exige só com várias instâncias), e a ausência do corpo de POST nos logs vem da lista completa de campos dos _runtime logs_, não de uma frase explícita. O teste `lib/hospedagem.test.ts` protege a ausência de `allowedOrigins`. A conferência reabre se houver _proxy_/CDN na frente da Vercel ou se o site sair dela.
 7. **Plano da Vercel:** a documentação da Vercel ("Fair use guidelines" e "Hobby plan") restringe o plano Hobby a uso pessoal **não comercial**. Uma loja que vende exige o plano Pro (pago) ou Enterprise. Enquanto a loja for simulada e só houver Preview, nada muda. A troca de plano é decisão e custo do dono, **antes** da publicação real.
 8. **Domínio próprio:** fica para a publicação real. Ao trocar, basta mudar `NEXT_PUBLIC_SITE_URL` e publicar de novo (canônicas, sitemap e Open Graph mudam no build).
 

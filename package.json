@@ -21,7 +21,9 @@
     "auditar:dev": "node scripts/auditar-dev.mjs",
     "prepare": "lefthook install",
     "test:cobertura": "vitest run --coverage",
-    "lighthouse": "node scripts/lighthouse.mjs"
+    "lighthouse": "node scripts/lighthouse.mjs",
+    "licencas:gerar": "node scripts/licencas.mjs gerar",
+    "licencas:conferir": "node scripts/licencas.mjs conferir"
   },
   "dependencies": {
     "@google/model-viewer": "4.4.0",

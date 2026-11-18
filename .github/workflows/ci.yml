@@ -44,6 +44,8 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
+      # ADR-0016 (decisão 6): falha se uma dependência de produção mudou sem regenerar os avisos.
+      - run: npm run licencas:conferir
       - run: npm run lint
       - run: npm run typecheck
       - run: npm run format:check

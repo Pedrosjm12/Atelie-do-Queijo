@@ -156,6 +156,7 @@ O Dependabot (`.github/dependabot.yml`) abre PRs toda segunda-feira, para `npm` 
 - **Major de dependência de produção** (`next`, `react`, `react-dom`, `zod`, `@google/model-viewer`, `three`): nunca entra sem perguntar ao dono do projeto.
 - **Playwright:** PR à parte, também só com o ok do dono. Trocar a versão troca a imagem Docker da regressão visual; se as capturas mudarem, regenere com `npm run test:visual:docker -- --update-snapshots` e peça a conferência do `guardiao-do-design` antes de mesclar.
 - **Nunca propostos:** `@types/node` 26 (o projeto fica no Node 24) e `three` 0.184 ou maior (o `@google/model-viewer` 4.4.0 aceita só `three` 0.183.x). Trocar de Node também exige pergunta ao dono.
+- **Avisos de licença:** se o CI falhar em `licencas:conferir`, rode `npm ci && npm run licencas:gerar` na branch do PR e commite `public/licencas-de-terceiros.txt` antes de mesclar.
 - **Segurança:** um aviso novo em dependência de produção deixa o CI vermelho mesmo sem mudança de código; é o objetivo da execução semanal. O GitHub desativa a execução semanal depois de 60 dias sem atividade no repositório; um *push* ou o botão manual a reativa.
 
 ## Convenções
