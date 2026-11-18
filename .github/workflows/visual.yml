@@ -1,0 +1,70 @@
+name: Regressão visual
+
+# P90 = B (ADR-0016, decisão 4): roda só quando algo que muda a aparência é alterado.
+on:
+  push:
+    branches: [main]
+    paths: &caminhos
+      - 'app/**'
+      - 'components/**'
+      - '**/*.css'
+      - 'public/**'
+      - 'data/**'
+      - 'lib/**'
+      - 'next.config.ts'
+      - 'e2e/visual/**'
+      - 'playwright.config.ts'
+      - 'package-lock.json'
+      - 'scripts/visual-docker.mjs'
+      - '.github/workflows/visual.yml'
+  pull_request:
+    branches: [main]
+    paths: *caminhos
+  # Botão "Run workflow" na aba Actions.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  LEFTHOOK: 0
+  PERMITIR_DADOS_FICTICIOS: '1'
+
+concurrency:
+  group: visual-${{ github.workflow }}-${{ github.ref }}
+  # Só PRs cancelam a execução anterior; push e manual na main sempre terminam.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  visual:
+    name: Regressão visual (Playwright no Docker)
+    runs-on: ubuntu-latest
+    # Download da imagem do Playwright + npm ci + build + capturas, com folga (sem medição ainda;
+    # reduzir depois das primeiras execuções, como no ci.yml).
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      # O script lê a versão do @playwright/test no node_modules do host para escolher a imagem
+      # (mcr.microsoft.com/playwright:v<versão>-noble); o resto roda dentro do contêiner.
+      - run: npm ci --ignore-scripts
+      # Mesma imagem e mesmo script usados pelo dono. Nunca com --update-snapshots: a CI só compara.
+      - run: npm run test:visual:docker
+      # O contêiner roda como root e cria arquivos no workspace; devolve a posse ao usuário do runner.
+      - name: Devolver a posse dos arquivos criados pelo contêiner
+        if: always()
+        run: sudo chown -R "$(id -u):$(id -g)" . || true
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: failure()
+        with:
+          name: visual-diferencas
+          path: test-results/
+          if-no-files-found: ignore
+          retention-days: 7

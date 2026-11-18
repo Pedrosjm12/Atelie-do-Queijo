@@ -48,3 +48,6 @@ blob-report
 
 # claude code (configuração local)
 .claude/settings.local.json
+
+# lighthouse ci
+.lighthouseci

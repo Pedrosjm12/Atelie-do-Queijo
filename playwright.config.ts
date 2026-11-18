@@ -29,7 +29,7 @@ const projetoVisual = {
 export default defineConfig({
   testDir: './e2e',
   fullyParallel: true,
-  forbidOnly: emCI,
+  forbidOnly: emCI || process.env.ATELIE_FORBID_ONLY === '1',
   retries: emCI ? 1 : 0,
   reporter: emCI ? [['html', { open: 'never' }], ['list']] : 'list',
   use: {

@@ -13,3 +13,6 @@ skills-lock.json
 
 # protótipo do dono (não reformatar)
 design/
+
+# lighthouse ci (relatórios gerados)
+.lighthouseci

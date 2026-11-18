@@ -1,0 +1,91 @@
+name: Lighthouse
+
+# Modo aviso (`warn` em lighthouserc.json) até a tarefa 9 do bloco C passar as metas a `error`,
+# depois de 5 execuções de calibração (P91 = B, ADR-0016 decisão 5).
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'app/**'
+      - 'components/**'
+      - '**/*.css'
+      - 'public/**'
+      - 'data/**'
+      - 'lib/**'
+      - 'scripts/lighthouse.mjs'
+      - 'package-lock.json'
+      - 'next.config.ts'
+      - 'lighthouserc.json'
+      - '.github/workflows/lighthouse.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'app/**'
+      - 'components/**'
+      - '**/*.css'
+      - 'public/**'
+      - 'data/**'
+      - 'lib/**'
+      - 'scripts/lighthouse.mjs'
+      - 'package-lock.json'
+      - 'next.config.ts'
+      - 'lighthouserc.json'
+      - '.github/workflows/lighthouse.yml'
+  # Botão "Run workflow" na aba Actions.
+  workflow_dispatch:
+  # Segunda-feira, 9h UTC.
+  schedule:
+    - cron: '0 9 * * 1'
+
+permissions:
+  contents: read
+
+env:
+  LEFTHOOK: 0
+  # P74: `next build` exige a permissão enquanto houver dados fictícios.
+  PERMITIR_DADOS_FICTICIOS: '1'
+
+concurrency:
+  group: lighthouse-${{ github.workflow }}-${{ github.ref }}
+  # Só PRs cancelam a execução anterior; push, semanal e manual na main sempre terminam.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  lighthouse:
+    name: Lighthouse (celular, mediana de 3)
+    runs-on: ubuntu-latest
+    # Provisório: ~3 min de build e medição esperados; ajustar na tarefa 9 com as durações reais.
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - name: Lighthouse CI (Chrome do runner)
+        run: |
+          export CHROME_PATH="$(command -v google-chrome || command -v google-chrome-stable)"
+          "$CHROME_PATH" --version
+          npm run lighthouse -- --sem-build
+      - name: Resumo (execução representativa)
+        if: always()
+        run: |
+          if [ -f .lighthouseci/resumo.md ]; then
+            cat .lighthouseci/resumo.md >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Lighthouse não gerou relatórios." >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: lighthouse
+          path: .lighthouseci/
+          include-hidden-files: true
+          if-no-files-found: warn
+          retention-days: 14

@@ -44,6 +44,8 @@ const resultado = spawnSync(
     '-e',
     'CI=',
     '-e',
+    `ATELIE_FORBID_ONLY=${process.env.CI ? '1' : ''}`,
+    '-e',
     'PERMITIR_DADOS_FICTICIOS=1',
     '-e',
     'NEXT_TELEMETRY_DISABLED=1',

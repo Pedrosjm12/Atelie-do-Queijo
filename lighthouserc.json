@@ -1,0 +1,42 @@
+{
+  "ci": {
+    "collect": {
+      "startServerCommand": "npm run start -- --port 3217",
+      "startServerReadyPattern": "Ready",
+      "startServerReadyTimeout": 60000,
+      "url": [
+        "http://localhost:3217/",
+        "http://localhost:3217/queijos/canastra-curado",
+        "http://localhost:3217/presentes",
+        "http://localhost:3217/aprenda",
+        "http://localhost:3217/sacola",
+        "http://localhost:3217/checkout"
+      ],
+      "numberOfRuns": 3,
+      "settings": {
+        "chromeFlags": "--headless=new"
+      }
+    },
+    "assert": {
+      "aggregationMethod": "median",
+      "assertions": {
+        "categories:performance": ["warn", { "minScore": 0.9 }],
+        "categories:best-practices": ["warn", { "minScore": 0.95 }],
+        "categories:accessibility": ["warn", { "minScore": 0.96 }],
+        "document-title": ["warn", { "minScore": 1 }],
+        "meta-description": ["warn", { "minScore": 1 }],
+        "http-status-code": ["warn", { "minScore": 1 }],
+        "link-text": ["warn", { "minScore": 1 }],
+        "crawlable-anchors": ["warn", { "minScore": 1 }],
+        "robots-txt": ["warn", { "minScore": 1 }],
+        "image-alt": ["warn", { "minScore": 1 }],
+        "hreflang": ["warn", { "minScore": 1 }],
+        "canonical": ["warn", { "minScore": 1 }]
+      }
+    },
+    "upload": {
+      "target": "filesystem",
+      "outputDir": ".lighthouseci"
+    }
+  }
+}
