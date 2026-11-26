@@ -2706,7 +2706,7 @@ Auditoria da tarefa 6 (`auditor-de-seguranca`, 2026-11-11), somente leitura, sob
 
 | Gravidade | Achado | Destino |
 | --- | --- | --- |
-| Média | Newsletter sem `method="post"` (`app/_home/Newsletter.tsx:57`): envio antes da hidratação põe o e-mail na URL (`/?email=…`), no histórico e nos logs da Vercel | `frontend-nextjs`, no commit do bloco B |
+| Média | Newsletter sem `method="post"` (`app/_home/Newsletter.tsx:57`): envio antes da hidratação põe o e-mail na URL (`/?email=…`), no histórico e nos logs da Vercel | `frontend-nextjs`, no commit do bloco B. **Resolvido** (conferido em 2026-11-26: o formulário já usa `method="post"`) |
 | Baixa | Trava de build P74 aceita `NODE_ENV=test` ou `development` no `next build` (o Next não força `production`): passa sem `PERMITIR_DADOS_FICTICIOS` e publica CNPJ, endereço e frete fictícios fora da Vercel (o número vira `null`) | `devops-e-deploy`: na fase de build, exigir só `PERMITIR_DADOS_FICTICIOS=1`, com teste |
 | Baixa | Toolbar da Vercel em Preview gera violação de CSP (`vercel.live`) | Dono: desligar o Toolbar em Pre-Production (Settings → General) ou `VERCEL_PREVIEW_FEEDBACK_ENABLED=0` em Preview; ADR-0015 sem mudança |
 | Baixa | Lacunas fixas no JSX a partir de `null` ou lista vazia (`[A DEFINIR: queijos citados]`, `[A DEFINIR: artigos]`, perfil sensorial) não são detectadas pela trava P73 | `devops-e-deploy`: `postbuild` que, com `VERCEL_ENV=production`, procura `[A DEFINIR` em `.next/server/app` |
@@ -2722,7 +2722,7 @@ Auditoria da tarefa 6 (`auditor-de-seguranca`, 2026-11-11), somente leitura, sob
 
 | Fluxo | Dado pessoal recebido | Onde vive | Sai do navegador? | Log, URL ou armazenamento |
 | --- | --- | --- | --- | --- |
-| Newsletter (§5.9) | E-mail | Só o campo do formulário; validação de formato no navegador | Não: nada é gravado nem enviado (D25/P9) | Sem log nem armazenamento. **URL: risco antes da hidratação (achado médio), a corrigir** |
+| Newsletter (§5.9) | E-mail | Só o campo do formulário; validação de formato no navegador | Não: nada é gravado nem enviado (D25/P9) | Sem log nem armazenamento. **URL: risco antes da hidratação (achado médio), resolvido: o formulário já usa `method="post"` (conferido em `app/_home/Newsletter.tsx`, 2026-11-26)** |
 | Calculadora de frete (produto e checkout) | CEP | Estado do componente | Sim: Server Action `consultarFrete` (corpo POST) | Sem log; resposta sem a entrada; formulário `method="post"` |
 | Checkout (etapas 1 a 3) | Nome, e-mail, telefone, endereço (CEP, rua, número, complemento, bairro, cidade, UF); se for presente, mensagem do cartão e data de entrega; forma de pagamento (Pix ou cartão, **sem dado de cartão**) | Só em memória (React, P37); recarregar a página apaga | Sim: Server Action `confirmarPedido` (corpo POST), validada com Zod, usada em memória e descartada | Sem log, sem persistência, sem URL; a resposta devolve só número, e-mail e totais |
 | Assistente (chat) | Texto livre digitado (a pessoa pode escrever dado pessoal) | Só em memória; motor determinístico no navegador | Não. Os links `wa.me` levam mensagens fixas por motivo, nunca o texto digitado; ao clicar, a pessoa vai por conta própria ao WhatsApp (Meta), que deve ser citado no aviso | Sem log nem armazenamento |
@@ -3613,6 +3613,12 @@ Continuam como lacuna, por decisão do dono: dados dos 9 queijos sem ficha (`[A 
 | D34 | `--placeholder` (4,47:1): manter e rever antes de publicar, se ainda houver `[FOTO: …]`. |
 
 **Restrição ao D30 (aguarda confirmação do dono).** A spec (§9) proíbe inventar características dos queijos sem ficha, e o `CLAUDE.md` manda manter as lacunas visíveis. Por isso, **só os dados de negócio** (D26 a D29) recebem valores fictícios. Selos, descrição e perfil sensorial dos 9 queijos continuam **`[A DEFINIR]`** até o dono confirmar que quer texto fictício também nesses campos.
+
+### Decisão do dono de 2026-11-26 (P97)
+
+| # | Decisão |
+| --- | --- |
+| P97 | **Borda inferior do cabeçalho de ponta a ponta a 1440 px: manter** como desvio aprovado (o protótipo a limita ao contêiner de 1264 px). Era o desvio A1 do [checklist de aceite](aceite.md#23-desvio-de-leitura-do-protótipo). Decidido pelo dono em 2026-11-26; segue a numeração P (a última era a P96) porque a série D foi fechada em 2026-11-03. |
 
 ### Tarefas geradas por estas decisões
 
